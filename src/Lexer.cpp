@@ -16,15 +16,15 @@ std::vector<std::pair<Token, std::string_view>> Lexer::Tokenize(std::string& Cod
 
         for(size_t i = 0; i < LineofCode.size(); ++i){
             // Checks for beginning and end of a string
-            if((LineofCode[i] == '\"')){
+            if((LineofCode[i] == '\"') || (LineofCode[i] == '\'')){
                 // beggining of a string
-                if(TempID == ID::None){
-                    TempID = ID::CharDouble;
+                if((TempID == ID::None) || (TempID == ID::ParenArgs)){
+                    TempID = ID::Char;
                     TempString = "";
                 }
 
                 // end of a string
-                else if(TempID == ID::CharDouble){
+                else if(TempID == ID::Char){
                     std::cout << TempString << std::endl;
                     TempID = ID::StringEnd;
                     Tokens.emplace_back(Token::String, TempString);
@@ -32,36 +32,17 @@ std::vector<std::pair<Token, std::string_view>> Lexer::Tokenize(std::string& Cod
                 }
 
                 else{
-                    throw error::RendorException("Invalid Syntax: EOL while scanning string on line " + std::to_string(LineNumber));
-                }
-            }
-
-            if((LineofCode[i] == '\'')){
-                // beggining of a string
-                if(TempID == ID::None){
-                    TempID = ID::CharArpro;
-                    TempString = "";
-                }
-
-                // end of a string
-                else if(TempID == ID::CharArpro){
                     std::cout << TempString << std::endl;
-                    TempID = ID::StringEnd;
-                    Tokens.emplace_back(Token::String, TempString);
-                    TempString = "";
-                }
-
-                else{
                     throw error::RendorException("Invalid Syntax: EOL while scanning string on line " + std::to_string(LineNumber));
                 }
             }
 
-            else if((LineofCode[i] == ' ') && ((TempID != ID::CharDouble) || (TempID != ID::CharArpro))){
+            else if((LineofCode[i] == ' ') && (TempID != ID::Char)){
                 
             }
 
             // Comments
-            else if(((LineofCode[i] == '/') && (TempID == ID::None))){
+            else if((LineofCode[i] == '/') && (TempID != ID::Char)){
                 if(TempID != ID::Comment){
                     TempID = ID::Comment;
                     TempString = "";
@@ -73,10 +54,11 @@ std::vector<std::pair<Token, std::string_view>> Lexer::Tokenize(std::string& Cod
             }
 
             // Checks for keywords
-            else if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && ((TempID != ID::CharArpro) || (TempID != ID::CharDouble))){
+            else if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && (TempID == ID::None)){
                 std::cout << TempString << std::endl;
                 Tokens.emplace_back(Token::Keyword, TempString);
                 TempID = ID::KeywordArgs;
+                TempString = "";
             }
 
             //Checks for parens
@@ -103,6 +85,11 @@ std::vector<std::pair<Token, std::string_view>> Lexer::Tokenize(std::string& Cod
             else if((LineofCode[i] == '{') && (TempID == ID::None)){
                 Tokens.emplace_back(Token::Bracket, TempString);
                 TempID = ID::None;
+                TempString = "";
+            }
+
+            else if((LineofCode[i] == '|') && (TempID == ID::ParenArgs)){
+                Tokens.emplace_back(Token::Operator, TempString);
                 TempString = "";
             }
 
