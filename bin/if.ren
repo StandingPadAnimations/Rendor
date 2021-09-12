@@ -1,0 +1,9 @@
+user = 'b'
+
+if (user = 'b' || user = 'c'){
+    echo("hi")
+}
+
+if(user = 'b' || user = 'c'){
+    echo("hi this works")
+}

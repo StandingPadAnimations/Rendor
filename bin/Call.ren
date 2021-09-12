@@ -1,0 +1,8 @@
+echo("Hello World")
+
+
+/back = "we be back"/
+/echo(back)/
+
+/_input = input("Enter Something ")/
+/echo(_input)/
