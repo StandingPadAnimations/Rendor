@@ -13,5 +13,5 @@ Rendor is the successor to the EnderKnight programming language. It aims to fix 
 * Better lexer
 * Better parser
 * C++17 features
-# Compiling requirements:
-* You have to compile to C++17 
+# Compiling requirements for building from source:
+* You have to compile using C++17. On Linux, Mac, and Windows(if you're using mingw32-make or the GNU port of make for Windows) you can use the make file 
