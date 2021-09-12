@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project("Rendor")
+set(Rendor_Includes "./includes/Exceptions.hpp" "./includes/PythonStatements.hpp" "./includes/Lexer.hpp" "./includes/Parser.hpp") 
+set(Rendor_Src "./src/Rendor.cpp")
+add_executable(yourExec ${Rendor_Includes} ${Rendor_Src}) 
+include_directories("./includes")

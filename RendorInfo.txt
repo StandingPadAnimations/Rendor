@@ -1,0 +1,65 @@
+Precedence:
+    String & Comment
+    Keyword
+    Operation
+    Variable
+
+
+ByteCode key for Rendor:
+    d(define){
+        Section 0(keywords like int, bool, string){
+            0d00 : VOID_DEF
+            0d01 : INT_DEF
+            0d02 : FLOAT_DEF
+            0d03 : CHAR_DEF
+            0d04 : STRING_DEF
+            0d05 : BOOL_DEF
+        }
+        Section 1(actual parts of code like true, 5, and "hello world"){
+            1d00 : INT
+            1d01 : FLOAT
+            1d02 : CHAR
+            1d03 : STRING
+            1d05 : BOOL
+            1d06 : ARITHMITHIC
+        }
+    }
+    e(edef){
+        0e00 : edef_function_name
+        0e01 : argument_start
+        0e02 : argument_end
+        0e03 : return_type 
+        0e04 : return
+    }
+    f(if){
+        0f00 : if
+    }
+    l(loop){
+        0l00 : while_loop
+    }
+    x(shared across other sections){
+        Section 0{
+            0x00 : end_scope
+            0x01 : conditions 
+            0x02 : or
+            0x03 : and 
+            0x04 : END_DEF
+            0x05 : variable_reference
+        }
+        Section 1(flags though they won't be avalible until bytecode compiling gets added except 1x00){
+            1x00 : version
+            1x01 : lock_to_version
+            1x02 : lock_to_version_and_bellow
+            1x03 : experimential
+        }
+    }
+    j(calls){
+        0j00 : call
+        0j01 : call_arguments
+        0j02 : call_arguments_end
+    }
+
+ProblemCode key for Rendor:
+    0000 : None 
+    0001 : Expected END_DEF after INT or FLOAT
+    0002 : Expected STRING and got STRING_PART
