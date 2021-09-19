@@ -12,24 +12,45 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
         ++LineNumber;
         // Check for beginning of string
         std::vector<ID> TempID {ID::None};
+        SpecificID SpecificTempID = SpecificID::None; 
         std::string TempString = "";
 
         for(size_t i = 0; i < LineofCode.size(); ++i){
             // Checks for beginning and end of a string
-            if((LineofCode[i] == '\"') || (LineofCode[i] == '\'')){
+            if((LineofCode[i] == '\"') || (LineofCode[i] == '\'') || (LineofCode[i] == '`')){
                 // beggining of a string
                 if((TempID.back() == ID::None) || (TempID.back() == ID::ParenArgs) || (TempID.back() == ID::KeywordArgs)){
                     // std::cout << "StringStart " << TempString << std::endl;
                     TempID.emplace_back(ID::Char);
                     TempString = "";
+
+                    // defines what should end string
+                    if(LineofCode[i] == '\''){
+                        SpecificTempID = SpecificID::CharSingle;
+                    }
+                    else if(LineofCode[i] == '\"'){
+                        SpecificTempID = SpecificID::CharDouble;
+                    }
+                    else if(LineofCode[i] == '`'){
+                        SpecificTempID = SpecificID::CharTilda;
+                    }
                 }
 
                 // end of a string
                 else if(TempID.back() == ID::Char){
                     // std::cout << TempString << std::endl;
-                    Tokens.emplace_back(Token::String, TempString);
-                    TempID.pop_back();
-                    TempString = "";
+
+                    if(((LineofCode[i] == '\'') && (SpecificTempID == SpecificID::CharSingle)) || 
+                    ((LineofCode[i] == '\"') && (SpecificTempID == SpecificID::CharDouble)) || 
+                    ((LineofCode[i] == '`') && (SpecificTempID == SpecificID::CharTilda))){
+                        Tokens.emplace_back(Token::String, TempString);
+                        TempID.pop_back();
+                        TempString = "";
+                    }
+                    else{
+                        TempString.push_back(LineofCode[i]);
+                    }
+                    
                 }
 
                 else{
@@ -70,9 +91,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 TempString = "";
             }
 
-            // Whenever { is used outside of a string, TempID will always be ID::None
-            else if((LineofCode[i] == '{') && (TempID.back() == ID::None)){
-                Tokens.emplace_back(Token::Bracket, TempString);
+            // Whenever { is used outside of a string, TempID will always be ID::KeywordArgs
+            else if((LineofCode[i] == '{') && (TempID.back() == ID::KeywordArgs)){
+                Tokens.emplace_back(Token::Bracket, "BRACK");
                 TempID.pop_back();
                 TempString = "";
             }
