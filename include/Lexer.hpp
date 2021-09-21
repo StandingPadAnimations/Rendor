@@ -7,48 +7,53 @@
 #include <algorithm>
 #include <string_view>
 #include <sstream>
-#include "PythonStatements.hpp"
 #include "Exceptions.hpp"
 
-// Creates a class called Lexer in the namespace Lex(to prevent conflicts).
 namespace Lex{
     // Enum for tokens 
     enum class Token{
-        Import,
-        PreProcessDefine,
-        Comment,
-        Int,
-        Float,
-        Char,
-        String,
-        Bool,
-        Paren,
-        Bracket,
-        Operator,
-        Keyword,
-        Variable,
+        Import, // 0
+        PreProcessDefine, // 1
+        Comment, // 2
+        Int, // 3 
+        Float, // 4
+        String, // 5
+        Bool, // 6
+        Paren, // 7
+        Bracket, // 8
+        Operator, // 9
+        Keyword, // 10
+        Variable, // 11
+        FunctionCall // 12
     };
 
     enum class ID{
         None,
         Comment,
         Char,
-        StringEnd, // Exists for error handling
         KeywordArgs,
-        ParenArgs
+    };
+
+    enum class SpecificID{
+        None,
+        CharDouble,
+        CharSingle,
+        CharTilda,
+        ForwardSlash,
+        EqualOperator
     };
 
     // Lexer Class 
     class Lexer{
         private:
-            // Python recreated functions for the Lexer
-            py::Python LexPython;
+            // Keywords to check for 
+            std::string Keywords[5] {"edef", "while", "if", "return", "echo"};
 
             // Keywords to check for 
-            std::string Keywords[4] {"edef", "while", "if", "return"};
+            std::string Operators[2] {"and", "or"};
             
         public:            
             // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string_view>> Tokenize(std::string&);
+            std::vector<std::pair<Token, std::string>> Tokenize(std::string&);
     };
 }
