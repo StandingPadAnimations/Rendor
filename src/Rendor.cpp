@@ -31,18 +31,19 @@ and please excuse my terrible speeling lol
 #include <iostream>
 #include <fstream>
 #include "Lexer.hpp"
-#include "PythonStatements.hpp"
-
+#include "ExtraFunctions.hpp"
+#include "Preprocessor.hpp"
 
 
 int main(int argc, char *argv[]){
-    /* 
-    Sets variables and initializes them.
-    std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
-    */
+    // Sets variables and initializes them.
+    // std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
     try{
-        bool DebugMode = false;
+        std::vector<std::pair<Lex::Token, std::string>> Tokens;
+        bool DebugMode = true;
         std::ifstream File(argv[1]);
+        IfFileExists(File);
+
         // if(argv[2] != NULL){
         //     if(argv[2] == "-debug"){
         //         DebugMode = true;
@@ -52,28 +53,26 @@ int main(int argc, char *argv[]){
         //     }
         // }
 
+        {
+            Lex::Lexer RenLexer;
+            ex::Extra RendorExtra;
 
-        Lex::Lexer RenLexer;
-        py::Python RendorPython;
+            // This part of the program reads the individual lines in the ek file(argv[1]) and checks to see if the size is above 0. 
+            // If it is, CodeLine.size() is true and false if it is 0.
+            // Then it concentrates everything to a single string
+            std::string AllCode;
+            for(std::string CodeLine; std::getline(File, CodeLine);){
+                CodeLine = RendorExtra.reduce(CodeLine, " ", " \t");
+                AllCode = AllCode + CodeLine + '\n';
+            }
 
-        /* 
-        This part of the program reads the individual lines in the ek file(argv[1]) and checks to see if the size is above 0. 
-        If it is, CodeLine.size() is true and false if it is 0.
-        Because of this, we can just put if(Line.size()) which will check if it equals true or not, saving some space in the code.
-        */
-        std::string AllCode;
-        for(std::string CodeLine; std::getline(File, CodeLine);){
-            CodeLine = RendorPython.reduce(CodeLine, " ", " \t");
-            AllCode = AllCode + CodeLine + '\n';
-        }
+            // Tokenizes the AllCode string
+            Tokens = RenLexer.Tokenize(AllCode);
 
-
-        // Tokenizes the AllCode string
-        std::vector<std::pair<Lex::Token, std::string_view>> Tokens = RenLexer.Tokenize(AllCode);
-
-        if(DebugMode){
-            for(auto const& [token, value] : Tokens){
-                std::cout << static_cast<int>(token) << " " << value << std::endl;
+            if(DebugMode){
+                for(auto const& [token, value] : Tokens){
+                    std::cout << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << ";" << std::endl;
+                }
             }
         }
 
