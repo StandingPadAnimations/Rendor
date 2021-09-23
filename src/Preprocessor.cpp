@@ -1,42 +1,42 @@
 #include "Preprocessor.hpp"
 
-std::string PreProcess(std::ifstream& __File__){
+std::string PreProcess(std::ifstream& File){
     // If the file exists and has an entry point
-    std::string __AllCode__ = FileValidityCheck(__File__);;
-    return __AllCode__;
+    std::string AllCode = FileValidityCheck(File);;
+    return AllCode;
 }
 
-std::string FileValidityCheck(std::ifstream& __Filename__){
-    IfFileExists(__Filename__);
-    std::string ReturnCode = LookForEntryPoint(__Filename__);
+std::string FileValidityCheck(std::ifstream& Filename){
+    IfFileExists(Filename);
+    std::string ReturnCode = LookForEntryPoint(Filename);
     return ReturnCode;
 }
 
-void IfFileExists(std::ifstream& __Filename__){
-    if(!__Filename__){
+void IfFileExists(std::ifstream& Filename){
+    if(!Filename){
         throw error::RendorException("File does not exist");
     }
 }
 
-std::string LookForEntryPoint(std::ifstream& __Filename__){
+std::string LookForEntryPoint(std::ifstream& Filename){
     PreprocessName __RendorName__ = PreprocessName::preprocess_main;
-    bool __FoundBeginingOfEntryPoint__ = false;
-    bool __FoundEndOfEntryPoint__ = false;
-    std::string __AllCode__;
-    ex::Extra __RendorExtra__;
+    bool FoundBeginingOfEntryPoint = false;
+    bool FoundEndOfEntryPoint = false;
+    std::string AllCode;
+    ex::Extra RendorExtra;
     
     // go over each line
-    for(std::string __PreProcessLine__; std::getline(__Filename__, __PreProcessLine__);){
+    for(std::string PreProcessLine; std::getline(Filename, PreProcessLine);){
         // Check if line contains preprocessor function with the # prefix
-        if(__PreProcessLine__[0] == '#'){
+        if(PreProcessLine[0] == '#'){
             // function name
-            std::string __PreProcessFunctionName__ = __PreProcessLine__.substr(0, __PreProcessLine__.find_first_of(' '));
+            std::string PreProcessFunctionName = PreProcessLine.substr(0, PreProcessLine.find_first_of(' '));
 
             // main function
-            if(__PreProcessFunctionName__ == "#rdef"){
+            if(PreProcessFunctionName == "#rdef"){
                 switch(__RendorName__){
                     case PreprocessName::preprocess_main:
-                        __FoundBeginingOfEntryPoint__ = true;
+                        FoundBeginingOfEntryPoint = true;
                         break;
 
                     case PreprocessName::import:
@@ -44,12 +44,12 @@ std::string LookForEntryPoint(std::ifstream& __Filename__){
                 }
             }
             //main function end
-            else if(__PreProcessFunctionName__ == "#rdef_end"){
+            else if(PreProcessFunctionName == "#rdef_end"){
                 switch(__RendorName__){
                     case PreprocessName::preprocess_main:
-                        switch(__FoundBeginingOfEntryPoint__){
+                        switch(FoundBeginingOfEntryPoint){
                             case true:
-                                __FoundEndOfEntryPoint__ = true;
+                                FoundEndOfEntryPoint = true;
                                 break;
                             
                             case false:
@@ -64,12 +64,12 @@ std::string LookForEntryPoint(std::ifstream& __Filename__){
             }
         }
         // add to allcode string
-        __PreProcessLine__ = __RendorExtra__.reduce(__PreProcessLine__, " ", " \t");
-        __AllCode__ = __AllCode__ + __PreProcessLine__ + '\n';
+        PreProcessLine = RendorExtra.reduce(PreProcessLine, " ", " \t");
+        AllCode = AllCode + PreProcessLine + '\n';
     }
 
-    if((__FoundBeginingOfEntryPoint__ == true) && (__FoundEndOfEntryPoint__ == true)){
-        return __AllCode__;
+    if((FoundBeginingOfEntryPoint == true) && (FoundEndOfEntryPoint == true)){
+        return AllCode;
     }
     throw error::RendorException("Entry Point not defined");
 }
