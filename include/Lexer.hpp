@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <string_view>
 #include <sstream>
+#include <functional>
 #include "Exceptions.hpp"
 
 namespace Lex{
