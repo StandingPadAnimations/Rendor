@@ -1,9 +1,13 @@
-user = 'b'
+#rdef main(){
+    user = 'b'
 
-if (user == 'b' || user == 'c'){
-    echo("hi")
+    if (user == 'b' or user == 'c'){
+        echo(`"he's out"`)
+    }
+
+    //if(user = 'b' or user = 'c'){
+    //    echo("hi this works")
+    //}
 }
+#rdef_end
 
-//if(user = 'b' && user = 'c'){
-//    echo("hi this works")
-//}

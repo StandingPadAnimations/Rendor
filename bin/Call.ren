@@ -1,8 +1,10 @@
+#rdef main(){
 echo("Hello World")
+}
+#rdef_end
 
+//back = "we be back"
+/echo(back)
 
-/back = "we be back"/
-/echo(back)/
-
-/_input = input("Enter Something ")/
-/echo(_input)/
+//_input = input("Enter Something ")
+//echo(_input)
