@@ -28,7 +28,9 @@ namespace Lex{
         Arithmic, // 13
         Increment, // 14
         Decrement, // 15
-        ComparisonObject // 16
+        ComparisonObject, // 16
+        EntryFunction, // 17
+        EndOfProgram // 18
     };
 
     enum class ID{
@@ -55,7 +57,7 @@ namespace Lex{
             std::string Keywords[5] {"edef", "while", "if", "return", "echo"};
 
             // Keywords to check for 
-            std::string Operators[3] {"and", "or", "not"};
+            std::string Operators[4] {"and", "or", "not", "is"};
             
         public:            
             // Tokenizes Lines of code from Rendor Files
