@@ -150,9 +150,8 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             else if((LineofCode[i] == '#') && (TempID != ID::Char)){
                 std::string PreProcessFunctionName = LineofCode.substr(0, LineofCode.find_first_of(' '));
                 if(PreProcessFunctionName == "#rdef"){
-                    // IsMainFunction = true;
+                    IsMainFunction = true;
                     AddToTokensOrMainVector(Token::EntryFunction, "ENTRY", AddTokenLambda);
-                    // MainFunction.emplace_back(Token::EntryFunction, "ENTRY");
                     TempIDList.emplace_back(ID::KeywordArgs);
                 }
                 else if(PreProcessFunctionName == "#rdef_end"){
@@ -235,6 +234,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 // std::cout << static_cast<std::underlying_type<ID>::type>(TempID) << std::endl;
             }
         }
+    }
+    for(auto const& pair : MainFunction){
+        Tokens.emplace_back(pair);
     }
     return Tokens;
 }
