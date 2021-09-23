@@ -3,199 +3,206 @@ using namespace Lex;
 
 
 std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
-    std::stringstream ss(Code);
-    std::string LineofCode;
-    std::vector<std::pair<Token, std::string>> Tokens;
-    unsigned int LineNumber = 0;
+    std::stringstream __ss__(Code);
+    std::string __LineofCode__;
+    std::vector<std::pair<Token, std::string>> __Tokens__;
+    unsigned int __LineNumber__ = 0;
 
-    while(std::getline(ss, LineofCode)){
-        ++LineNumber;
+    while(std::getline(__ss__, __LineofCode__)){
+        ++__LineNumber__;
         // Check for beginning of string
-        std::vector<ID> TempIDList {ID::None};
-        SpecificID SpecificTempID = SpecificID::None; 
-        std::string TempString = "";
+        std::vector<ID> __TempIDList__ {ID::None};
+        SpecificID __SpecificTempID__ = SpecificID::None; 
+        std::string __TempString__ = "";
 
-        for(size_t i = 0; i < LineofCode.size(); ++i){
-            ID TempID = TempIDList.back();
+        for(size_t i = 0; i < __LineofCode__.size(); ++i){
+            ID __TempID__ = __TempIDList__.back();
             // Checks for beginning and end of a string
-            if((LineofCode[i] == '\"') || (LineofCode[i] == '\'') || (LineofCode[i] == '`')){
+            if((__LineofCode__[i] == '\"') || (__LineofCode__[i] == '\'') || (__LineofCode__[i] == '`')){
                 // beggining of a string
-                if((TempID == ID::None) || (TempID == ID::KeywordArgs)){
-                    // std::cout << "StringStart " << TempString << std::endl;
-                    TempIDList.emplace_back(ID::Char);
-                    TempString = "";
+                if((__TempID__ == ID::None) || (__TempID__ == ID::KeywordArgs)){
+                    // std::cout << "StringStart " << __TempString__ << std::endl;
+                    __TempIDList__.emplace_back(ID::Char);
+                    __TempString__ = "";
 
                     // defines what should end string
-                    switch(LineofCode[i]){
+                    switch(__LineofCode__[i]){
                         case '\'': 
-                            SpecificTempID = SpecificID::CharSingle;
+                            __SpecificTempID__ = SpecificID::CharSingle;
                             break;
 
                         case '\"':
-                            SpecificTempID = SpecificID::CharDouble;
+                            __SpecificTempID__ = SpecificID::CharDouble;
                             break;
 
                         case '`':
-                            SpecificTempID = SpecificID::CharTilda;
+                            __SpecificTempID__ = SpecificID::CharTilda;
                             break;
                     }
                     
                 }
 
                 // end of a string
-                else if(TempID == ID::Char){
-                    // std::cout << TempString << std::endl;
+                else if(__TempID__ == ID::Char){
+                    // std::cout << __TempString__ << std::endl;
 
-                    if(((LineofCode[i] == '\'') && (SpecificTempID == SpecificID::CharSingle)) || 
-                    ((LineofCode[i] == '\"') && (SpecificTempID == SpecificID::CharDouble)) || 
-                    ((LineofCode[i] == '`') && (SpecificTempID == SpecificID::CharTilda))){
-                        Tokens.emplace_back(Token::String, TempString);
-                        TempIDList.pop_back();
-                        TempString = "";
+                    if(((__LineofCode__[i] == '\'') && (__SpecificTempID__ == SpecificID::CharSingle)) || 
+                    ((__LineofCode__[i] == '\"') && (__SpecificTempID__ == SpecificID::CharDouble)) || 
+                    ((__LineofCode__[i] == '`') && (__SpecificTempID__ == SpecificID::CharTilda))){
+                        __Tokens__.emplace_back(Token::String, __TempString__);
+                        __TempIDList__.pop_back();
+                        __TempString__ = "";
                     }
                     else{
-                        TempString.push_back(LineofCode[i]);
+                        __TempString__.push_back(__LineofCode__[i]);
                     }
                     
                 }
 
                 else{
-                    // std::cout << "StringEOL Error " << TempString  << " " << static_cast<std::underlying_type<ID>::type>(TempID) << std::endl;
-                    throw error::RendorException("Invalid Syntax: EOL while scanning string on line " + std::to_string(LineNumber));
+                    // std::cout << "StringEOL Error " << __TempString__  << " " << static_cast<std::underlying_type<ID>::type>(__TempID__) << std::endl;
+                    throw error::RendorException("Invalid Syntax: EOL while scanning string on line " + std::to_string(__LineNumber__));
                 }
             }
 
-            else if((LineofCode[i] == ' ') && (TempID != ID::Char)){
+            else if((__LineofCode__[i] == ' ') && (__TempID__ != ID::Char)){
 
             }
 
             // Comments
-            else if((LineofCode[i] == '/') && (TempID != ID::Char)){
-                if(TempID != ID::Comment){
+            else if((__LineofCode__[i] == '/') && (__TempID__ != ID::Char)){
+                if(__TempID__ != ID::Comment){
                     // std::cout << "Encounted Comment" << std::endl;
-                    TempIDList.emplace_back(ID::Comment);
-                    TempString = "";
+                    __TempIDList__.emplace_back(ID::Comment);
+                    __TempString__ = "";
                 }
                 
-                else if(TempID == ID::Comment){
-                    // std::cout << "Comment " << TempString << std::endl; 
+                else if(__TempID__ == ID::Comment){
+                    // std::cout << "Comment " << __TempString__ << std::endl; 
                     break;
                 }
             }
 
             // Checks for operators
-            else if((std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators)) && (TempID == ID::KeywordArgs)){
-                Tokens.emplace_back(Token::Operator, TempString);
-                TempString = "";
+            else if((std::find(std::begin(Operators), std::end(Operators), __TempString__) != std::end(Operators)) && (__TempID__ == ID::KeywordArgs)){
+                __Tokens__.emplace_back(Token::Operator, __TempString__);
+                __TempString__ = "";
 
                 // to account for chars not being added when a operator is found
-                TempString.push_back(LineofCode[i]);
+                __TempString__.push_back(__LineofCode__[i]);
             }
 
             //Checks for parens
-            else if(LineofCode[i] == '('){
+            else if(__LineofCode__[i] == '('){
                 // Sometimes the ( is part of a keyword
-                if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && (TempID == ID::None)){
-                    Tokens.emplace_back(Token::Keyword, TempString);
-                    TempIDList.emplace_back(ID::KeywordArgs);
-                    TempString = "";
+                if((std::find(std::begin(Keywords), std::end(Keywords), __TempString__) != std::end(Keywords)) && (__TempID__ == ID::None)){
+                    __Tokens__.emplace_back(Token::Keyword, __TempString__);
+                    __TempIDList__.emplace_back(ID::KeywordArgs);
+                    __TempString__ = "";
                 }
-                Tokens.emplace_back(Token::Paren, "PAREN");
+                __Tokens__.emplace_back(Token::Paren, "PAREN");
             }
 
-            else if(LineofCode[i] == ')'){
-                Tokens.emplace_back(Token::Paren, "PAREN");
+            else if(__LineofCode__[i] == ')'){
+                __Tokens__.emplace_back(Token::Paren, "PAREN");
             }
 
-            else if((LineofCode[i] == '{') || (LineofCode[i] == '}')){
-                switch(LineofCode[i]){
+            else if((__LineofCode__[i] == '{') || (__LineofCode__[i] == '}')){
+                switch(__LineofCode__[i]){
                     case '{':
-                        switch(TempID){
-                            // Whenever { is used outside of a string, TempID will always be ID::KeywordArgs
+                        switch(__TempID__){
+                            // Whenever { is used outside of a string, __TempID__ will always be ID::KeywordArgs
                             case ID::KeywordArgs:
-                                Tokens.emplace_back(Token::Bracket, "BRACK");
-                                TempIDList.pop_back();
-                                TempString = "";
+                                __Tokens__.emplace_back(Token::Bracket, "BRACK");
+                                __TempIDList__.pop_back();
+                                __TempString__ = "";
                                 break;
                             
                             default:
-                                throw error::RendorException("Random { found on line " + std::to_string(LineNumber));
+                                throw error::RendorException("Random { found on line " + std::to_string(__LineNumber__));
                         }
                         break;
 
                     case '}':
-                        Tokens.emplace_back(Token::Bracket, "BRACK");
+                        __Tokens__.emplace_back(Token::Bracket, "BRACK");
                         break;
                 }
             }
 
-            // Preprocessor definitions are planned for a future update 
-            else if((LineofCode[i] == '#') && (TempID != ID::Char)){
-                throw error::RendorException("Preprocessor definitions are currently not supported in Rendor 1.0");
+            // Preprocessor definitions 
+            else if((__LineofCode__[i] == '#') && (__TempID__ != ID::Char)){
+                std::string __PreProcessFunctionName__ = __LineofCode__.substr(0, __LineofCode__.find_first_of(' '));
+                if(__PreProcessFunctionName__ == "#rdef"){
+                    __Tokens__.emplace_back(Token::EntryFunction, "ENTRY");
+                    __TempIDList__.emplace_back(ID::KeywordArgs);
+                }
+                else if(__PreProcessFunctionName__ == "#rdef_end"){
+                    __Tokens__.emplace_back(Token::EndOfProgram, "END");
+                }
             }
 
-            else if(LineofCode[i] == '='){
-                switch(TempID){
+            else if(__LineofCode__[i] == '='){
+                switch(__TempID__){
                     case ID::None:
-                        Tokens.emplace_back(Token::Variable, TempString);
-                        TempString = "";
+                        __Tokens__.emplace_back(Token::Variable, __TempString__);
+                        __TempString__ = "";
                         break;
                     
                     case ID::KeywordArgs:
-                        if(SpecificTempID != SpecificID::EqualOperator){
-                            SpecificTempID = SpecificID::EqualOperator;
+                        if(__SpecificTempID__ != SpecificID::EqualOperator){
+                            __SpecificTempID__ = SpecificID::EqualOperator;
                             break;
                         }
-                        Tokens.emplace_back(Token::ComparisonObject, TempString);
-                        Tokens.emplace_back(Token::Operator, "EQUAL");
-                        TempString = "";
+                        __Tokens__.emplace_back(Token::ComparisonObject, __TempString__);
+                        __Tokens__.emplace_back(Token::Operator, "EQUAL");
+                        __TempString__ = "";
                         break;
 
                     default:
-                        throw error::RendorException("Random = found on line " + std::to_string(LineNumber));
+                        throw error::RendorException("Random = found on line " + std::to_string(__LineNumber__));
                 }
             }
 
-            else if(LineofCode[i] == '^' ||
-            LineofCode[i] == '*' || LineofCode[i] == '/' ||
-            LineofCode[i] == '+' || LineofCode[i] == '-'){
-                switch(LineofCode[i]){
+            else if(__LineofCode__[i] == '^' ||
+            __LineofCode__[i] == '*' || __LineofCode__[i] == '/' ||
+            __LineofCode__[i] == '+' || __LineofCode__[i] == '-'){
+                switch(__LineofCode__[i]){
                     case '^':
-                        Tokens.emplace_back(Token::Arithmic, "^");
+                        __Tokens__.emplace_back(Token::Arithmic, "^");
                         break;
 
                     case '*':
-                        Tokens.emplace_back(Token::Arithmic, "*");
+                        __Tokens__.emplace_back(Token::Arithmic, "*");
                         break;
 
                     case '/':
-                        Tokens.emplace_back(Token::Arithmic, "/");
+                        __Tokens__.emplace_back(Token::Arithmic, "/");
                         break;
 
                     case '+':
-                        switch(SpecificTempID){
+                        switch(__SpecificTempID__){
                             case SpecificID::IncrementDecrementCheck:
-                                Tokens.pop_back();
-                                Tokens.emplace_back(Token::Increment, "++");
+                                __Tokens__.pop_back();
+                                __Tokens__.emplace_back(Token::Increment, "++");
                                 break;
 
                             default:
-                                Tokens.emplace_back(Token::Arithmic, "+");
-                                SpecificTempID = SpecificID::IncrementDecrementCheck;
+                                __Tokens__.emplace_back(Token::Arithmic, "+");
+                                __SpecificTempID__ = SpecificID::IncrementDecrementCheck;
                                 break;
                         }
                         break;
 
                     case '-':
-                        switch(SpecificTempID){
+                        switch(__SpecificTempID__){
                             case SpecificID::IncrementDecrementCheck:
-                                Tokens.pop_back();
-                                Tokens.emplace_back(Token::Decrement, "--");
+                                __Tokens__.pop_back();
+                                __Tokens__.emplace_back(Token::Decrement, "--");
                                 break;
 
                             default:
-                                Tokens.emplace_back(Token::Arithmic, "-");
-                                SpecificTempID = SpecificID::IncrementDecrementCheck;
+                                __Tokens__.emplace_back(Token::Arithmic, "-");
+                                __SpecificTempID__ = SpecificID::IncrementDecrementCheck;
                                 break;
                         }
                         break;
@@ -204,10 +211,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
 
             // Push chars in a temporary string
             else{
-                TempString.push_back(LineofCode[i]);
-                // std::cout << static_cast<std::underlying_type<ID>::type>(TempID) << std::endl;
+                __TempString__.push_back(__LineofCode__[i]);
+                // std::cout << static_cast<std::underlying_type<ID>::type>(__TempID__) << std::endl;
             }
         }
     }
-    return Tokens;
+    return __Tokens__;
 }

@@ -42,7 +42,6 @@ int main(int argc, char *argv[]){
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
         bool DebugMode = true;
         std::ifstream File(argv[1]);
-        IfFileExists(File);
 
         // if(argv[2] != NULL){
         //     if(argv[2] == "-debug"){
@@ -54,17 +53,8 @@ int main(int argc, char *argv[]){
         // }
 
         {
+            std::string AllCode = PreProcess(File);
             Lex::Lexer RenLexer;
-            ex::Extra RendorExtra;
-
-            // This part of the program reads the individual lines in the ek file(argv[1]) and checks to see if the size is above 0. 
-            // If it is, CodeLine.size() is true and false if it is 0.
-            // Then it concentrates everything to a single string
-            std::string AllCode;
-            for(std::string CodeLine; std::getline(File, CodeLine);){
-                CodeLine = RendorExtra.reduce(CodeLine, " ", " \t");
-                AllCode = AllCode + CodeLine + '\n';
-            }
 
             // Tokenizes the AllCode string
             Tokens = RenLexer.Tokenize(AllCode);
