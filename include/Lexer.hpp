@@ -38,6 +38,7 @@ namespace Lex{
         Comment,
         Char,
         KeywordArgs,
+        Number
     };
 
     enum class SpecificID{
@@ -47,7 +48,12 @@ namespace Lex{
         CharTilda,
         ForwardSlash,
         EqualOperator,
-        IncrementDecrementCheck
+        IncrementDecrementCheck,
+        Increment,
+        Decrement,
+        Arithmic,
+        Int,
+        Float,
     };
 
     // Lexer Class 

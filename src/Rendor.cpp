@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
             std::string AllCode = PreProcess(File);
             Lex::Lexer RenLexer;
 
+
             // Tokenizes the AllCode string
             Tokens = RenLexer.Tokenize(AllCode);
 

@@ -32,11 +32,16 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
         std::vector<ID> TempIDList {ID::None};
         SpecificID SpecificTempID = SpecificID::None; 
         std::string TempString = "";
+        ID TempID = TempIDList.back();
 
         for(size_t i = 0; i < LineofCode.size(); ++i){
-            ID TempID = TempIDList.back();
+            TempID = TempIDList.back();
             // Checks for beginning and end of a string
-            if((LineofCode[i] == '\"') || (LineofCode[i] == '\'') || (LineofCode[i] == '`')){
+            if(
+            (LineofCode[i] == '\"') || 
+            (LineofCode[i] == '\'') || 
+            (LineofCode[i] == '`')
+            ){
                 // beggining of a string
                 if((TempID == ID::None) || (TempID == ID::KeywordArgs)){
                     // std::cout << "StringStart " << TempString << std::endl;
@@ -64,9 +69,14 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 else if(TempID == ID::Char){
                     // std::cout << TempString << std::endl;
 
-                    if(((LineofCode[i] == '\'') && (SpecificTempID == SpecificID::CharSingle)) || 
-                    ((LineofCode[i] == '\"') && (SpecificTempID == SpecificID::CharDouble)) || 
-                    ((LineofCode[i] == '`') && (SpecificTempID == SpecificID::CharTilda))){
+                    if(
+                    ((LineofCode[i] == '\'') && 
+                    (SpecificTempID == SpecificID::CharSingle)) || 
+                    ((LineofCode[i] == '\"') && 
+                    (SpecificTempID == SpecificID::CharDouble)) || 
+                    ((LineofCode[i] == '`') && 
+                    (SpecificTempID == SpecificID::CharTilda))
+                    ){
                         AddToTokensOrMainVector(Token::String, TempString, AddTokenLambda);
                         TempIDList.pop_back();
                         TempString = "";
@@ -82,22 +92,29 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if((LineofCode[i] == ' ') && (TempID != ID::Char)){
+            else if((LineofCode[i] == ' ') && ((TempID != ID::Char))){
 
             }
 
-            // Comments
-            else if((LineofCode[i] == '/') && (TempID != ID::Char)){
-                if(TempID != ID::Comment){
-                    // std::cout << "Encounted Comment" << std::endl;
-                    TempIDList.emplace_back(ID::Comment);
-                    TempString = "";
+            // Comments and division
+            else if((LineofCode[i] == '/') && ((TempID != ID::Char))){
+                switch(TempID){
+                    case ID::Number:
+                        TempString.push_back(LineofCode[i]);
+                        break;
+
+                    case ID::Comment:
+                        goto BreakForComment;
+
+                    default:
+                        TempIDList.emplace_back(ID::Comment);
+                        TempString = "";
+                        break;
                 }
-                
-                else if(TempID == ID::Comment){
-                    // std::cout << "Comment " << TempString << std::endl; 
+                // to avoid Rendor from accidentally breaking for comment for division 
+                continue;
+                BreakForComment:
                     break;
-                }
             }
 
             // Checks for operators
@@ -115,13 +132,33 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && (TempID == ID::None)){
                     AddToTokensOrMainVector(Token::Keyword, TempString, AddTokenLambda);
                     TempIDList.emplace_back(ID::KeywordArgs);
+                    TempID = TempIDList.back();
                     TempString = "";
                 }
-                AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
+                switch(TempID){
+                    case ID::KeywordArgs:
+                    case ID::None:
+                        AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
+                        break;
+
+                    default:
+                        TempString.push_back(LineofCode[i]);
+                        SpecificTempID = SpecificID::Arithmic;
+                        break;
+                }
             }
 
             else if(LineofCode[i] == ')'){
-                AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
+                switch(TempID){
+                    case ID::KeywordArgs:
+                        AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
+                        break;
+
+                    default:
+                        TempString.push_back(LineofCode[i]);
+                        SpecificTempID = SpecificID::Arithmic;
+                        break;
+                }
             }
 
             else if((LineofCode[i] == '{') || (LineofCode[i] == '}')){
@@ -182,32 +219,73 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if(LineofCode[i] == '^' ||
-            LineofCode[i] == '*' || LineofCode[i] == '/' ||
-            LineofCode[i] == '+' || LineofCode[i] == '-'){
+            else if(
+                ((std::isdigit(LineofCode[i])) || 
+                (LineofCode[i] == '.')) && 
+                (TempID != ID::Char)
+                ){
+                switch(TempID){
+                    case ID::Number:
+                        TempString.push_back(LineofCode[i]);
+                        if(LineofCode[i] == '.'){
+                            switch(SpecificTempID){
+                                case SpecificID::Int:
+                                    SpecificTempID = SpecificID::Float;
+                                    break;
+                                
+                                default:
+                                    break;
+                            }
+                        }
+                        switch(SpecificTempID){
+                            case SpecificID::IncrementDecrementCheck:
+                                SpecificTempID = SpecificID::Arithmic;
+
+                            default:
+                                break;
+                        }
+                        break;
+                    
+                    default:
+                        switch(SpecificTempID){
+                            case SpecificID::Int:
+                                break;
+                            
+                            default:
+                                SpecificTempID = SpecificID::Int; // floats can't be defined without an int first 
+                        }
+                        TempIDList.emplace_back(ID::Number);
+                        TempID = TempIDList.back();
+                        TempString.push_back(LineofCode[i]);
+                        break;
+                }
+            }
+
+            else if(
+            (LineofCode[i] == '^') ||
+            (LineofCode[i] == '*') || 
+            (LineofCode[i] == '+') || 
+            (LineofCode[i] == '-') 
+            ){
                 switch(LineofCode[i]){
                     case '^':
-                        AddToTokensOrMainVector(Token::Arithmic, "^", AddTokenLambda);
+                        TempString.push_back(LineofCode[i]);
                         break;
 
                     case '*':
-                        AddToTokensOrMainVector(Token::Arithmic, "*", AddTokenLambda);
-                        break;
-
-                    case '/':
-                        AddToTokensOrMainVector(Token::Arithmic, "/", AddTokenLambda);
+                        TempString.push_back(LineofCode[i]);
                         break;
 
                     case '+':
                         switch(SpecificTempID){
                             case SpecificID::IncrementDecrementCheck:
-                                Tokens.pop_back();
-                                AddToTokensOrMainVector(Token::Increment, "++", AddTokenLambda);
+                                TempString.push_back(LineofCode[i]);
+                                SpecificTempID = SpecificID::Increment;
                                 break;
 
                             default:
-                                AddToTokensOrMainVector(Token::Arithmic, "+", AddTokenLambda);
                                 SpecificTempID = SpecificID::IncrementDecrementCheck;
+                                TempString.push_back(LineofCode[i]);
                                 break;
                         }
                         break;
@@ -215,16 +293,35 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                     case '-':
                         switch(SpecificTempID){
                             case SpecificID::IncrementDecrementCheck:
-                                Tokens.pop_back();
-                                AddToTokensOrMainVector(Token::Decrement, "--", AddTokenLambda);
+                                TempString.push_back(LineofCode[i]);
+                                SpecificTempID = SpecificID::Decrement;
                                 break;
 
                             default:
-                                AddToTokensOrMainVector(Token::Arithmic, "-", AddTokenLambda);
                                 SpecificTempID = SpecificID::IncrementDecrementCheck;
+                                TempString.push_back(LineofCode[i]);
                                 break;
                         }
                         break;
+                }
+                switch(SpecificTempID){
+                    case SpecificID::Increment:
+                    case SpecificID::Decrement:
+                    case SpecificID::IncrementDecrementCheck:
+                        break;
+                    
+                    case SpecificID::Arithmic:
+                        break;
+
+                    default:
+                        SpecificTempID = SpecificID::Arithmic;
+                }
+                switch(TempID){
+                    case ID::Number:
+                        break;
+                    
+                    default:
+                        TempIDList.emplace_back(ID::Number);
                 }
             }
 
@@ -232,6 +329,32 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             else{
                 TempString.push_back(LineofCode[i]);
                 // std::cout << static_cast<std::underlying_type<ID>::type>(TempID) << std::endl;
+            }
+        }
+        if(TempID == ID::Number){
+            switch(SpecificTempID){
+                case SpecificID::Int:
+                    AddToTokensOrMainVector(Token::Int, TempString, AddTokenLambda);
+                    break;
+
+                case SpecificID::Float:
+                    AddToTokensOrMainVector(Token::Float, TempString, AddTokenLambda);
+                    break;
+
+                case SpecificID::Arithmic:
+                    AddToTokensOrMainVector(Token::Arithmic, TempString, AddTokenLambda);
+                    break;
+
+                case SpecificID::Increment:
+                    AddToTokensOrMainVector(Token::Increment, TempString, AddTokenLambda);
+                    break;
+
+                case SpecificID::Decrement:
+                    AddToTokensOrMainVector(Token::Decrement, TempString, AddTokenLambda);
+                    break;
+                
+                default:
+                    throw error::RendorException("Massive screw up on line " + std::to_string(LineNumber));
             }
         }
     }

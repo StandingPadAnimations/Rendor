@@ -1,7 +1,8 @@
 #rdef main(){
     num = 1
-    //Largenum = 10
-    //Arithnum = 1-1(9 / 3)
-    //--num
+    Largenum = 10
+    FloNum = 1.2
+    Arithnum = 1-1(9 / 3)
+    --num
 }
 #rdef_end
