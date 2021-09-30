@@ -151,6 +151,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             else if(LineofCode[i] == ')'){
                 switch(TempID){
                     case ID::KeywordArgs:
+                        AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
                         AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
                         break;
 

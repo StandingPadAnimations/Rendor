@@ -6,7 +6,8 @@ edef spam_echo(num){
     }
 }
 
+
 #rdef main(){
 spam_echo(1)
 }
-#redef_end
+#rdef_end

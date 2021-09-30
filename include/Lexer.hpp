@@ -30,7 +30,8 @@ namespace Lex{
         Decrement, // 15
         ComparisonObject, // 16
         EntryFunction, // 17
-        EndOfProgram // 18
+        EndOfProgram, // 18
+        ArgumentObject // 19
     };
 
     enum class ID{
@@ -60,7 +61,7 @@ namespace Lex{
     class Lexer{
         private:
             // Keywords to check for 
-            std::string Keywords[5] {"edef", "while", "if", "return", "echo"};
+            std::string Keywords[6] {"edef", "while", "if", "return", "echo", "input"};
 
             // Keywords to check for 
             std::string Operators[4] {"and", "or", "not", "is"};

@@ -1,10 +1,5 @@
 #rdef main(){
-echo("Hello World")
+    UserUnput = input('Say something: ')
+    echo(UserUnput)
 }
 #rdef_end
-
-//back = "we be back"
-/echo(back)
-
-//_input = input("Enter Something ")
-//echo(_input)
