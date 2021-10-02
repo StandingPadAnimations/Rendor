@@ -1,0 +1,5 @@
+#rdef main(){
+    UserUnput = input('Say something: ')
+    echo(UserUnput)
+}
+#rdef_end

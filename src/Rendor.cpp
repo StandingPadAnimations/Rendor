@@ -40,17 +40,17 @@ int main(int argc, char *argv[]){
     // std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
     try{
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
-        bool DebugMode = true;
+        bool DebugMode = false;
         std::ifstream File(argv[1]);
 
-        // if(argv[2] != NULL){
-        //     if(argv[2] == "-debug"){
-        //         DebugMode = true;
-        //     }
-        //     else if(argv[2] == "-compile"){
-        //         throw error::RendorException("Compiling not yet supported");
-        //     }
-        // }
+        if(argv[2] != NULL){
+            if(std::string(argv[2]) == "-debug"){
+                DebugMode = true;
+            }
+            else if(std::string(argv[2]) == "-compile"){
+                throw error::RendorException("Compiling not yet supported");
+            }
+        }
 
         {
             std::string AllCode = PreProcess(File);

@@ -1,0 +1,18 @@
+#rdef main(){
+user='a'
+num = 5
+flo = 5.5
+
+back = "we be back"
+echo(back)
+back = "update"
+echo(back)
+}
+#rdef_end
+
+
+
+
+
+
+
