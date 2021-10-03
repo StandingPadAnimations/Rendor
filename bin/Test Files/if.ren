@@ -18,15 +18,6 @@
     // if(user == 'b' or user == 'c'){
     //     echo("hi this works")
     // }
-    user = 'b'
-
-    if (user == 'b' or user == 'c'){
-        echo(`he's out`) 
-    }
-
-    if(user = 'b' or user = 'c'){
-        echo("hi this works")
-    }
 }
 #rdef_end
 
