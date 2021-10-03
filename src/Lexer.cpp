@@ -92,12 +92,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if((LineofCode[i] == ' ') && ((TempID != ID::Char))){
+            else if((LineofCode[i] == ' ') && (TempID != ID::Char)){
 
             }
 
             // Comments and division
-            else if((LineofCode[i] == '/') && ((TempID != ID::Char))){
+            else if((LineofCode[i] == '/') && (TempID != ID::Char)){
                 switch(TempID){
                     case ID::Number:
                         TempString.push_back(LineofCode[i]);
@@ -127,7 +127,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             }
 
             //Checks for parens
-            else if(LineofCode[i] == '('){
+            else if(LineofCode[i] == '(' && (TempID != ID::Char)){
                 // Sometimes the ( is part of a keyword
                 if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && (TempID == ID::None)){
                     AddToTokensOrMainVector(Token::Keyword, TempString, AddTokenLambda);
@@ -148,7 +148,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if(LineofCode[i] == ')'){
+            else if(LineofCode[i] == ')' && (TempID != ID::Char)){
                 switch(TempID){
                     case ID::KeywordArgs:
                         AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
@@ -162,7 +162,21 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if((LineofCode[i] == '{') || (LineofCode[i] == '}')){
+            else if(LineofCode[i] == ',' && (TempID != ID::Char)){
+                switch(TempID){
+                    case ID::KeywordArgs:
+                        AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
+                        AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
+                        break;
+
+                    default:
+                        TempString.push_back(LineofCode[i]);
+                        SpecificTempID = SpecificID::Arithmic;
+                        break;
+                }
+            }
+
+            else if(((LineofCode[i] == '{') || (LineofCode[i] == '}')) && (TempID != ID::Char)){
                 switch(LineofCode[i]){
                     case '{':
                         switch(TempID){

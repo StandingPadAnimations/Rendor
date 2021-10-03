@@ -1,0 +1,13 @@
+edef spam_echo(num){
+    loop = 0 + 1
+    while(loop < 5){
+        echo("SPAM")
+        loop = ++loop
+    }
+}
+
+
+#rdef main(){
+spam_echo(1)
+}
+#rdef_end
