@@ -48,7 +48,6 @@ namespace Lex{
         CharSingle,
         CharTilda,
         ForwardSlash,
-        EqualOperator,
         IncrementDecrementCheck,
         Increment,
         Decrement,
@@ -64,7 +63,7 @@ namespace Lex{
             std::string Keywords[6] {"edef", "while", "if", "return", "echo", "input"};
 
             // Keywords to check for 
-            std::string Operators[4] {"and", "or", "not", "is"};
+            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
             
         public:            
             // Tokenizes Lines of code from Rendor Files
