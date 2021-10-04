@@ -40,34 +40,69 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             // Processing for strings
             if(TempID == ID::Char){
                 switch(LineofCode[i]){
-                    case '\"':
-                    case '\'':
-                    case '`':
-                        AddToTokensOrMainVector(Token::String, TempString, AddTokenLambda);
-                        TempIDList.pop_back();
-                        TempString = "";
+                    case '\"': // When it encounters a " char
+                        switch(SpecificTempID){
+                            case SpecificID::CharDouble:
+                                AddToTokensOrMainVector(Token::String, TempString, AddTokenLambda);
+                                TempIDList.pop_back();
+                                TempString = "";
+                                break;
+                            
+                            default:
+                                TempString.push_back(LineofCode[i]);
+                        }
                         break;
 
-                    default:
+                    case '\'': // When it encounters a ' char
+                        switch(SpecificTempID){
+                            case SpecificID::CharSingle:
+                                AddToTokensOrMainVector(Token::String, TempString, AddTokenLambda);
+                                TempIDList.pop_back();
+                                TempString = "";
+                                break;
+                            
+                            default:
+                                TempString.push_back(LineofCode[i]);
+                        }
+                        break;
+
+                    case '`': // When it encounters a ` char
+                        switch(SpecificTempID){
+                            case SpecificID::CharTilda:
+                                AddToTokensOrMainVector(Token::String, TempString, AddTokenLambda);
+                                TempIDList.pop_back();
+                                TempString = "";
+                                break;
+                            
+                            default:
+                                TempString.push_back(LineofCode[i]);
+                        }
+                        break;
+
+                    default: // Otherwise
                         TempString.push_back(LineofCode[i]);
                 }
             }
             
             // Checks for beginning and end of a string
             else if(
-            ((LineofCode[i] == '\"') || 
+            (
+            (LineofCode[i] == '\"') || 
             (LineofCode[i] == '\'') || 
-            (LineofCode[i] == '`')) && 
-            ((TempID == ID::None) || 
-            (TempID == ID::KeywordArgs))
+            (LineofCode[i] == '`')
+            ) && 
+            (
+            (TempID == ID::None) || 
+            (TempID == ID::KeywordArgs)
+            )
             ){
                 TempIDList.emplace_back(ID::Char);
                 TempString = "";
 
-                // defines what should end string
+                // Defines what should end string
                 switch(LineofCode[i]){
                     case '\'': 
-                        SpecificTempID = SpecificID::CharSingle;
+                        SpecificTempID = SpecificID::CharSingle; // SpecificTempID prevents strings from closing with the wrong char 
                         break;
 
                     case '\"':
@@ -85,7 +120,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             }
 
             // Comments and division
-            else if((LineofCode[i] == '/') && (TempID != ID::Char)){
+            else if(
+            (LineofCode[i] == '/') && 
+            (TempID != ID::Char)
+            ){
                 switch(TempID){
                     case ID::Number:
                         TempString.push_back(LineofCode[i]);
@@ -99,25 +137,34 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                         TempString = "";
                         break;
                 }
-                // to avoid Rendor from accidentally breaking for comment for division 
+                // To avoid Rendor from accidentally breaking for comment for division 
                 continue;
-                BreakForComment:
+                BreakForComment: // Otherwise 
                     break;
             }
 
             // Checks for operators
-            else if((std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators)) && (TempID == ID::KeywordArgs)){
+            else if(
+            (std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators)) && 
+            (TempID == ID::KeywordArgs)
+            ){
                 AddToTokensOrMainVector(Token::Operator, TempString, AddTokenLambda);
                 TempString = "";
 
-                // to account for chars not being added when a operator is found
+                // To account for chars not being added when a operator is found
                 TempString.push_back(LineofCode[i]);
             }
 
             //Checks for parens
-            else if(LineofCode[i] == '(' && (TempID != ID::Char)){
+            else if(
+            (LineofCode[i] == '(') && 
+            (TempID != ID::Char)
+            ){
                 // Sometimes the ( is part of a keyword
-                if((std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && (TempID == ID::None)){
+                if(
+                (std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) && 
+                (TempID == ID::None)
+                ){
                     AddToTokensOrMainVector(Token::Keyword, TempString, AddTokenLambda);
                     TempIDList.emplace_back(ID::KeywordArgs);
                     TempID = TempIDList.back();
@@ -136,16 +183,23 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if(LineofCode[i] == ')' && (TempID != ID::Char)){
+            else if(
+            (LineofCode[i] == ')') && 
+            (TempID != ID::Char)
+            ){
                 switch(TempID){
                     case ID::KeywordArgs:
-                        AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
+                        if(TempString.size()){ // To make sure that there's actually something worth assigning a Token::ArgumentObject to 
+                            AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
+                        }
                         AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
                         break;
 
                     default:
                         if(std::find(std::begin(TempIDList), std::end(TempIDList), ID::KeywordArgs) != std::end(TempIDList)){ // This is where TempIDList is useful
-                            AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
+                            if(TempString.size()){ // To make sure that there's actually something worth assigning a Token::ArgumentObject to 
+                                AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
+                            }
                             AddToTokensOrMainVector(Token::Paren, "PAREN", AddTokenLambda);
                             TempIDList.pop_back();
                             break;
@@ -156,7 +210,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if(LineofCode[i] == ',' && (TempID != ID::Char)){
+            else if(
+            (LineofCode[i] == ',') && 
+            (TempID != ID::Char)
+            ){
                 switch(TempID){
                     case ID::KeywordArgs:
                         AddToTokensOrMainVector(Token::ArgumentObject, TempString, AddTokenLambda);
@@ -170,7 +227,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
 
-            else if(((LineofCode[i] == '{') || (LineofCode[i] == '}')) && (TempID != ID::Char)){
+            else if(
+            (
+            (LineofCode[i] == '{') || 
+            (LineofCode[i] == '}')
+            ) && 
+            (TempID != ID::Char)
+            ){
                 switch(LineofCode[i]){
                     case '{':
                         switch(TempID){
@@ -193,7 +256,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
             }
 
             // Preprocessor definitions 
-            else if((LineofCode[i] == '#') && (TempID != ID::Char)){
+            else if(
+            (LineofCode[i] == '#') && 
+            (TempID != ID::Char)
+            ){
                 std::string PreProcessFunctionName = LineofCode.substr(0, LineofCode.find_first_of(' '));
                 if(PreProcessFunctionName == "#rdef"){
                     IsMainFunction = true;
@@ -206,56 +272,45 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(std::string& Code){
                 }
             }
             
-            else if(LineofCode[i] == '='){
-                switch(TempID){
-                    case ID::None:
-                        if(TempString.size() == 0){
-                            throw error::RendorException("Random = found on line " + std::to_string(LineNumber));
-                        }
-                        AddToTokensOrMainVector(Token::Variable, TempString, AddTokenLambda);
-                        TempString = "";
-                        break;
-                    
-                    case ID::KeywordArgs:
-                        if(
-                        (TempString != "!") || 
-                        (TempString != ">") || 
-                        (TempString != "<") || 
-                        (TempString != "=")
-                        ){
-                            AddToTokensOrMainVector(Token::ComparisonObject, TempString, AddTokenLambda); // Add what is being compared
-                            TempString = "";
-                        }
-                        TempString.push_back(LineofCode[i]);
-                        break;
-
-                    default:
-                        throw error::RendorException("Random = found on line " + std::to_string(LineNumber));
-                }
-            }
-            
-            else if(
+            else if( // For if statement operators 
+            (
+            (LineofCode[i] == '=') || 
             (LineofCode[i] == '!') || 
-            (LineofCode[i] == '>') || 
+            (LineofCode[i] == '>') ||
             (LineofCode[i] == '<')
+            ) && 
+            (TempID == ID::KeywordArgs)
             ){
-                switch(TempID){
-                    case ID::KeywordArgs:
-                        AddToTokensOrMainVector(Token::ComparisonObject, TempString, AddTokenLambda); 
-                        TempString = "";
-                        TempString.push_back(LineofCode[i]);
-                        break;
+                if(TempString.find_first_not_of("=!><") == std::string::npos){
+                    TempString.push_back(LineofCode[i]);
 
-                    default:
-                        throw error::RendorException("Random operator found on line " + std::to_string(LineNumber));
+                    if(std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators)){
+                        AddToTokensOrMainVector(Token::Operator, TempString, AddTokenLambda);
+                        TempString = "";
+                    }
+                }
+                else{
+                    AddToTokensOrMainVector(Token::ComparisonObject, TempString, AddTokenLambda);
+                    TempString = "";
+                    TempString.push_back(LineofCode[i]);
                 }
             }
 
             else if(
-                ((std::isdigit(LineofCode[i])) || 
-                (LineofCode[i] == '.')) && 
-                (TempID != ID::Char)
-                ){
+            (LineofCode[i] == '=') && 
+            (TempID == ID::None)
+            ){ // For variable assignment. It's more readable like this. 
+                AddToTokensOrMainVector(Token::Variable, TempString, AddTokenLambda);
+                TempString = "";
+            }
+
+            else if(
+            (
+            (std::isdigit(LineofCode[i])) || 
+            (LineofCode[i] == '.')
+            ) && 
+            (TempID != ID::Char)
+            ){
                 switch(TempID){
                     case ID::Number:
                         TempString.push_back(LineofCode[i]);

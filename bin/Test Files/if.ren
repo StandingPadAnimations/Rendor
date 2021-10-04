@@ -1,24 +1,17 @@
 #rdef main(){
-    // user = 'b'
+    user = 'b'
     int = 5
 
-    // if(user == 'b'){
-
-    // }
-
-    if (int <= 5){
-
+    if(user == 'b'){
+        // just a test
     }
 
-    // if (user == 'b' or user == 'c'){
-    //     echo(`he's out`) 
-    // }
-    
+    if (int <= 5){
+        // Just a test
+    }
 
-    // if(user == 'b' or user == 'c'){
-    //     echo("hi this works")
-    // }
+    if (user == 'b' or user == 'c'){
+        echo(`he's out`) 
+    }
 }
 #rdef_end
-
-

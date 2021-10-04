@@ -44,15 +44,21 @@ int main(int argc, char *argv[]){
         std::ifstream File(argv[1]);
 
         if(argv[2] != NULL){
-            if(std::string(argv[2]) == "-debug"){
+            if(
+            (std::string(argv[2]) == "-debug") ||
+            (std::string(argv[2]) == "-d")
+            ){
                 DebugMode = true;
             }
-            else if(std::string(argv[2]) == "-compile"){
+            else if(
+            (std::string(argv[2]) == "-compile") ||
+            (std::string(argv[2]) == "-c")
+            ){
                 throw error::RendorException("Compiling not yet supported");
             }
         }
-
-        {
+        
+        { // Start of compiling scope(may be an if statement in the future)
             std::string AllCode = PreProcess(File);
             Lex::Lexer RenLexer;
 
@@ -65,7 +71,7 @@ int main(int argc, char *argv[]){
                     std::cout << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << ";" << std::endl;
                 }
             }
-        }
+        } // End of scope
 
         File.close();
         return EXIT_SUCCESS;
