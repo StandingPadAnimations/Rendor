@@ -31,9 +31,12 @@ and please excuse my terrible speeling lol
 #include <iostream>
 #include <fstream>
 #include "Lexer.hpp"
+
+// Boost libraries
+#include <boost/filesystem.hpp>
+
 #include "ExtraFunctions.hpp"
 #include "Preprocessor.hpp"
-
 
 int main(int argc, char *argv[]){
     // Sets variables and initializes them.
@@ -42,6 +45,11 @@ int main(int argc, char *argv[]){
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
         bool DebugMode = false;
         std::ifstream File(argv[1]);
+        
+        boost::filesystem::path pathObj(argv[1]);
+        if(pathObj.extension().string() != ".ren"){
+            throw error::RendorException("Rendor only allows .ren files");
+        }
 
         if(argv[2] != NULL){
             if(
