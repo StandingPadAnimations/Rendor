@@ -31,12 +31,13 @@ and please excuse my terrible speeling lol
 #include <iostream>
 #include <fstream>
 #include "Lexer.hpp"
-
-// Boost libraries
-#include <boost/filesystem.hpp>
-
 #include "ExtraFunctions.hpp"
 #include "Preprocessor.hpp"
+
+// Boost libraries 
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED 
+#include <boost/filesystem.hpp>
 
 int main(int argc, char *argv[]){
     // Sets variables and initializes them.
@@ -46,9 +47,23 @@ int main(int argc, char *argv[]){
         bool DebugMode = false;
         std::ifstream File(argv[1]);
         
-        boost::filesystem::path pathObj(argv[1]);
-        if(pathObj.extension().string() != ".ren"){
-            throw error::RendorException("Rendor only allows .ren files");
+        // Boost variables for checking some stuff
+        boost::filesystem::path AbsPath(argv[1]);
+        std::string AbsPathExt = AbsPath.extension().string();
+        std::string AbspathParentDir = AbsPath.parent_path().string();
+
+        if((AbsPathExt == ".ren") || (AbsPathExt == ".Cren")){
+            if(AbsPathExt == ".Cren"){
+                throw error::RendorException("Can't use .Cren files currently!");
+            }
+        }
+
+        else{
+            throw error::RendorException("Rendor only allows .ren and .Cren files");
+        }
+
+        if(!boost::filesystem::is_directory(AbspathParentDir + "/.__rencache__")){
+            boost::filesystem::create_directory(AbspathParentDir + "/.__rencache__");
         }
 
         if(argv[2] != NULL){
@@ -70,13 +85,13 @@ int main(int argc, char *argv[]){
             std::string AllCode = PreProcess(File);
             Lex::Lexer RenLexer;
 
-
             // Tokenizes the AllCode string
             Tokens = RenLexer.Tokenize(AllCode);
 
             if(DebugMode){
+                std::ofstream CrenOutput(AbspathParentDir + "/.__rencache__" + "/" + AbsPath.filename().replace_extension(".Cren").string());
                 for(auto const& [token, value] : Tokens){
-                    std::cout << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << ";" << std::endl;
+                    CrenOutput << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << std::endl;
                 }
             }
         } // End of scope
