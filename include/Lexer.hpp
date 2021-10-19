@@ -8,6 +8,11 @@
 #include <sstream>
 #include <functional>
 #include "Exceptions.hpp"
+#include <boost/format.hpp>
+
+#define BOOST_FILESYSTEM_VERSION 3
+#define BOOST_FILESYSTEM_NO_DEPRECATED 
+#include <boost/filesystem.hpp>
 
 namespace Lex{
     // Enum for tokens 
@@ -25,21 +30,25 @@ namespace Lex{
         Keyword, // 10
         Variable, // 11
         FunctionCall, // 12
-        Arithmic, // 13
-        Increment, // 14
-        Decrement, // 15
-        ComparisonObject, // 16
-        EntryFunction, // 17
-        EndOfProgram, // 18
-        ArgumentObject // 19
+        ComparisonObject, // 13
+        EntryFunction, // 14
+        EndOfProgram, // 15
+        ArgumentObject, // 16
+        Bop, // 17
+        BopVariableRef, // 18
+        Increment, // 19
+        Decrement, // 20
+        CppCompileTypeHint // 21
     };
+
 
     enum class ID{
         None,
-        Comment,
         Char,
         KeywordArgs,
-        Number
+        Number,
+        Comment,
+        Rdef
     };
 
     enum class SpecificID{
@@ -48,25 +57,34 @@ namespace Lex{
         CharSingle,
         CharTilda,
         ForwardSlash,
-        IncrementDecrementCheck,
-        Increment,
-        Decrement,
-        Arithmic,
         Int,
         Float,
+        Increment,
+        Decrement
     };
 
     // Lexer Class 
     class Lexer{
         private:
-            // Keywords to check for 
+            // * Keywords to check for 
             std::string Keywords[6] {"edef", "while", "if", "return", "echo", "input"};
 
-            // Keywords to check for 
+            // * Keywords to check for 
             std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
-            
+
         public:            
-            // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(std::string&);
+            // * Tokenizes Lines of code from Rendor Files
+            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, const std::string&);
+
+            // * Contains paths of imports to compile later 
+            std::vector<boost::filesystem::path> Imports;
+
+            // * CompileVariable; Lexer changes behavior when in Cpp compile mode
+            bool LexerCompileMode = false;
+
+            // * Constructer
+            explicit Lexer(const bool& CompileMode){
+                LexerCompileMode = CompileMode;
+            };
     };
 }

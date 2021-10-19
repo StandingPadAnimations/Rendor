@@ -1,0 +1,7 @@
+#import "Test Imports From Other Directories/DirTest"
+#import "Edef"
+
+#rdef main(){
+    // spam_echo(1)
+}
+#rdef_end
