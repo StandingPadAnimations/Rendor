@@ -187,10 +187,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                         switch(SpecificTempID){ // To check for ints and floats that already exist in the code
                             case SpecificID::Int:
                                 Tokens.emplace_back(Token::Int, TempString);
+                                TempIDList.pop_back();
                                 break;
 
                             case SpecificID::Float:
                                 Tokens.emplace_back(Token::Float, TempString);
+                                TempIDList.pop_back();
                                 break;
 
                             default:

@@ -3,13 +3,13 @@
         // just a test
     }
 
-    // if (int <= 5){
+    if (int <= 5){
         // just a test
-    // }
+    }
 
-    // if (user == 'b' or user == 'c'){
+    if (user == 'b' or user == 'c'){
         // echo(`he's out`) 
-    // }
+    }
 }
 #rdef_end
 user = 'b'

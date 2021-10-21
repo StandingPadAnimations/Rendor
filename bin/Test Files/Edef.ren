@@ -1,13 +1,28 @@
-edef spam_echo(num){
-    loop = 0 + 1
-    while(loop < 5){
-        echo("SPAM")
-        loop = ++loop
-    }
+~ __COMPILER__ : g++ 
+
+// This includes the transpiled output expected from the Rendor -> C++ compiler
+
+foward {
+    ~ void(num : int, msg : string)
+    spam_echo; num // ->                    void spam_echo(int num, std::string msg);
+    ~ int(num1, num2 : int)
+    add; num1, num2 // ->                   int add(int num1, int num2);
 }
 
+#rdef main(){ // ->                         int main(){
+    spam_echo(1) // ->                          spam_echo(1);
+} 
+#rdef_end // ->                                 return 0;
+// ->                                       }
 
-#rdef main(){
-spam_echo(1)
-}
-#rdef_end
+edef spam_echo(num, msg){ // ->             void spam_echo(int num, std::string msg){
+    loop = 0 // ->                              int loop = 0 
+    while(loop < 5){ // ->                      while(loop < 5){
+        echo(msg) // ->                             std::cout << msg << std::endl;
+        ++loop // ->                                ++loop;
+    } // ->                                     }           
+} // ->                                     }
+
+edef add(num1, num2){ // ->                 int add(int num1, int num2){
+    return num1 + num2 // ->                    return num1 + num2;
+} // ->                                     }

@@ -3,6 +3,7 @@ ByteCode key for Rendor:
         0 : Global
         1 : Main 
     }
+    Body
     Load_Scope {ScopeName} 
     Keyword {Keyword, Args[]}
     If {Conditions[]}

@@ -37,6 +37,7 @@ While the extension isn't required, it does make the code more readable in my op
 #include <iostream>
 #include <fstream>
 #include "Lexer.hpp"
+#include "Parser.hpp"
 #include "ExtraFunctions.hpp"
 
 // Boost libraries and macros
@@ -52,7 +53,6 @@ int main(int argc, char *argv[]){
     // Sets variables and initializes them.
     // std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
     try{
-        std::vector<std::pair<Lex::Token, std::string>> Tokens;
         std::ifstream File(argv[1]);
         ex::Extra ExtraFunctions;
         
@@ -99,25 +99,31 @@ int main(int argc, char *argv[]){
             }
         }
         
-        {
             std::string AllCode;
             for(std::string PreProcessLine; std::getline(File, PreProcessLine);){
                 AllCode = AllCode + ExtraFunctions.reduce(PreProcessLine, " ", " \t") + "\n";
             }
 
-
             // Tokenizes the AllCode string
             Lex::Lexer RenLexer(CompileCppMode);
+            std::vector<std::pair<Lex::Token, std::string>> Tokens;
             Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
+            // Parses
+            std::vector<std::string> ByteCode = Parser(Tokens);
+
+            // Adds it to output Cren File
+            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+            std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+            for(auto const& command : ByteCode){
+                CrenOutput << command << std::endl;
+            }
+
             if(DebugMode){ // Creates the .Cren output 
-                std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-                std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
-                for(auto const& [token, value] : Tokens){
-                    CrenOutput << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << std::endl;
+                for(auto const& command : ByteCode){
+                    std::cout << command << std::endl;
                 }
             }
-        } 
 
         File.close();
         return EXIT_SUCCESS;
@@ -125,6 +131,9 @@ int main(int argc, char *argv[]){
     catch(const std::exception& exp){             
         std::cout << exp.what() << std::endl;   
         return EXIT_FAILURE;
+    }
+    catch(...){
+        std::cout << "whoops" << std::endl;
     }
     return 0;
 }

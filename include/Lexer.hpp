@@ -67,7 +67,7 @@ namespace Lex{
     class Lexer{
         private:
             // * Keywords to check for 
-            std::string Keywords[6] {"edef", "while", "if", "return", "echo", "input"};
+            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
 
             // * Keywords to check for 
             std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};

@@ -1,5 +1,10 @@
 ~ __COMPILER__ : g++ 
 
+foward {
+    ~ void(num1, num2 : int)
+    add(num1, num2)
+}
+
 #rdef main(){
     ~ x : varient<int, string>
     ~ x : get<int>
@@ -11,7 +16,6 @@
     echo(x)
 }
 
-// ~ add : void(num1 : int, num2 : int)
-// edef add(num1, num2){
-//     echo(num1 + num2)
-// }
+edef add(num1, num2){
+    echo(num1 + num2)
+}

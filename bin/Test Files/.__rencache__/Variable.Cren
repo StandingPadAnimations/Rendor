@@ -1,0 +1,6 @@
+Load 0
+Load 1
+Assign 2, user, a
+Assign 0, num, 5
+Assign 1, flo, 5.5
+Assign 2, back, we be back
