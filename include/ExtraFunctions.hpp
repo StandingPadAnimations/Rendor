@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EXTRAFUNCTIONS
+#define EXTRAFUNCTIONS
 
 /*
 This file is just to make my life easier
@@ -23,3 +24,5 @@ class Extra{
         std::string reduce(const std::string&, const std::string&, const std::string&);
 };
 }
+
+#endif // EXTRAFUNCTIONS

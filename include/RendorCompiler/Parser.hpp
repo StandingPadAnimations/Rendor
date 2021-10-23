@@ -1,10 +1,11 @@
-#pragma once
+#ifndef PARSER
+#define PARSER
 #include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
 #include "boost/format.hpp"
-#include "Lexer.hpp"
+#include "RendorCompiler/Lexer.hpp"
 #include "Exceptions.hpp"
 
 std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
@@ -26,33 +27,43 @@ enum class CurrentScope{
     Main,
 };
 
+enum class NodeType{
+    Body,
+    Scope,
+    Rdef,
+    MarkRdef,
+    MarkGlobal,
+    AssignVariable,
+    RendorKeyWord
+};
+
 struct Node{
     // virtual function; is used for some things
-    virtual std::string Type() = 0;
+    virtual NodeType Type() = 0;
 };
 
 struct Body : Node{
     std::vector<std::unique_ptr<Node>> ConnectedNodes;
-    std::string Type(){return "body";}
+    NodeType Type(){return NodeType::Body;}
 };
 
 struct Scope : Node{
     std::string ScopeName;
     Body ScopeBody;
-    std::string Type(){return "scope";}
+    NodeType Type(){return NodeType::Scope;}
 };
 
 struct Rdef : Node{
     Body MainFunctionBody;
-    std::string Type(){return "rdef";}
+    NodeType Type(){return NodeType::Rdef;}
 };
 
 struct MarkRdef : Node{
-    std::string Type(){return "mark_rdef";}
+    NodeType Type(){return NodeType::MarkRdef;}
 };
 
 struct MarkGlobal : Node{
-    std::string Type(){return "mark_global";}
+    NodeType Type(){return NodeType::MarkGlobal;}
 };
 
 struct AssignVariable : Node{
@@ -61,7 +72,14 @@ struct AssignVariable : Node{
     VariableTypes VariableType;
 
     explicit AssignVariable(std::string VariableName) : VariableName(VariableName){}
-    std::string Type(){return "assignment";}
+    NodeType Type(){return NodeType::AssignVariable;}
+};
+
+struct RendorKeyWord : Node{
+    std::string KeyWord;
+    std::string Args;
+    explicit RendorKeyWord(std::string KeyWord) : KeyWord(KeyWord){}
+    NodeType Type(){return NodeType::RendorKeyWord;}
 };
 
 struct Main{
@@ -70,3 +88,4 @@ struct Main{
     std::vector<std::unique_ptr<Node>> *GlobalBody = &Global.ConnectedNodes;
     std::vector<std::unique_ptr<Node>> *MainBody = &MainFunction.MainFunctionBody.ConnectedNodes;
 };
+#endif // * PARSER

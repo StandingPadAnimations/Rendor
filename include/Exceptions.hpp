@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENDORERROR
+#define RENDORERROR
 
 // Imports needed. All classes here use the exception class.
 #include <exception>
@@ -20,3 +21,5 @@ namespace error{
     inline RendorException::RendorException(const std::string& message) : message_(message) {
     }
 }
+
+#endif // RENDORERROR

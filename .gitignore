@@ -1,4 +1,5 @@
 /.vscode/
-/bin/rendorc.exe
+/bin/RendorCompiler/rendorc.exe
+/bin/RendorInterpreter/rendor.exe
 .gitconfig
 Makefile

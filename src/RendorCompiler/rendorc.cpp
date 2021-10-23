@@ -36,8 +36,8 @@ While the extension isn't required, it does make the code more readable in my op
 // Includes files needed for the main file
 #include <iostream>
 #include <fstream>
-#include "Lexer.hpp"
-#include "Parser.hpp"
+#include "RendorCompiler/Lexer.hpp"
+#include "RendorCompiler/Parser.hpp"
 #include "ExtraFunctions.hpp"
 
 // Boost libraries and macros
@@ -46,7 +46,6 @@ While the extension isn't required, it does make the code more readable in my op
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
-
 // TODO: Make this more readable 
 // ! Make. It. Readable.
 int main(int argc, char *argv[]){
@@ -54,8 +53,9 @@ int main(int argc, char *argv[]){
     // std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
     try{
         std::ifstream File(argv[1]);
-        ex::Extra ExtraFunctions;
-        
+        std::vector<std::string> ByteCode;
+        std::string AllCode;
+
         // * Boost variables for checking some stuff
         // ? Personally I think there may be a way to use less variables 
         boost::filesystem::path AbsPath(argv[1]);
@@ -99,32 +99,34 @@ int main(int argc, char *argv[]){
             }
         }
         
-            std::string AllCode;
-            for(std::string PreProcessLine; std::getline(File, PreProcessLine);){
-                AllCode = AllCode + ExtraFunctions.reduce(PreProcessLine, " ", " \t") + "\n";
+            {
+                ex::Extra ExtraFunctions;
+                for(std::string PreProcessLine; std::getline(File, PreProcessLine);){
+                    AllCode = AllCode + ExtraFunctions.reduce(PreProcessLine, " ", " \t") + "\n";
+                }
             }
-
             // Tokenizes the AllCode string
-            Lex::Lexer RenLexer(CompileCppMode);
-            std::vector<std::pair<Lex::Token, std::string>> Tokens;
-            Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
+            {
+                Lex::Lexer RenLexer(CompileCppMode);
+                std::vector<std::pair<Lex::Token, std::string>> Tokens;
+                Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
-            // Parses
-            std::vector<std::string> ByteCode = Parser(Tokens);
+                // Parses
+                ByteCode = Parser(Tokens);
 
-            // Adds it to output Cren File
-            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
-            for(auto const& command : ByteCode){
-                CrenOutput << command << std::endl;
+                // Adds it to output Cren File
+                std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+                std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+                for(auto const& command : ByteCode){
+                    CrenOutput << command << std::endl;
+                }
             }
-
             if(DebugMode){ // Creates the .Cren output 
+                std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
                 for(auto const& command : ByteCode){
                     std::cout << command << std::endl;
                 }
             }
-
         File.close();
         return EXIT_SUCCESS;
     }
