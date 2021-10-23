@@ -1,0 +1,22 @@
+CXX       := g++
+CXX_FLAGS := -std=c++17 -Wall -Wfatal-errors 
+
+BIN     := bin
+SRC     := src
+INCLUDE := include/RendorInterpreter
+
+LIBRARIES   := 
+EXECUTABLE  := RendorInterpreter/rendor
+
+
+all: $(BIN)/$(EXECUTABLE)
+
+run: clean all
+	clear
+	./$(BIN)/$(EXECUTABLE)
+
+$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -L$(LIBRARIES)
+
+clean:
+	-rm $(BIN)/*
