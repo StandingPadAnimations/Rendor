@@ -4,9 +4,13 @@ CXX_FLAGS := -std=c++17 -Wall -Wfatal-errors
 BIN     := bin
 SRC     := src/RendorInterpreter
 INCLUDE := include
+BOOST := "C:/C++ Libaries/boost_1_77_0/"
 
-LIBRARIES   := 
+LIBRARIES   := "C:/C++ Libaries/boost_1_77_0/stage/lib/"
 EXECUTABLE  := RendorInterpreter/rendor
+
+BOOSTFILE := boost_filesystem-mgw8-mt-x64-1_77
+BOOSTSYS := boost_system-mgw8-mt-x64-1_77
 
 
 all: $(BIN)/$(EXECUTABLE)
@@ -16,7 +20,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ 
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 clean:
 	-rm $(BIN)/*

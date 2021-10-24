@@ -43,8 +43,8 @@ While the extension isn't required, it does make the code more readable in my op
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#include "boost/filesystem.hpp"
+#include "boost/format.hpp"
 
 // TODO: Make this more readable 
 // ! Make. It. Readable.
@@ -64,12 +64,10 @@ int main(int argc, char *argv[]){
         std::string AbsPathRenCache = AbsPathParentDir + "/.__rencache__";
 
         // * Checks for seeing if the file is compatible with the interpreter
-        if((AbsPathExt == ".ren") || (AbsPathExt == ".Cren")){
-            if(AbsPathExt == ".Cren"){
-                throw error::RendorException("Can't use .Cren files currently!");
-            }
+        if(AbsPathExt == ".ren"){
+            
         } else{
-            throw error::RendorException("Rendor only allows .ren and .Cren files");
+            throw error::RendorException("Rendor only allows .ren files");
         }
 
         if(!boost::filesystem::is_directory(AbsPathRenCache)){ // creates .__rencache__ folder if it doesn't exist
@@ -121,7 +119,7 @@ int main(int argc, char *argv[]){
                     CrenOutput << command << std::endl;
                 }
             }
-            if(DebugMode){ // Creates the .Cren output 
+            if(DebugMode){ 
                 std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
                 for(auto const& command : ByteCode){
                     std::cout << command << std::endl;

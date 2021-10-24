@@ -1,7 +1,7 @@
 #include "ExtraFunctions.hpp"
 
 /*
-Source code of PythonStatements.
+Source code of ExtraFuctions.
 */
 
 std::vector<std::string> ex::Extra::Split(std::string String, char Seperator){
@@ -11,7 +11,7 @@ std::vector<std::string> ex::Extra::Split(std::string String, char Seperator){
 
     // Splits lines and pushes them in vector
     while(getline(ss, line, Seperator)) {
-        SeparatedSentance.push_back(line);
+        SeparatedSentance.emplace_back(line);
     }
     return SeparatedSentance;
 }
@@ -25,10 +25,10 @@ std::vector<std::string> ex::Extra::MultiSplit(std::string String, std::string S
     while ((pos_end = String.find (Separator, pos_start)) != std::string::npos) {
         token = String.substr (pos_start, pos_end - pos_start);
         pos_start = pos_end + delim_len;
-        SeparatedSentance.push_back(token);
+        SeparatedSentance.emplace_back(token);
     }
 
-    SeparatedSentance.push_back(String.substr (pos_start));
+    SeparatedSentance.emplace_back(String.substr (pos_start));
     return SeparatedSentance;
 }
 

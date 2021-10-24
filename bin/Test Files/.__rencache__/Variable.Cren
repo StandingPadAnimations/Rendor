@@ -1,5 +1,6 @@
 LOAD 0
 LOAD 1
-ASSIGN 2, world, Hello World!
+ASSIGN world
+STRING_CONST Hello World!
 ECHO world
 END 1
