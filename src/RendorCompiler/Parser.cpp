@@ -106,6 +106,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         }
         ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node)); // Generate bytecode
     }
+    ByteCode.emplace_back("END 0"); // End Global Scope
     return ByteCode;
 }
 

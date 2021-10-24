@@ -4,3 +4,4 @@ ASSIGN world
 STRING_CONST Hello World!
 ECHO world
 END 1
+END 0
