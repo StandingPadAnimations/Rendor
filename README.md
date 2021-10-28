@@ -1,5 +1,5 @@
 # Rendor
-<img src="RendorLogo.png" width="480" height="480">
+<img src="RendorLogo.png" width="240" height="240">
 GitHub for the Rendor programming language
 
 Rendor is the successor to the EnderKnight programming language. It aims to fix certain bugs and add:
