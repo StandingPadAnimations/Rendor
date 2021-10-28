@@ -1,4 +1,5 @@
 # Rendor
+![Rendor Logo](/Rendor Logo.png?raw=true)
 GitHub for the Rendor programming language
 
 Rendor is the successor to the EnderKnight programming language. It aims to fix certain bugs and add:
