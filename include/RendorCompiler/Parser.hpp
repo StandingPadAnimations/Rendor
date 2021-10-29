@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "boost/format.hpp"
+#include <map>
+#include <boost/format.hpp>
 #include "RendorCompiler/Lexer.hpp"
 #include "Exceptions.hpp"
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <sstream>
 #include <functional>
+#include <string_view>
 #include "Exceptions.hpp"
 #include <boost/format.hpp>
 
@@ -38,7 +39,8 @@ namespace Lex{
         BopVariableRef, // 18
         Increment, // 19
         Decrement, // 20
-        CppCompileTypeHint // 21
+        CppCompileTypeHint, // 21
+        VariableReference // 22
     };
 
 
@@ -48,7 +50,8 @@ namespace Lex{
         KeywordArgs,
         Number,
         Comment,
-        Rdef
+        Rdef,
+        VariableDef
     };
 
     enum class SpecificID{
@@ -74,7 +77,7 @@ namespace Lex{
 
         public:            
             // * Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, const std::string&);
+            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, std::string_view);
 
             // * Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;

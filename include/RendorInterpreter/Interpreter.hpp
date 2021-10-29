@@ -5,6 +5,10 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/finder.hpp>
 #include "Exceptions.hpp"
 #include "ExtraFunctions.hpp"
 
@@ -15,7 +19,8 @@ enum class VariableType{
     Int,
     Float,
     String,
-    Bool
+    Bool,
+    NullType
 };
 
 struct Type {
@@ -23,6 +28,14 @@ struct Type {
     public:
         std::string Value;
         explicit Type(const std::string& Value) : Value(Value){}
+};
+
+struct NullType : Type{
+    VariableType TypeOfVariable(){return VariableType::NullType;}
+    
+    inline std::string RetriveVariable(){
+        return "Null";
+    }
 };
 
 struct Int : Type{

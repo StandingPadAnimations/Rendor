@@ -2,7 +2,7 @@
 using namespace Lex;
 
 // TODO: Improve readability
-std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Code, const std::string& ParentPath){ // ? Perhaps string_view be used over const std::string&
+std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Code, std::string_view ParentPath){ // ? Perhaps string_view be used over const std::string&
     std::stringstream ss(Code);
     std::string LineofCode;
     std::vector<std::pair<Token, std::string>> Tokens;
@@ -74,7 +74,8 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 (LineofCode[i] == '\'') || 
                 (LineofCode[i] == '`')) && 
                 ((TempID == ID::None) || 
-                (TempID == ID::KeywordArgs))
+                (TempID == ID::KeywordArgs) || 
+                (TempID == ID::VariableDef))
             ){
                 TempIDList.emplace_back(ID::Char);
                 TempString = "";
@@ -180,7 +181,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 // TODO: Make this better
                 switch(TempID){
                     case ID::KeywordArgs:
-                        Tokens.emplace_back(Token::ArgumentObjects, TempString);
+                        if(TempString.size() == 0){ 
+                            auto& LastToken = Tokens.back();
+                            LastToken.first = Token::ArgumentObjects;
+                        } else{
+                            Tokens.emplace_back(Token::ArgumentObjects, TempString);
+                        }
                         Tokens.emplace_back(Token::Paren, ")");
                         break;
 
@@ -322,7 +328,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
             (LineofCode[i] == '=') && 
             (TempID == ID::None)
             ){ 
+                if(TempString.find_first_of("&") != std::string::npos){
+                    std::cout << (boost::format("WARNING: & found in variable on line %s; May caused undefined behavior at runtime") % std::to_string(LineNumber)).str() << std::endl;
+                }
                 Tokens.emplace_back(Token::Variable, TempString);
+                TempIDList.emplace_back(ID::VariableDef);
+                TempID = TempIDList.back();
                 TempString = "";
             }
 
@@ -409,7 +420,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
             }
         }
 
-        // Checks for leftover numbers at the end of lines 
+        // Extra tokens not handled earlier
         // ? I feel like this could be made better 
         switch(TempID){
             case ID::Number:
@@ -427,6 +438,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                             break;
                     }
                 }
+                break;
+            
+            case ID::VariableDef:
+                Tokens.emplace_back(Token::VariableReference, TempString);
+                break;
+
             default: // Increment amd Decrement handling
                 switch(SpecificTempID){
                     case SpecificID::Increment:
