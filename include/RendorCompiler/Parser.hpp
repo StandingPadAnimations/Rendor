@@ -35,7 +35,9 @@ enum class NodeType{
     MarkRdef,
     MarkGlobal,
     AssignVariable,
-    RendorKeyWord
+    RendorKeyWord,
+    Increment,
+    Decrement
 };
 
 struct Node{
@@ -81,6 +83,18 @@ struct RendorKeyWord : Node{
     std::string Args;
     explicit RendorKeyWord(std::string KeyWord) : KeyWord(KeyWord){}
     NodeType Type(){return NodeType::RendorKeyWord;}
+};
+
+struct Increment : Node{
+    std::string Args;
+    explicit Increment(std::string Args) : Args(Args){}
+    NodeType Type(){return NodeType::Increment;}
+};
+
+struct Decrement : Node{
+    std::string Args;
+    explicit Decrement(std::string Args) : Args(Args){}
+    NodeType Type(){return NodeType::Decrement;}
 };
 
 struct Main{

@@ -112,6 +112,14 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
                 throw error::RendorException("Arguments can only be used in ()");
             }
         }
+        
+        else if(token == Lex::Token::Increment){
+            Scope->push_back(std::make_unique<Increment>(value));
+        }
+
+        else if(token == Lex::Token::Decrement){
+            Scope->push_back(std::make_unique<Decrement>(value));
+        }
         LastToken = token;
     }
     
@@ -162,6 +170,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
         }
         return (boost::format("CONST %s %s\nASSIGN %s") % Type % AssignmentNode.Value % AssignmentNode.VariableName).str();
     } 
+
     else if(ClassType == NodeType::RendorKeyWord){
         auto& RendorKeyWordNode = dynamic_cast<RendorKeyWord&>(*NodeClass); // if we reach here, it should be a RendorKeyWord object
 
@@ -171,12 +180,39 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
             } else{
                 return (boost::format("ECHO %s") % RendorKeyWordNode.Args).str();
             }
-        } else {
-            throw error::RendorException((boost::format("Fatal Error: %s is not a keyword") % RendorKeyWordNode.KeyWord).str());
+        } else { // in case it's not a keyword somehow
+            throw error::RendorException((boost::format("WTH Error; %s is not a keyword. This error should not appear so please post an issue on the GitHub") % RendorKeyWordNode.KeyWord).str());
         }
     }
+
+    else if(ClassType == NodeType::Increment){
+        auto& IncrementNode = dynamic_cast<Increment&>(*NodeClass); // if we reach here, it should be an Increment object
+
+        if(Variables.find(IncrementNode.Args) == Variables.end()){ // You can only increment variables that have been defined
+            throw error::RendorException((boost::format("Fatal Error; %s is not defined") % IncrementNode.Args).str());
+        } else{
+            if(Variables[IncrementNode.Args] != 'N'){
+                throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be incremented") % IncrementNode.Args).str());
+            }
+            return (boost::format("INCREMENT %s") % IncrementNode.Args).str();
+        }
+    }
+
+    else if(ClassType == NodeType::Decrement){
+        auto& DecrementNode = dynamic_cast<Decrement&>(*NodeClass); // if we reach here, it should be an Increment object
+
+        if(Variables.find(DecrementNode.Args) == Variables.end()){ // You can only increment variables that have been defined
+            throw error::RendorException((boost::format("Fatal Error; %s is not defined") % DecrementNode.Args).str());
+        } else{
+            if(Variables[DecrementNode.Args] != 'N'){
+                throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be decremented") % DecrementNode.Args).str());
+            }
+            return (boost::format("DECREMENT %s") % DecrementNode.Args).str();
+        }
+    }
+    
     else{
-        throw error::RendorException((boost::format("Fatal Error: rendorc can't generate bytecode for %s node") % static_cast<std::underlying_type<NodeType>::type>(ClassType)).str());
+        throw error::RendorException((boost::format("Fatal Error; rendorc can't generate bytecode for %s node") % static_cast<std::underlying_type<NodeType>::type>(ClassType)).str());
     }
 }
 

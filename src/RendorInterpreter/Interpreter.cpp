@@ -22,7 +22,7 @@ void ExecuteByteCode(std::ifstream& File){
 
         if(Command == "CONST"){ // when a constant is declared 
             auto& ConstantVariable = *Variables["CONSTANT"];
-            auto& ConstantValueClass = static_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
+            auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
             switch(Args[0]){
                 case '0':
                     ConstantValueClass.ConstVariableType = 'N';
@@ -50,7 +50,7 @@ void ExecuteByteCode(std::ifstream& File){
             Variables[std::string{Args}] = std::make_unique<Variable>(std::string{Args});
 
             auto& VariableBeingAssigned = *Variables[std::string{Args}];
-            const auto& ConstantValueClass = static_cast<Constant&>(*Variables["CONSTANT"]->ValueClass); // get the Constant object from the CONSTANT variable 
+            const auto& ConstantValueClass = dynamic_cast<Constant&>(*Variables["CONSTANT"]->ValueClass); // get the Constant object from the CONSTANT variable 
             
             switch(ConstantValueClass.ConstVariableType){
                 case 'N':
@@ -71,6 +71,20 @@ void ExecuteByteCode(std::ifstream& File){
         else if(Command == "ECHO"){
             const auto& EchoArgs = *Variables[std::string{Args}];
             RENDOR_ECHO_FUNCTION(EchoArgs.ValueClass->Value);
+        }
+
+        else if(Command == "INCREMENT"){
+            auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
+            int ValueOfVariable = IncrementedVariable.RetriveVariable();
+            ++ValueOfVariable;
+            IncrementedVariable.Value = std::to_string(ValueOfVariable);
+        }
+
+        else if(Command == "DECREMENT"){
+            auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
+            int ValueOfVariable = IncrementedVariable.RetriveVariable();
+            --ValueOfVariable;
+            IncrementedVariable.Value = std::to_string(ValueOfVariable);
         }
     }
     File.close();
