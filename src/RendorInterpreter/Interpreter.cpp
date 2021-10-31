@@ -37,7 +37,13 @@ void ExecuteByteCode(std::ifstream& File){
                     ConstantValueClass.ConstVariableType = 'B';
                     break;
             }
-            ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
+            if(Args[2] == '_' && Args[3] == '&'){ // Checks if variable is a copy of another
+                const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
+                const auto& CopiedVariable = *Variables[CopiedVariableName];
+                ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
+            } else{
+                ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
+            }
         }
 
         else if(Command == "ASSIGN"){  

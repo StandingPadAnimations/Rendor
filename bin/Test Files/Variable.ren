@@ -1,12 +1,12 @@
 #rdef main(){
     world = "Hello World"
-    echo(world)
+    // echo(world)
 
-    world = 1
-    echo(world)
+    // world = 1
+    // echo(world)
 
-    // num = world
-    // echo(num)
+    num = world
+    echo(num)
     // echo(num)
     // echo(num)
 }
