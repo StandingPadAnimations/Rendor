@@ -1,12 +1,10 @@
 LOAD 0
 LOAD 1
-CONST 2(Hello World)
+CONST 2 Hello World
 ASSIGN world
-CONST 2(_&world)
-ASSIGN num
-FAST_LOAD num
-ECHO num
-ECHO num
-ECHO num
+ECHO world
+CONST 0 1
+ASSIGN world
+ECHO world
 END 1
 END 0

@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 #include <fstream>
-#include <vector>
 #include <map>
 #include <algorithm>
 #include <boost/format.hpp>
@@ -20,7 +19,8 @@ enum class VariableType{
     Float,
     String,
     Bool,
-    NullType
+    NullType,
+    Constant
 };
 
 struct Type {
@@ -76,6 +76,16 @@ struct Bool : Type{
         else{
             return false;
         }
+    }
+};
+
+struct Constant : Type{
+    VariableType TypeOfVariable(){return VariableType::Constant;}
+    char ConstVariableType;
+    explicit Constant(std::string Value, char ConstVariableType) : Type(Value), ConstVariableType(ConstVariableType){}
+
+    inline std::string RetriveVariable(){
+        return Value;
     }
 };
 

@@ -1,6 +1,6 @@
 #include "RendorCompiler/Parser.hpp"
 
-std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass);
+std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::map<std::string, char>& Variables);
 void SetVariable(std::map<std::string, char>& Variables, const std::string& value, AssignVariable& AssignmentNode, std::string& VariableName);
 
 std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens){
@@ -121,20 +121,17 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
             ByteCode.emplace_back("LOAD 1"); // For Main Scope
             // Start looping in main
             for(const auto& Node : (*Script.MainBody)){
-                ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node)); // Generate bytecode
+                ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, Variables)); // Generate bytecode
             }
             continue; // Move on to next node
         }
-        ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node)); // Generate bytecode
+        ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, Variables)); // Generate bytecode
     }
     ByteCode.emplace_back("END 0"); // End Global Scope
     return ByteCode;
 }
 
-std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass){
-    // ? This could be improved for less memory usage
-    static std::string FastLoadedVariable; // is part of fast loading optimization 
-
+std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::map<std::string, char>& Variables){
     if(ClassType == NodeType::MarkGlobal){
         return ("END 1");
     }
@@ -163,21 +160,17 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
             default:
                 throw error::RendorException("Invalid node type; Assignment Variable Fail");
         }
-        return (boost::format("CONST %s(%s)\nASSIGN %s") % Type % AssignmentNode.Value % AssignmentNode.VariableName).str();
+        return (boost::format("CONST %s %s\nASSIGN %s") % Type % AssignmentNode.Value % AssignmentNode.VariableName).str();
     } 
     else if(ClassType == NodeType::RendorKeyWord){
         auto& RendorKeyWordNode = dynamic_cast<RendorKeyWord&>(*NodeClass); // if we reach here, it should be a RendorKeyWord object
-        if(RendorKeyWordNode.KeyWord == "echo"){
 
-            if(FastLoadedVariable == RendorKeyWordNode.Args){ // Optimization rendorc will make to avoid fast loading multiple times 
-                return (boost::format("ECHO %s") % FastLoadedVariable).str();
+        if(RendorKeyWordNode.KeyWord == "echo"){ // if keyword is echo 
+            if(Variables.find(RendorKeyWordNode.Args) == Variables.end()){ // CONSTANT is a variable defined in rendorvm
+                return (boost::format("CONST 2 %s\nECHO CONSTANT") % RendorKeyWordNode.Args).str(); // we pretend it's a string cause ECHO will only use strings anyway
+            } else{
+                return (boost::format("ECHO %s") % RendorKeyWordNode.Args).str();
             }
-
-            else{ 
-                FastLoadedVariable = RendorKeyWordNode.Args;
-                return (boost::format("FAST_LOAD %s\nECHO %s") % FastLoadedVariable % FastLoadedVariable).str();
-            }
-
         } else {
             throw error::RendorException((boost::format("Fatal Error: %s is not a keyword") % RendorKeyWordNode.KeyWord).str());
         }
