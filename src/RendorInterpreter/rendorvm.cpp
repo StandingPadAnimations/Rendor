@@ -55,6 +55,10 @@ int main(int argc, char *argv[]){
                 throw error::RendorException((boost::format("There either is no .Cren file of %s; Compile your code first") % argv[1]).str());
             }
 
+            if(Bfs::last_write_time(AbsPath) > Bfs::last_write_time(AbsPathToCren)){
+                std::cout << (boost::format("%s was modified recently but has not yet been recompiled;\nWe all forget to recompile\n") % AbsPath.filename().string()) << std::endl;
+            }
+
             std::ifstream File(AbsPathToCren);
             if(File.is_open()){
                 ExecuteByteCode(File);
