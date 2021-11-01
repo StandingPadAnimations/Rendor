@@ -1,16 +1,20 @@
-CXX       := g++
-CXX_FLAGS := -std=c++17 -Wall -Wfatal-errors
+CXX         := g++
+CXX_FLAGS   := -std=c++17 -Wall -Wfatal-errors
 
-BIN     := bin
-SRC     := src/RendorCompiler
-INCLUDE := include
-BOOST := "C:/C++ Libaries/boost_1_77_0/"
-
+BIN         := bin
+OBJDIR         := bin/RendorCompiler/ObjectFiles
+SRC         := src/RendorCompiler
+INCLUDE     := include
 LIBRARIES   := "C:/C++ Libaries/boost_1_77_0/stage/lib/"
+
 EXECUTABLE  := RendorCompiler/rendorc
 
-BOOSTFILE := boost_filesystem-mgw8-mt-x64-1_77
-BOOSTSYS := boost_system-mgw8-mt-x64-1_77
+SOURCES     := $(wildcard $(SRC)/*.cpp)
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+
+BOOST       := "C:/C++ Libaries/boost_1_77_0/"
+BOOSTFILE   := boost_filesystem-mgw8-mt-x64-1_77
+BOOSTSYS    := boost_system-mgw8-mt-x64-1_77
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -18,8 +22,11 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
+$(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
+
+$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -c -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 clean:
 	-rm $(BIN)/*
