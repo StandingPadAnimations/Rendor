@@ -40,21 +40,29 @@ While the extension isn't required, it does make the code more readable in my op
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
+
+namespace Bfs = boost::filesystem;
 
 int main(int argc, char *argv[]){
     try{
-        boost::filesystem::path AbsPath(argv[1]);
+        Bfs::path AbsPath(argv[1]);
         std::string AbsPathExt = AbsPath.extension().string();
+        if(AbsPathExt == ".ren"){
+            std::string AbsPathToCren = (boost::format("%s/.__rencache__/%s") % AbsPath.parent_path().string() % AbsPath.filename().replace_extension(".Cren").string()).str();
 
-        if(AbsPathExt == ".Cren"){
-            std::ifstream File(AbsPath.string());
+            if(!Bfs::exists(AbsPathToCren)){
+                throw error::RendorException((boost::format("There either is no .Cren file of %s; Compile your code first") % argv[1]).str());
+            }
+
+            std::ifstream File(AbsPathToCren);
             if(File.is_open()){
                 ExecuteByteCode(File);
             } else {
                 throw error::RendorException("File is not open");
             }
         } else{
-            throw error::RendorException("rendor only allows .Cren files");
+            throw error::RendorException("rendor only allows .ren files");
         }
         return EXIT_SUCCESS;
     }

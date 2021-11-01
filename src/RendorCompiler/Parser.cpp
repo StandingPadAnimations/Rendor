@@ -85,8 +85,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
                             std::string VariableBeingReferenced(value.c_str()+1, value.size()-1);
                             SetVariable(Variables, VariableBeingReferenced, AssignmentNode, VariableName);
                             AssignmentNode.Value = (boost::format("_&&%s") % VariableBeingReferenced).str(); // to let the interpreter know that it's refering to another variable
-                        }
-                        else{
+                        } else{
                             SetVariable(Variables, value, AssignmentNode, VariableName);
                             AssignmentNode.Value = (boost::format("_&%s") % value).str(); // to let the interpreter know that it's copying to another variable
                         }
@@ -120,6 +119,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         else if(token == Lex::Token::Decrement){
             Scope->push_back(std::make_unique<Decrement>(value));
         }
+
         LastToken = token;
     }
     
@@ -136,6 +136,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, Variables)); // Generate bytecode
     }
     ByteCode.emplace_back("END 0"); // End Global Scope
+
     return ByteCode;
 }
 
@@ -143,6 +144,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     if(ClassType == NodeType::MarkGlobal){
         return ("END 1");
     }
+
     else if(ClassType == NodeType::AssignVariable){
         auto& AssignmentNode = dynamic_cast<AssignVariable&>(*NodeClass); // if we reach here, it should be a AssignVariable object
         std::string Type;
@@ -168,6 +170,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
             default:
                 throw error::RendorException("Invalid node type; Assignment Variable Fail");
         }
+
         return (boost::format("CONST %s %s\nASSIGN %s") % Type % AssignmentNode.Value % AssignmentNode.VariableName).str();
     } 
 
@@ -177,9 +180,9 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
         if(RendorKeyWordNode.KeyWord == "echo"){ // if keyword is echo 
             if(Variables.find(RendorKeyWordNode.Args) == Variables.end()){ // CONSTANT is a variable defined in rendorvm
                 return (boost::format("CONST 2 %s\nECHO CONSTANT") % RendorKeyWordNode.Args).str(); // we pretend it's a string cause ECHO will only use strings anyway
-            } else{
-                return (boost::format("ECHO %s") % RendorKeyWordNode.Args).str();
-            }
+            } 
+
+            return (boost::format("ECHO %s") % RendorKeyWordNode.Args).str();
         } else { // in case it's not a keyword somehow
             throw error::RendorException((boost::format("WTH Error; %s is not a keyword. This error should not appear so please post an issue on the GitHub") % RendorKeyWordNode.KeyWord).str());
         }
@@ -188,14 +191,15 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     else if(ClassType == NodeType::Increment){
         auto& IncrementNode = dynamic_cast<Increment&>(*NodeClass); // if we reach here, it should be an Increment object
 
+        // Error checking
         if(Variables.find(IncrementNode.Args) == Variables.end()){ // You can only increment variables that have been defined
             throw error::RendorException((boost::format("Fatal Error; %s is not defined") % IncrementNode.Args).str());
-        } else{
-            if(Variables[IncrementNode.Args] != 'N'){
-                throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be incremented") % IncrementNode.Args).str());
-            }
-            return (boost::format("INCREMENT %s") % IncrementNode.Args).str();
         }
+        if(Variables[IncrementNode.Args] != 'N'){
+            throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be incremented") % IncrementNode.Args).str());
+        }
+
+        return (boost::format("INCREMENT %s") % IncrementNode.Args).str();
     }
 
     else if(ClassType == NodeType::Decrement){
@@ -203,12 +207,12 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
 
         if(Variables.find(DecrementNode.Args) == Variables.end()){ // You can only increment variables that have been defined
             throw error::RendorException((boost::format("Fatal Error; %s is not defined") % DecrementNode.Args).str());
-        } else{
-            if(Variables[DecrementNode.Args] != 'N'){
-                throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be decremented") % DecrementNode.Args).str());
-            }
-            return (boost::format("DECREMENT %s") % DecrementNode.Args).str();
+        } 
+        if(Variables[DecrementNode.Args] != 'N'){
+            throw error::RendorException((boost::format("Fatal Error; %s is not an interger; only integers can be decremented") % DecrementNode.Args).str());
         }
+
+        return (boost::format("DECREMENT %s") % DecrementNode.Args).str();
     }
     
     else{
