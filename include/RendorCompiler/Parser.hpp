@@ -5,9 +5,11 @@
 #include <vector>
 #include <memory>
 #include <map>
-#include <boost/format.hpp>
+
 #include "RendorCompiler/Lexer.hpp"
 #include "Exceptions.hpp"
+
+#include <boost/format.hpp>
 
 std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
 

@@ -34,6 +34,7 @@ While the extension isn't required, it does make the code more readable in my op
 
 #include <iostream>
 #include <fstream>
+
 #include "RendorInterpreter/Interpreter.hpp"
 #include "Exceptions.hpp"
 
@@ -56,7 +57,7 @@ int main(int argc, char *argv[]){
             }
 
             if(Bfs::last_write_time(AbsPath) > Bfs::last_write_time(AbsPathToCren)){
-                std::cout << (boost::format("%s was modified recently but has not yet been recompiled;\nWe all forget to recompile\n") % AbsPath.filename().string()) << std::endl;
+                std::cout << (boost::format("%s was modified recently but has not yet been recompiled;\nWe all forget to recompile so don't slam your head\n") % AbsPath.filename().string()) << std::endl;
             }
 
             std::ifstream File(AbsPathToCren);

@@ -1,11 +1,6 @@
 #ifndef EXTRAFUNCTIONS
 #define EXTRAFUNCTIONS
 
-/*
-This file is just to make my life easier
-*/
-
-
 #include <iostream>
 #include <string>
 #include <vector>

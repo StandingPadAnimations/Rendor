@@ -8,12 +8,13 @@
 #include <sstream>
 #include <functional>
 #include <string_view>
+
 #include "Exceptions.hpp"
-#include <boost/format.hpp>
 
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
 namespace Lex{
     // Enum for tokens 

@@ -1,3 +1,6 @@
+#ifndef RENDORAPI
+#define RENDORAPI 
+
 #include <iostream>
 #include <string>
 #include "Interpreter.hpp"
@@ -7,3 +10,5 @@
 struct RenObj{
 
 };
+
+#endif // Rendor API

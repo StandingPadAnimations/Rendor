@@ -5,11 +5,13 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
+
+#include "Exceptions.hpp"
+#include "ExtraFunctions.hpp"
+
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/finder.hpp>
-#include "Exceptions.hpp"
-#include "ExtraFunctions.hpp"
 
 void ExecuteByteCode(std::ifstream& File);
 
