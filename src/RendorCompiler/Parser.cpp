@@ -75,66 +75,64 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         (token == Lex::Token::Float) ||
         (token == Lex::Token::String) ||
         (token == Lex::Token::Bool) ||
-        (token == Lex::Token::Bop) ||
         (token == Lex::Token::VariableReference) 
         ){
-            if(LastToken == Lex::Token::Variable){
+            if(ParserTempID == TempID::ArithAssemble){
+                auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
+                AssignmentNode.Value += value;
+            }
+            else if(LastToken == Lex::Token::Variable){
                 // Editing the actual object
                 auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                 std::string VariableName = AssignmentNode.VariableName;
 
-                if(ParserTempID == TempID::ArithAssemble){ // for arithmethic assembly
-                    AssignmentNode.Value += value; // Add the value to variable
-                    std::cout << AssignmentNode.Value << std::endl;
-                } else{
-                    // Set the type of the variable
-                    switch(token){
-                        case Lex::Token::Int:
-                            if(Tokens[TokenIndex+1].first == Lex::Token::Bop){
-                                AssignmentNode.VariableType = VariableTypes::Int;
-                                Variables[VariableName] = 'A';
-                                ParserTempID = TempID::ArithAssemble;
-                                break;
-                            }
-                            AssignmentNode.VariableType = VariableTypes::Int;
-                            Variables[VariableName] = 'N';
+                // Set the type of the variable
+                switch(token){
+                    case Lex::Token::Int:
+                        if(Tokens[TokenIndex+1].first == Lex::Token::Bop){
+                            AssignmentNode.VariableType = VariableTypes::Arith;
+                            Variables[VariableName] = 'A';
+                            ParserTempID = TempID::ArithAssemble;
                             break;
+                        }
+                        AssignmentNode.VariableType = VariableTypes::Int;
+                        Variables[VariableName] = 'N';
+                        break;
 
-                        case Lex::Token::Float:
-                            if(Tokens[TokenIndex+1].first != Lex::Token::Bop){
-                                AssignmentNode.VariableType = VariableTypes::Int;
-                                Variables[VariableName] = 'A';
-                                ParserTempID = TempID::ArithAssemble;
-                                break;
-                            }
-                            AssignmentNode.VariableType = VariableTypes::Float;
-                            Variables[VariableName] = 'F';
+                    case Lex::Token::Float:
+                        if(Tokens[TokenIndex+1].first != Lex::Token::Bop){
+                            AssignmentNode.VariableType = VariableTypes::Arith;
+                            Variables[VariableName] = 'A';
+                            ParserTempID = TempID::ArithAssemble;
                             break;
+                        }
+                        AssignmentNode.VariableType = VariableTypes::Float;
+                        Variables[VariableName] = 'F';
+                        break;
 
-                        case Lex::Token::String:
-                            AssignmentNode.VariableType = VariableTypes::String;
-                            Variables[VariableName] = 'S';
-                            break;
+                    case Lex::Token::String:
+                        AssignmentNode.VariableType = VariableTypes::String;
+                        Variables[VariableName] = 'S';
+                        break;
 
-                        case Lex::Token::Bool:
-                            AssignmentNode.VariableType = VariableTypes::Bool;
-                            Variables[VariableName] = 'B';
-                            break;
+                    case Lex::Token::Bool:
+                        AssignmentNode.VariableType = VariableTypes::Bool;
+                        Variables[VariableName] = 'B';
+                        break;
 
-                        case Lex::Token::VariableReference: 
-                            if(value[0] == '&'){
-                                std::string VariableBeingReferenced(value.c_str()+1, value.size()-1);
-                                SetVariable(Variables, VariableBeingReferenced, AssignmentNode, VariableName, Tokens, TokenIndex, ParserTempID);
-                                AssignmentNode.Value = (boost::format("_&&%s") % VariableBeingReferenced).str(); // to let the interpreter know that it's refering to another variable
-                            } else{
-                                SetVariable(Variables, value, AssignmentNode, VariableName, Tokens, TokenIndex, ParserTempID);
-                                AssignmentNode.Value = (boost::format("_&%s") % value).str(); // to let the interpreter know that it's copying to another variable
-                            }
-                            break;
-                        
-                        default:
-                            throw error::RendorException("Invalid token type; Assignment Variable Fail");
-                    }
+                    case Lex::Token::VariableReference: 
+                        if(value[0] == '&'){
+                            std::string VariableBeingReferenced(value.c_str()+1, value.size()-1);
+                            SetVariable(Variables, VariableBeingReferenced, AssignmentNode, VariableName, Tokens, TokenIndex, ParserTempID);
+                            AssignmentNode.Value = (boost::format("_&&%s") % VariableBeingReferenced).str(); // to let the interpreter know that it's refering to another variable
+                        } else{
+                            SetVariable(Variables, value, AssignmentNode, VariableName, Tokens, TokenIndex, ParserTempID);
+                            AssignmentNode.Value = (boost::format("_&%s") % value).str(); // to let the interpreter know that it's copying to another variable
+                        }
+                        break;
+                    
+                    default:
+                        throw error::RendorException("Invalid token type; Assignment Variable Fail");
                 }
                 AssignmentNode.Value = value;
             }
@@ -164,7 +162,12 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         }
 
         else if(token == Lex::Token::Bop){
-            
+            auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
+
+            if(ParserTempID == TempID::ArithAssemble){ // for arithmethic assembly
+                AssignmentNode.Value += value; // Add the value to variable
+                std::cout << AssignmentNode.Value << std::endl;
+            }
         }
 
         LastToken = token;
@@ -288,7 +291,7 @@ void SetVariable(
     switch(Variables[value]){
         case 'N':
             if(Tokens[TokenIndex+1].first == Lex::Token::Bop){
-                AssignmentNode.VariableType = VariableTypes::Int;
+                AssignmentNode.VariableType = VariableTypes::Arith;
                 Variables[VariableName] = 'A';
                 ParserTempID = TempID::ArithAssemble;
                 break;
@@ -299,7 +302,7 @@ void SetVariable(
         
         case 'F':
             if(Tokens[TokenIndex+1].first == Lex::Token::Bop){
-                AssignmentNode.VariableType = VariableTypes::Int;
+                AssignmentNode.VariableType = VariableTypes::Arith;
                 Variables[VariableName] = 'A';
                 ParserTempID = TempID::ArithAssemble;
                 break;

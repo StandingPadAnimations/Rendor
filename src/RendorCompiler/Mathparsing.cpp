@@ -28,6 +28,7 @@ std::string OperationToPostfix(std::string_view Operation){
             else if((OperatorPresedence[PartOfOperation] <= OperatorPresedence[Stack.back()])){
                 Output += " " + Stack.back();
                 Stack.pop_back();
+                Stack.emplace_back(PartOfOperation);
             }
             else {
                 throw error::RendorException("WTH error; Invalid binary operator");
