@@ -16,7 +16,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
         std::vector<ID> TempIDList {ID::None};
         SpecificID SpecificTempID = SpecificID::None; 
         std::string TempString = "";
-        ID TempID = TempIDList.back();
+        ID TempID;
 
         for(size_t i = 0; i < LineofCode.size(); ++i){
             TempID = TempIDList.back();
@@ -120,16 +120,21 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
             (TempID != ID::Char)
             ){
                 if(LineofCode[i+1] == '/'){ // * Comments
+                    TempID = ID::Comment;
                     break;
                 } else{ // * Division 
                     if(TempString.find_first_not_of("1234567890.") != std::string::npos){ // * this checks TempString to see if there's a variable or number 
+
                         Tokens.emplace_back(Token::BopVariableRef, TempString);
+
                     } else{
+
                         if(TempString.find_first_of(".") != std::string::npos){ // * to check if it's an int or float
                             Tokens.emplace_back(Token::Float, TempString);
                         } else{
                             Tokens.emplace_back(Token::Int, TempString);
                         }
+
                     }
 
                     TempString = ""; 
@@ -422,42 +427,46 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
 
         // Extra tokens not handled earlier
         // ? I feel like this could be made better 
-        switch(TempID){
-            case ID::Number:
-                if(TempString.size() > 0){ // if there actually is anything worth tokenizing 
+        if(TempID != ID::Comment){
+            switch(TempID){
+                case ID::Number:
+                    if(TempString.size() > 0){ // if there actually is anything worth tokenizing 
+                        switch(SpecificTempID){
+                            case SpecificID::Int:
+                                Tokens.emplace_back(Token::Int, TempString);
+                                break;
+
+                            case SpecificID::Float:
+                                Tokens.emplace_back(Token::Float, TempString);
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                    Tokens.emplace_back(Token::NewLine, "--NEWLINE--"); // to allow certain things in the parser like line numbers in errors
+                    break;
+                
+                case ID::VariableDef:
+                    Tokens.emplace_back(Token::VariableReference, TempString);
+                    break;
+
+                default: // Increment amd Decrement handling
                     switch(SpecificTempID){
-                        case SpecificID::Int:
-                            Tokens.emplace_back(Token::Int, TempString);
+                        case SpecificID::Increment:
+                            Tokens.emplace_back(Token::Increment, TempString);
                             break;
 
-                        case SpecificID::Float:
-                            Tokens.emplace_back(Token::Float, TempString);
+                        case SpecificID::Decrement:
+                            Tokens.emplace_back(Token::Decrement, TempString);
                             break;
 
                         default:
                             break;
                     }
-                }
-                break;
-            
-            case ID::VariableDef:
-                Tokens.emplace_back(Token::VariableReference, TempString);
-                break;
-
-            default: // Increment amd Decrement handling
-                switch(SpecificTempID){
-                    case SpecificID::Increment:
-                        Tokens.emplace_back(Token::Increment, TempString);
-                        break;
-
-                    case SpecificID::Decrement:
-                        Tokens.emplace_back(Token::Decrement, TempString);
-                        break;
-
-                    default:
-                        break;
-                }
-                break;
+                    Tokens.emplace_back(Token::NewLine, "--NEWLINE--"); // to allow certain things in the parser like line numbers in errors
+                    break;
+            }
         }
     }
     return Tokens;

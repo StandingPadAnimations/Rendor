@@ -41,7 +41,8 @@ namespace Lex{
         Increment, // 19
         Decrement, // 20
         CppCompileTypeHint, // 21
-        VariableReference // 22
+        VariableReference, // 22
+        NewLine // 23
     };
 
 

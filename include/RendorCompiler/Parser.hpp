@@ -7,6 +7,7 @@
 #include <map>
 
 #include "RendorCompiler/Lexer.hpp"
+#include "RendorCompiler/Mathparsing.hpp"
 #include "Exceptions.hpp"
 
 #include <boost/format.hpp>
@@ -19,15 +20,16 @@ enum class VariableTypes{
     Float,
     String,
     Bool,
+    Arith,
     IntStatic,
     FloatStatic,
     StringStatic,
     BoolStatic
 };
 
-enum class CurrentScope{
-    Global,
-    Main,
+enum class TempID{
+    None,
+    ArithAssemble
 };
 
 enum class NodeType{
