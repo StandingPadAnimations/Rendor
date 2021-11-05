@@ -20,6 +20,7 @@ void ExecuteByteCode(std::ifstream& File){
         std::string_view Command(ByteCodeOperation.c_str(), ByteCodeSpaceIndex);
         std::string_view Args(ByteCodeOperation.c_str() + ByteCodeSpaceIndex + 1, ByteCodeSize - (ByteCodeSpaceIndex + 1));
 
+
         if(Command == "CONST"){ // when a constant is declared 
             auto& ConstantVariable = *Variables["CONSTANT"];
             auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
@@ -36,12 +37,25 @@ void ExecuteByteCode(std::ifstream& File){
                 case '3':
                     ConstantValueClass.ConstVariableType = 'B';
                     break;
+                
+                case '4':
+                    std::string Result = PostFixEval(Args.substr(2, Args.size()-2)); 
+                    if(Result.find_first_of(".") == std::string::npos){
+                        ConstantValueClass.ConstVariableType = 'N';
+                    } else{
+                        ConstantValueClass.ConstVariableType = 'F';
+                    }
+                    break;
             }
             if(Args[2] == '_' && Args[3] == '&'){ // Checks if variable is a copy of another
                 const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
                 const auto& CopiedVariable = *Variables[CopiedVariableName];
                 ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
-            } else{
+            } 
+            else if(Args[0] == '4'){
+                ConstantValueClass.Value = PostFixEval(Args.substr(2, Args.size()-2));
+            }
+            else{
                 ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
             }
         }
@@ -65,6 +79,8 @@ void ExecuteByteCode(std::ifstream& File){
                 case 'B':
                     VariableBeingAssigned.ValueClass = std::make_unique<Bool>(ConstantValueClass.Value);
                     break;
+                case 'A':
+                    throw error::RendorException("WTH Error; Arithmethic should have already been converted to int/float. Please report this as an issue on the Rendor Github.");
             }
         }
 

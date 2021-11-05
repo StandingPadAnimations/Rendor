@@ -39,13 +39,13 @@ While the extension isn't required, it does make the code more readable in my op
 
 #include "RendorCompiler/Lexer.hpp"
 #include "RendorCompiler/Parser.hpp"
-#include "ExtraFunctions.hpp"
 
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 // TODO: Make this more readable 
 // ! Make. It. Readable.
@@ -99,9 +99,9 @@ int main(int argc, char *argv[]){
         }
         
             {
-                ex::Extra ExtraFunctions;
                 for(std::string PreProcessLine; std::getline(File, PreProcessLine);){
-                    AllCode = AllCode + ExtraFunctions.reduce(PreProcessLine, " ", " \t") + "\n";
+                    boost::algorithm::trim(PreProcessLine);
+                    AllCode += PreProcessLine + "\n";
                 }
             }
             // Tokenizes the AllCode string

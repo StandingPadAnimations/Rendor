@@ -77,7 +77,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         (token == Lex::Token::Bool) ||
         (token == Lex::Token::VariableReference) 
         ){
-            if(ParserTempID == TempID::ArithAssemble){
+            if(ParserTempID == TempID::ArithAssemble){ // Assembles arithmethic operations until NEWLINE
                 auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                 AssignmentNode.Value += value;
             }
@@ -100,7 +100,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
                         break;
 
                     case Lex::Token::Float:
-                        if(Tokens[TokenIndex+1].first != Lex::Token::Bop){
+                        if(Tokens[TokenIndex+1].first == Lex::Token::Bop){
                             AssignmentNode.VariableType = VariableTypes::Arith;
                             Variables[VariableName] = 'A';
                             ParserTempID = TempID::ArithAssemble;
@@ -166,7 +166,6 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
 
             if(ParserTempID == TempID::ArithAssemble){ // for arithmethic assembly
                 AssignmentNode.Value += value; // Add the value to variable
-                std::cout << AssignmentNode.Value << std::endl;
             }
         }
 
