@@ -10,6 +10,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
     bool IsMainFunction = false;
     
     unsigned int LineNumber = 0;
+    unsigned int SkipCount = 0;
 
     while(std::getline(ss, LineofCode)){ // TODO: This could definitely be improved. stringstreams take a lot of memory
         ++LineNumber;
@@ -21,8 +22,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
         for(size_t i = 0; i < LineofCode.size(); ++i){
             TempID = TempIDList.back();
 
+            if(SkipCount > 0){ 
+                --SkipCount;
+                continue;
+            }
+
             // Processing for strings
-            if(TempID == ID::Char){ // TODO: Add variable strings. Syntax could be v"blah blah {random_variable} blah blah"
+            else if(TempID == ID::Char){ // TODO: Add variable strings. Syntax could be v"blah blah {random_variable} blah blah"
                 switch(LineofCode[i]){
                     case '\"': // When it encounters a " char
                         switch(SpecificTempID){
@@ -344,11 +350,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
 
             // ints and floats
             else if( 
-                ((std::isdigit(LineofCode[i])) || 
+                (
+                    (std::isdigit(LineofCode[i])) || 
                 (
                     (LineofCode[i] == '.') && // * TempID should be ID::Number when it encounters a . in a float
                     (TempID == ID::Number) // ? this is to avoid future chain function calls from being assigned as floats but I feel like I could do better
-                )) && 
+                )
+                ) && 
             (TempID != ID::Char)
             ){
                 TempIDList.emplace_back(ID::Number);
@@ -374,43 +382,48 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
             
             // Binary operators
             else if(
-                    ((LineofCode[i] == '^') ||
-                    (LineofCode[i] == '*') || 
-                    (LineofCode[i] == '+') ||
-                    (LineofCode[i] == '-'))
+            (LineofCode[i] == '^') ||
+            (LineofCode[i] == '*') || 
+            (LineofCode[i] == '+') ||
+            (LineofCode[i] == '-')
+            ){
+                if( // Negative numbers
+                (LineofCode[i] == '-') &&
+                (TempID != ID::Number) &&
+                (TempString.size() == 0)
                 ){
-                    if(
-                    (SpecificTempID == SpecificID::Increment) ||
-                    (SpecificTempID == SpecificID::Decrement)
-                    ){
-                        continue; // * We don't want to handle increment/decrement symbols but we also don't want to add it to TempString
-                    }
-
-                    if(TempString.find_first_not_of("1234567890.") != std::string::npos){ // this checks TempString to see if there's a variable or number 
-                        Tokens.emplace_back(Token::BopVariableRef, TempString);
-                    } else{
-                        if(TempString.find_first_of(".") != std::string::npos){ // to check if it's an int or float
-                            Tokens.emplace_back(Token::Float, TempString);
-                        } else{
-                            if(TempString.size() > 0){ // this should be obvious
+                    TempString.push_back(LineofCode[i]);
+                }
+                else if( // Increment
+                    ((LineofCode[i] == '+') && 
+                    (LineofCode[i+1] == '+'))
+                ){
+                    SpecificTempID = SpecificID::Increment;
+                    ++SkipCount;
+                    continue;
+                }
+                else if( // Decrement
+                    ((LineofCode[i] == '-') &&
+                    (LineofCode[i+1] == '-'))
+                ){
+                    SpecificTempID = SpecificID::Increment;
+                    ++SkipCount;
+                    continue;
+                }
+                else{ // Everything else
+                    if(TempString.size() > 0){
+                        if(TempString.find_first_not_of("1234567890.-") != std::string::npos){
+                            Tokens.emplace_back(Token::VariableReference, TempString);
+                        }
+                        else{
+                            if(TempString.find_first_of(".") != std::string::npos){
+                                Tokens.emplace_back(Token::Float, TempString);
+                            } else{
                                 Tokens.emplace_back(Token::Int, TempString);
                             }
                         }
-                    }
-
-                    if(
-                    (LineofCode[i] == '+') && 
-                    (LineofCode[i+1] == '+')
-                    ){
-                        SpecificTempID = SpecificID::Increment;
-                        continue; // We don't want to assign tokens yet 
-                    } 
-                    else if(
-                    (LineofCode[i] == '-') && 
-                    (LineofCode[i+1] == '-')
-                    ){
-                        SpecificTempID = SpecificID::Decrement;
-                        continue; // We don't want to assign tokens yet 
+                    } else{
+                        throw error::RendorException((boost::format("Expected value in srithmethic operation; line %s") % std::to_string(LineNumber)).str());
                     }
                     TempString = ""; 
                     TempString.push_back(LineofCode[i]); // to get the operator
@@ -418,11 +431,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                     TempString = ""; 
                     SpecificTempID = SpecificID::None; // * To avoid issues with ints at the end of lines being assigned as floats and vice versa
                 }
-
+            }
+            
             else{
                 // * Push chars in a temporary string
                 TempString.push_back(LineofCode[i]);
             }
+        
         }
 
         // Extra tokens not handled earlier

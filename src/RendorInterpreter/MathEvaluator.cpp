@@ -27,19 +27,16 @@ std::string EvalNums(std::string Num1, std::string Num2, std::string Op){
     return Answer;
 }
 
-std::string PostFixEval(std::string_view PostFixOperation){
+std::string PostFixEval(std::string_view PostFixOperation, std::map<std::string, std::unique_ptr<Variable>>& Variables){
     boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(PostFixOperation, Delimeters);
 
-    std::vector<std::string> Stack;
+    std::list<std::string> Stack;
 
     for(auto const& PartOfOperation : SeparatedOperation){
         if(
-        (PartOfOperation == "^") ||
-        (PartOfOperation == "*") ||
-        (PartOfOperation == "/") ||
-        (PartOfOperation == "+") ||
-        (PartOfOperation == "-")
+        (PartOfOperation.find_first_of("^*/+-") != std::string::npos) && 
+        (PartOfOperation.find_first_of("1234567890.") == std::string::npos) // Just in case a number and operator are together 
         ){
             std::string Num2 = Stack.back();
             Stack.pop_back();
@@ -47,7 +44,23 @@ std::string PostFixEval(std::string_view PostFixOperation){
             Stack.pop_back();
             Stack.emplace_back(EvalNums(Num1, Num2, PartOfOperation));
         } else{
-            Stack.emplace_back(PartOfOperation);
+            // ! Rendor crashes here for some reason 
+            if(
+            (PartOfOperation[0] == '_') &&
+            (PartOfOperation[1] == '&')
+            ){
+                const auto CopiedVariableName = PartOfOperation.substr(2, PartOfOperation.size()-2);
+                auto& CopiedVariable = *Variables[CopiedVariableName];
+                if(
+                (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Int) &&
+                (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Float)
+                ){
+                    throw error::RendorException((boost::format("%s is not an int or float!") % CopiedVariableName).str());
+                }
+                Stack.emplace_back(CopiedVariable.ValueClass->Value);
+            } else{
+                Stack.emplace_back(PartOfOperation);
+            }
         }
     }
     if(Stack.size() > 1){

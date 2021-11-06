@@ -2,14 +2,14 @@
     // num = 1
     // num = 10
     // num = 1.2
-    num = 1-5
+    num = -1
     echo(num)
-    num = 2^3
-    echo(num)
-    num = 1.5-1 *6.0 
+    xd = num + 5
+    echo(xd)
+    // num = 1.5-1 *6.0 
     // num = 1-1(9 / 3.9) - 1 
     // ++num
-    echo(num)
+    // echo(num)
     // --num
     // echo(num)
     // ArithNum = num + 1(3)

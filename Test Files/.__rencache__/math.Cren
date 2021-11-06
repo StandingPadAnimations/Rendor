@@ -1,13 +1,10 @@
 LOAD 0
 LOAD 1
-CONST 4 1 5 -
+CONST 0 -1
 ASSIGN num
 ECHO num
-CONST 4 2 3 ^
-ASSIGN num
-ECHO num
-CONST 4 1.5 1 6.0 - *
-ASSIGN num
-ECHO num
+CONST 4 _&num 5 +
+ASSIGN xd
+ECHO xd
 END 1
 END 0

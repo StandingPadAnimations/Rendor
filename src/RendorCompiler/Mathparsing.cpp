@@ -2,12 +2,12 @@
 
 // TODO: finish this lol
 std::string OperationToPostfix(std::string_view Operation){
-    std::vector<std::string> Stack; // ? Perhaps a list would be better
+    std::list<std::string> Stack; // ? Perhaps a list would be better
     std::map<std::string, int> OperatorPresedence {{"^", 3}, {"*", 2}, {"/", 2}, {"+", 1}, {"-", 1},}; // based on PEMDAS
     std::string Output = "";
 
     // Does the actual seperation 
-    boost::char_separator<char> Delimeters("", "^*/+-");
+    boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(Operation, Delimeters);
 
     for(auto const& PartOfOperation : SeparatedOperation){

@@ -39,7 +39,7 @@ void ExecuteByteCode(std::ifstream& File){
                     break;
                 
                 case '4':
-                    std::string Result = PostFixEval(Args.substr(2, Args.size()-2)); 
+                    std::string Result = PostFixEval(Args.substr(2, Args.size()-2), Variables); 
                     if(Result.find_first_of(".") == std::string::npos){
                         ConstantValueClass.ConstVariableType = 'N';
                     } else{
@@ -53,7 +53,7 @@ void ExecuteByteCode(std::ifstream& File){
                 ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
             } 
             else if(Args[0] == '4'){
-                ConstantValueClass.Value = PostFixEval(Args.substr(2, Args.size()-2));
+                ConstantValueClass.Value = PostFixEval(Args.substr(2, Args.size()-2), Variables);
             }
             else{
                 ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};

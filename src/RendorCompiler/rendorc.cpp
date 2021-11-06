@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
                 Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
                 // Parses
-                ByteCode = Parser(Tokens);
+                ByteCode = Parser(Tokens); 
 
                 // Adds it to output Cren File
                 std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();

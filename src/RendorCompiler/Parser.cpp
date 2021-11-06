@@ -79,12 +79,14 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
         ){
             if(ParserTempID == TempID::ArithAssemble){ // Assembles arithmethic operations until NEWLINE
                 auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                AssignmentNode.Value += value;
+                AssignmentNode.Value += " " + value;
             }
             else if(LastToken == Lex::Token::Variable){
                 // Editing the actual object
                 auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                 std::string VariableName = AssignmentNode.VariableName;
+
+                AssignmentNode.Value = value; // Setting the value of a variable(for operations, this will be overwritten)
 
                 // Set the type of the variable
                 switch(token){
@@ -132,9 +134,8 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
                         break;
                     
                     default:
-                        throw error::RendorException("Invalid token type; Assignment Variable Fail");
+                        throw error::RendorException("Invalid token type; Assignment Node Creation Fail");
                 }
-                AssignmentNode.Value = value;
             }
         }
         
@@ -165,7 +166,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
             auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
 
             if(ParserTempID == TempID::ArithAssemble){ // for arithmethic assembly
-                AssignmentNode.Value += value; // Add the value to variable
+                AssignmentNode.Value += " " + value;; // Add the value to variable
             }
         }
 
@@ -224,6 +225,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 return (boost::format("CONST %s %s\nASSIGN %s") % Type % OperationToPostfix(AssignmentNode.Value) % AssignmentNode.VariableName).str();
 
             default:
+                std::cout << AssignmentNode.Value << std::endl;
                 throw error::RendorException("Invalid node type; Assignment Variable Fail");
         }
 
