@@ -2,7 +2,7 @@ CXX         := g++
 CXX_FLAGS   := -std=c++17 -Wall -Wfatal-errors
 
 BIN         := bin
-OBJDIR         := bin/RendorInterpreter/ObjectFiles
+OBJDIR      := bin/RendorInterpreter/ObjectFiles
 SRC         := src/RendorInterpreter
 INCLUDE     := include
 LIBRARIES   := "C:/C++ Libaries/boost_1_77_0/stage/lib/"
@@ -25,8 +25,8 @@ run: clean all
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
-$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp
+$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp Makefile.rendor
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -c -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 clean:
-	-rm $(BIN)/*
+	-rm $(OBJDIR)/*

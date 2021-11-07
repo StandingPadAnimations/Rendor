@@ -25,7 +25,7 @@ run: clean all
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
-$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp
+$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp Makefile.rendor
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(BOOST) $^ -c -o $@ -L$(LIBRARIES) -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 clean:
