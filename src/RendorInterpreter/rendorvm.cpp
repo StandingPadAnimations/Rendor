@@ -45,33 +45,45 @@ While the extension isn't required, it does make the code more readable in my op
 
 namespace Bfs = boost::filesystem;
 
-int main(int argc, char *argv[]){
-    try{
+int main (int argc, char *argv[])
+{
+    try 
+    {
         Bfs::path AbsPath(argv[1]);
         std::string AbsPathExt = AbsPath.extension().string();
-        if(AbsPathExt == ".ren"){
+        if (AbsPathExt == ".ren") 
+        {
             std::string AbsPathToCren = (boost::format("%s/.__rencache__/%s") % AbsPath.parent_path().string() % AbsPath.filename().replace_extension(".Cren").string()).str();
 
-            if(!Bfs::exists(AbsPathToCren)){
+            if (!Bfs::exists(AbsPathToCren)) 
+            {
                 throw error::RendorException((boost::format("There either is no .Cren file of %s; Compile your code first") % argv[1]).str());
             }
 
-            if(Bfs::last_write_time(AbsPath) > Bfs::last_write_time(AbsPathToCren)){
+            if (Bfs::last_write_time(AbsPath) > Bfs::last_write_time(AbsPathToCren))
+            {
                 std::cout << (boost::format("%s was modified recently but has not yet been recompiled;\nWe all forget to recompile so don't slam your head\n") % AbsPath.filename().string()) << std::endl;
             }
 
             std::ifstream File(AbsPathToCren);
-            if(File.is_open()){
+
+            if (File.is_open()) 
+            {
                 ExecuteByteCode(File);
-            } else {
+            } 
+            else 
+            {
                 throw error::RendorException("File is not open");
             }
-        } else{
+        } 
+        else 
+        {
             throw error::RendorException("rendor only allows .ren files");
         }
         return EXIT_SUCCESS;
     }
-    catch(std::exception& exp){
+    catch (std::exception& exp)
+    {
         std::cout << exp.what() << std::endl;
         return EXIT_FAILURE;
     }

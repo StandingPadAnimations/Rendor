@@ -10,37 +10,48 @@ std::string OperationToPostfix(std::string_view Operation){
     boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(Operation, Delimeters);
 
-    for(auto const& PartOfOperation : SeparatedOperation){
-        if(
+    for (auto const& PartOfOperation : SeparatedOperation){
+        if (
         (PartOfOperation.find_first_of("^*/+-") != std::string::npos) &&
-        (PartOfOperation.find_first_of("1234567890.") == std::string::npos) // Just in case a number and operator are together 
-        ){
-            if(
+        (PartOfOperation.find_first_of("1234567890.") == std::string::npos)) // Just in case a number and operator are together
+        {
+            if (
             (Stack.size() == 0) ||
-            (OperatorPresedence[PartOfOperation] > OperatorPresedence[Stack.back()])
-            ){
+            (OperatorPresedence[PartOfOperation] > OperatorPresedence[Stack.back()]))
+            {
                 Stack.emplace_back(PartOfOperation); // Places the operator in the stack if it has a high presedence then the previous
             }
-            else if((OperatorPresedence[PartOfOperation] <= OperatorPresedence[Stack.back()])){ // Remove operator on top of the stack, put it in output, and add new operator
+
+            else if ((OperatorPresedence[PartOfOperation] <= OperatorPresedence[Stack.back()])) // Remove operator on top of the stack, put it in output, and add new operator
+            {
                 Output += " " + Stack.back();
                 Stack.pop_back();
                 Stack.emplace_back(PartOfOperation);
             }
-            else if(PartOfOperation == " "){
+
+            else if (PartOfOperation == " ")
+            {
                 continue; // ignore whitespace 
             }
-            else {
+            
+            else
+            {
                 throw error::RendorException("WTH error; Invalid binary operator");
             }
-        } else{
-            if(Output.size() == 0){
+        } 
+        else
+        {
+            if (Output.size() == 0)
+            {
                 Output += PartOfOperation;
-            } else{
+            } 
+            else{
                 Output += " " + PartOfOperation;
             }
         }
     }
-    for(auto const& Operation : Stack){ // Add any leftover operators
+    for (auto const& Operation : Stack) // Add any leftover operators
+    { 
         Output += " " + Operation;
     }
     return Output;

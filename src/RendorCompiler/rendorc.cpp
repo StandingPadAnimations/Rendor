@@ -49,10 +49,12 @@ While the extension isn't required, it does make the code more readable in my op
 
 // TODO: Make this more readable 
 // ! Make. It. Readable.
-int main(int argc, char *argv[]){
+int main (int argc, char *argv[])
+{
     // Sets variables and initializes them.
     // std::ifstream checks the file argument(arg[1]) and then takes in the file contents.
-    try{
+    try
+    {
         std::ifstream File(argv[1]);
         std::vector<std::string> ByteCode;
         std::string AllCode;
@@ -65,13 +67,13 @@ int main(int argc, char *argv[]){
         std::string AbsPathRenCache = AbsPathParentDir + "/.__rencache__";
 
         // * Checks for seeing if the file is compatible with the interpreter
-        if(AbsPathExt == ".ren"){
-            
-        } else{
+        if (AbsPathExt != ".ren")
+        {
             throw error::RendorException("Rendor only allows .ren files");
-        }
+        } 
 
-        if(!boost::filesystem::is_directory(AbsPathRenCache)){ // creates .__rencache__ folder if it doesn't exist
+        if (!boost::filesystem::is_directory(AbsPathRenCache)) // creates .__rencache__ folder if it doesn't exist
+        { 
             boost::filesystem::create_directory(AbsPathRenCache);
         }
 
@@ -79,27 +81,30 @@ int main(int argc, char *argv[]){
         bool DebugMode = false;
         bool CompileCppMode = false;
 
-        if(argv[2] != NULL){ // * for all arguments other then the file 
+        if (argv[2] != NULL) // * for all arguments other then the file 
+        { 
             if(
             (std::string(argv[2]) == "-debug") ||
-            (std::string(argv[2]) == "-d")
-            ){
+            (std::string(argv[2]) == "-d"))
+            {
                 DebugMode = true;
             }
 
-            else if((std::string(argv[2]) == "-cpp")){
+            else if (std::string(argv[2]) == "-cpp")
+            {
                 CompileCppMode = true;
                 if(
                 (std::string(argv[3]) == "-debug") ||
-                (std::string(argv[3]) == "-d")
-                ){
+                (std::string(argv[3]) == "-d"))
+                {
                     DebugMode = true;
                 }
             }
         }
         
             {
-                for(std::string PreProcessLine; std::getline(File, PreProcessLine);){
+                for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
+                {
                     boost::algorithm::trim(PreProcessLine);
                     AllCode += PreProcessLine + "\n";
                 }
@@ -116,25 +121,26 @@ int main(int argc, char *argv[]){
                 // Adds it to output Cren File
                 std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
                 std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
-                for(auto const& command : ByteCode){
+                for (auto const& command : ByteCode)
+                {
                     CrenOutput << command << std::endl;
                 }
             }
-            if(DebugMode){ 
+            if (DebugMode)
+            { 
                 std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
-                for(auto const& command : ByteCode){
+                for (auto const& command : ByteCode)
+                {
                     std::cout << command << std::endl;
                 }
             }
         File.close();
         return EXIT_SUCCESS;
     }
-    catch(const std::exception& exp){             
+    catch (const std::exception& exp)
+    {             
         std::cout << exp.what() << std::endl;   
         return EXIT_FAILURE;
-    }
-    catch(...){
-        std::cout << "whoops" << std::endl;
     }
     return 0;
 }

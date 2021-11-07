@@ -1,8 +1,9 @@
 #include "RendorInterpreter/Interpreter.hpp"
 
-void RENDOR_ECHO_FUNCTION(std::string_view EchoValue);
+void RENDOR_ECHO_FUNCTION (std::string_view EchoValue);
 
-void ExecuteByteCode(std::ifstream& File){
+void ExecuteByteCode (std::ifstream& File)
+{
     std::map<std::string, std::unique_ptr<Variable>> Variables;
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
 
@@ -11,9 +12,11 @@ void ExecuteByteCode(std::ifstream& File){
 
     std::string FastLoadedVariable = ""; // For variables that have been fast loaded
     
-    for(std::string ByteCodeOperation; std::getline(File, ByteCodeOperation);){
+    for (std::string ByteCodeOperation; std::getline(File, ByteCodeOperation);)
+    {
         int ByteCodeSize = ByteCodeOperation.size();
-        if(ByteCodeSize == 0){
+        if (ByteCodeSize == 0)
+        {
             continue;
         }
         size_t ByteCodeSpaceIndex = ByteCodeOperation.find_first_of(" ");
@@ -21,10 +24,12 @@ void ExecuteByteCode(std::ifstream& File){
         std::string_view Args(ByteCodeOperation.c_str() + ByteCodeSpaceIndex + 1, ByteCodeSize - (ByteCodeSpaceIndex + 1));
 
 
-        if(Command == "CONST"){ // when a constant is declared 
+        if (Command == "CONST") // when a constant is declared 
+        { 
             auto& ConstantVariable = *Variables["CONSTANT"];
             auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
-            switch(Args[0]){
+            switch (Args[0])
+            {
                 case '0':
                     ConstantValueClass.ConstVariableType = 'N';
                     break;
@@ -40,33 +45,43 @@ void ExecuteByteCode(std::ifstream& File){
                 
                 case '4':
                     std::string Result = PostFixEval(Args.substr(2, Args.size()-2), Variables); 
-                    if(Result.find_first_of(".") == std::string::npos){
+                    if (Result.find_first_of(".") == std::string::npos)
+                    {
                         ConstantValueClass.ConstVariableType = 'N';
-                    } else{
+                    } 
+                    else
+                    {
                         ConstantValueClass.ConstVariableType = 'F';
                     }
                     break;
             }
-            if(Args[2] == '_' && Args[3] == '&'){ // Checks if variable is a copy of another
+            if ( // Checks if variable is a copy of another
+            (Args[2] == '_') && 
+            (Args[3] == '&')) 
+            { 
                 const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
                 const auto& CopiedVariable = *Variables[CopiedVariableName];
                 ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
             } 
-            else if(Args[0] == '4'){
+            else if (Args[0] == '4')
+            {
                 ConstantValueClass.Value = PostFixEval(Args.substr(2, Args.size()-2), Variables);
             }
-            else{
+            else
+            {
                 ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
             }
         }
 
-        else if(Command == "ASSIGN"){  
+        else if (Command == "ASSIGN")
+        {  
             Variables[std::string{Args}] = std::make_unique<Variable>(std::string{Args});
 
             auto& VariableBeingAssigned = *Variables[std::string{Args}];
             const auto& ConstantValueClass = dynamic_cast<Constant&>(*Variables["CONSTANT"]->ValueClass); // get the Constant object from the CONSTANT variable 
             
-            switch(ConstantValueClass.ConstVariableType){
+            switch (ConstantValueClass.ConstVariableType)
+            {
                 case 'N':
                     VariableBeingAssigned.ValueClass = std::make_unique<Int>(ConstantValueClass.Value);
                     break;
@@ -84,19 +99,22 @@ void ExecuteByteCode(std::ifstream& File){
             }
         }
 
-        else if(Command == "ECHO"){
+        else if (Command == "ECHO")
+        {
             const auto& EchoArgs = *Variables[std::string{Args}];
             RENDOR_ECHO_FUNCTION(EchoArgs.ValueClass->Value);
         }
 
-        else if(Command == "INCREMENT"){
+        else if (Command == "INCREMENT")
+        {
             auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
             int ValueOfVariable = IncrementedVariable.RetriveVariable();
             ++ValueOfVariable;
             IncrementedVariable.Value = std::to_string(ValueOfVariable);
         }
 
-        else if(Command == "DECREMENT"){
+        else if (Command == "DECREMENT")
+        {
             auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
             int ValueOfVariable = IncrementedVariable.RetriveVariable();
             --ValueOfVariable;
@@ -106,6 +124,7 @@ void ExecuteByteCode(std::ifstream& File){
     File.close();
 }
 
-void RENDOR_ECHO_FUNCTION(std::string_view EchoValue){
+void RENDOR_ECHO_FUNCTION (std::string_view EchoValue)
+{
     std::cout << EchoValue << std::endl;
 }
