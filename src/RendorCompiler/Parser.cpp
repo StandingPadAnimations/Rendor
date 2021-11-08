@@ -14,13 +14,15 @@ This way, the parser works as expected
 ----------------------------------------------------------------*/
 
 std::string ByteCodeGen (const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::map<std::string, char>& Variables);
-void SetVariable ( // ! This is way too many arguments
+void SetVariable // ! This is way too many arguments
+    ( 
     std::map<std::string, char>& Variables, 
     const std::string& value, AssignVariable& AssignmentNode, 
     const std::string& VariableName, 
     const std::vector<std::pair<Lex::Token, std::string>>& Tokens, 
     const unsigned int& TokenIndex, 
-    TempID& ParserTempID);
+    TempID& ParserTempID
+    );
 
 std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
 {
@@ -324,7 +326,8 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
 
 // This is made as a separate function to make the code easier to navagate
 // ! Arguments could be better handled 
-void SetVariable (
+void SetVariable 
+    (
     std::map<std::string, char>& Variables, 
     const std::string& value, AssignVariable& AssignmentNode, 
     const std::string& VariableName, 

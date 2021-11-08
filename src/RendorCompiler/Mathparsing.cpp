@@ -1,7 +1,7 @@
 #include "RendorCompiler/Mathparsing.hpp"
 
 // TODO: finish this lol
-std::string OperationToPostfix(std::string_view Operation){
+std::string OperationToPostfix (std::string_view Operation){
     std::list<std::string> Stack; // ? Perhaps a list would be better
     std::map<std::string, int> OperatorPresedence {{"^", 3}, {"*", 2}, {"/", 2}, {"+", 1}, {"-", 1},}; // based on PEMDAS
     std::string Output = "";
