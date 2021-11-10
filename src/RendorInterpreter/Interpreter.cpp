@@ -9,8 +9,6 @@ void ExecuteByteCode (std::ifstream& File)
 
     Variables["CONSTANT"] = std::make_unique<Variable>("CONSTANT");
     Variables["CONSTANT"]->ValueClass = std::make_unique<Constant>("NULL", '-');
-
-    std::string FastLoadedVariable = ""; // For variables that have been fast loaded
     
     for (std::string ByteCodeOperation; std::getline(File, ByteCodeOperation);)
     {
@@ -29,7 +27,7 @@ void ExecuteByteCode (std::ifstream& File)
             auto& ConstantVariable = *Variables["CONSTANT"];
             auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
             bool AlreadyHandled = false; // to prevent segementation fault errors that occur
-            
+
             switch (Args[0])
             {
                 case '0':
@@ -63,14 +61,19 @@ void ExecuteByteCode (std::ifstream& File)
             (Args[2] == '_') && 
             (Args[3] == '&')) 
             { 
-                if(AlreadyHandled){
+                const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
+
+                if(AlreadyHandled){ // to see if it was alreday added by the switch statement above
                     continue;
                 }
-                const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
-                const auto& CopiedVariable = (*Variables[CopiedVariableName]);
+                else if(Variables.count(CopiedVariableName) == 0){ // Checks if variable exists in the first place to avoid segementation fault errors
+                    throw error::RendorException((boost::format("Variable %s does not exist!") % CopiedVariableName).str());
+                }
+
+                const auto& CopiedVariable = (*Variables[CopiedVariableName]); // if above checks pass, then retrive variable from map
                 ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
             } 
-            else
+            else if(!AlreadyHandled)
             {
                 ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
             }
@@ -104,8 +107,8 @@ void ExecuteByteCode (std::ifstream& File)
 
         else if (Command == "ECHO")
         {
-            const auto& EchoArgs = *Variables[std::string{Args}];
-            RENDOR_ECHO_FUNCTION(EchoArgs.ValueClass->Value);
+            const auto& EchoArgs = (*Variables[std::string{Args}]);
+            RENDOR_ECHO_FUNCTION(EchoArgs.ValueClass->Value); 
         }
 
         else if (Command == "INCREMENT")

@@ -53,7 +53,7 @@ namespace Lex{
         Number,
         Comment,
         Rdef,
-        VariableDef
+        VariableDef,
     };
 
     enum class SpecificID{
@@ -65,7 +65,8 @@ namespace Lex{
         Int,
         Float,
         Increment,
-        Decrement
+        Decrement,
+        Bop
     };
 
     // Lexer Class 

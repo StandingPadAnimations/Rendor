@@ -92,7 +92,20 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             if (ParserTempID == TempID::ArithAssemble) // Assembles arithmethic operations until NEWLINE
             { 
                 auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                AssignmentNode.Value += " " + value;
+                switch (token)
+                {
+                    case Lex::Token::Int:
+                    case Lex::Token::Float:
+                        AssignmentNode.Value += " " + value;
+                        break; 
+                    
+                    case Lex::Token::VariableReference:
+                        AssignmentNode.Value += " " + (boost::format("_&%s") % value).str();
+                        break;
+
+                    default:
+                        throw error::RendorException((boost::format("Can not use %s in arithmethic operation; Line %s") % value % LineNumber).str());
+                }
             }
             else if (LastToken == Lex::Token::Variable)
             {

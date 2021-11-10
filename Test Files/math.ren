@@ -4,7 +4,9 @@
     // num = 1.2
     num = -1
     echo(num)
-    xd = num + 5
+    xd = 5 - num ^ 2
+    echo(xd)
+    xd = 2^2
     echo(xd)
     // num = 1.5-1 *6.0 
     // num = 1-1(9 / 3.9) - 1 

@@ -98,7 +98,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 switch (LineofCode[i])
                 {
                     case '\'': 
-                        SpecificTempID = SpecificID::CharSingle; // * SpecificTempID prevents strings from closing with the wrong char 
+                        SpecificTempID = SpecificID::CharSingle; // SpecificTempID prevents strings from closing with the wrong char 
                         break;
 
                     case '\"':
@@ -128,7 +128,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 Tokens.emplace_back(Token::Operator, TempString);
                 TempString = "";
 
-                // * To account for chars not being added when a operator is found
+                // To account for chars not being added when a operator is found
                 TempString.push_back(LineofCode[i]);
             }
 
@@ -138,14 +138,14 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             (LineofCode[i] == '/') && 
             (TempID != ID::Char))
             {
-                if (LineofCode[i+1] == '/') // * Comments
+                if (LineofCode[i+1] == '/') // Comments
                 { 
                     TempID = ID::Comment;
                     break;
                 } 
                 else
                 { // * Division 
-                    if (TempString.find_first_not_of("1234567890.") != std::string::npos) // * this checks TempString to see if there's a variable or number 
+                    if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
                     { 
 
                         Tokens.emplace_back(Token::BopVariableRef, TempString);
@@ -153,7 +153,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     } 
                     else
                     {
-                        if (TempString.find_first_of(".") != std::string::npos) // * to check if it's an int or float
+                        if (TempString.find_first_of(".") != std::string::npos) // to check if it's an int or float
                         { 
                             Tokens.emplace_back(Token::Float, TempString);
                         } 
@@ -168,7 +168,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     TempString.push_back(LineofCode[i]); // to get the operator
                     Tokens.emplace_back(Token::Bop, TempString);
                     TempString = ""; 
-                    SpecificTempID = SpecificID::None; // * To avoid issues with ints at the end of lines being assigned as floats and vice versa
+                    SpecificTempID = SpecificID::None; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
                 }
             }
 
@@ -276,7 +276,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     case '{':
                         switch (TempID)
                         {
-                            // * Whenever { is used outside of a string, TempID will always be ID::KeywordArgs or ID::Rdef
+                            // Whenever { is used outside of a string, TempID will always be ID::KeywordArgs or ID::Rdef
                             case ID::Rdef:
                             case ID::KeywordArgs:
                                 Tokens.emplace_back(Token::Bracket, "{");
@@ -295,7 +295,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 }
             }
 
-            // * Rendor -> Cpp Compiler Hints
+            // Rendor -> Cpp Compiler Hints
             else if (
             (LineofCode[i] == '~') &&
             (TempID != ID::Char))
@@ -499,7 +499,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     TempString.push_back(LineofCode[i]); // to get the operator
                     Tokens.emplace_back(Token::Bop, TempString);
                     TempString = ""; 
-                    SpecificTempID = SpecificID::None; // * To avoid issues with ints at the end of lines being assigned as floats and vice versa
+                    SpecificTempID = SpecificID::Bop; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
                 }
             }
             
@@ -528,6 +528,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
 
                             case SpecificID::Float:
                                 Tokens.emplace_back(Token::Float, TempString);
+                                break;
+
+                            case SpecificID::Bop:
+                                Tokens.emplace_back(Token::VariableReference, TempString);
                                 break;
 
                             default:
