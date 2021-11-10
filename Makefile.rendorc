@@ -2,7 +2,7 @@ CXX         := g++
 CXX_FLAGS   := -std=c++17 -Wall -Wfatal-errors
 
 BIN         := bin
-OBJDIR         := bin/RendorCompiler/ObjectFiles
+OBJDIR      := bin/RendorCompiler/ObjectFiles
 SRC         := src/RendorCompiler
 INCLUDE     := include
 LIBRARIES   := "C:/C++ Libaries/boost_1_77_0/stage/lib/"

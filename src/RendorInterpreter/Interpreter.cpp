@@ -28,6 +28,8 @@ void ExecuteByteCode (std::ifstream& File)
         { 
             auto& ConstantVariable = *Variables["CONSTANT"];
             auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
+            bool AlreadyHandled = false; // to prevent segementation fault errors that occur
+            
             switch (Args[0])
             {
                 case '0':
@@ -44,7 +46,7 @@ void ExecuteByteCode (std::ifstream& File)
                     break;
                 
                 case '4':
-                    std::string Result = PostFixEval(Args.substr(2, Args.size()-2), Variables); 
+                    const std::string Result = PostFixEval(Args.substr(2, Args.size()-2), Variables); 
                     if (Result.find_first_of(".") == std::string::npos)
                     {
                         ConstantValueClass.ConstVariableType = 'N';
@@ -53,20 +55,21 @@ void ExecuteByteCode (std::ifstream& File)
                     {
                         ConstantValueClass.ConstVariableType = 'F';
                     }
+                    ConstantValueClass.Value = Result;
+                    AlreadyHandled = true;
                     break;
             }
             if ( // Checks if variable is a copy of another
             (Args[2] == '_') && 
             (Args[3] == '&')) 
             { 
+                if(AlreadyHandled){
+                    continue;
+                }
                 const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
-                const auto& CopiedVariable = *Variables[CopiedVariableName];
+                const auto& CopiedVariable = (*Variables[CopiedVariableName]);
                 ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
             } 
-            else if (Args[0] == '4')
-            {
-                ConstantValueClass.Value = PostFixEval(Args.substr(2, Args.size()-2), Variables);
-            }
             else
             {
                 ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};

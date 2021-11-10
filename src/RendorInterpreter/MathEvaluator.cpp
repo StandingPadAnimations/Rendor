@@ -59,7 +59,7 @@ std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string
             (PartOfOperation[1] == '&'))
             {
                 const auto CopiedVariableName = PartOfOperation.substr(2, PartOfOperation.size()-2);
-                auto& CopiedVariable = *Variables[CopiedVariableName];
+                const auto& CopiedVariable = (*Variables[CopiedVariableName]);
                 if (
                 (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Int) &&
                 (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Float)
