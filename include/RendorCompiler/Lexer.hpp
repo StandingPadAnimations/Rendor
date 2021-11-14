@@ -4,8 +4,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
-#include <regex>
+#include <algorithm>
+#include <sstream>
+#include <functional>
+#include <string_view>
 
 #include "Exceptions.hpp"
 
@@ -44,8 +46,38 @@ namespace Lex{
     };
 
 
+    enum class ID{
+        None,
+        Char,
+        KeywordArgs,
+        Number,
+        Comment,
+        Rdef,
+        VariableDef,
+    };
+
+    enum class SpecificID{
+        None,
+        CharDouble,
+        CharSingle,
+        CharTilda,
+        ForwardSlash,
+        Int,
+        Float,
+        Increment,
+        Decrement,
+        Bop
+    };
+
     // Lexer Class 
     class Lexer{
+        private:
+            // * Keywords to check for 
+            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
+
+            // * Keywords to check for 
+            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
+
         public:            
             // * Tokenizes Lines of code from Rendor Files
             std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, std::string_view);
