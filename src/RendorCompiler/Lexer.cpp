@@ -8,7 +8,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
     std::vector<std::pair<Token, std::string>> Tokens;
     std::vector<std::pair<Token, std::string>> MainFunction;
     bool IsMainFunction = false;
-    
+    bool IsArith = false;
     unsigned int LineNumber = 0;
     unsigned int SkipCount = 0;
 
@@ -147,9 +147,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 { // * Division 
                     if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
                     { 
-
                         Tokens.emplace_back(Token::BopVariableRef, TempString);
-
                     } 
                     else
                     {
@@ -161,14 +159,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                         {
                             Tokens.emplace_back(Token::Int, TempString);
                         }
-
                     }
 
                     TempString = ""; 
                     TempString.push_back(LineofCode[i]); // to get the operator
                     Tokens.emplace_back(Token::Bop, TempString);
                     TempString = ""; 
-                    SpecificTempID = SpecificID::None; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
+                    SpecificTempID = SpecificID::Bop; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
                 }
             }
 
@@ -179,11 +176,28 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             (LineofCode[i] == '(') && 
             (TempID != ID::Char))
             {
-                if (std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) // keywords 
+                if(IsArith){
+                    if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
+                    { 
+                        Tokens.emplace_back(Token::BopVariableRef, TempString);
+                    } 
+                    else
+                    {
+                        if (TempString.find_first_of(".") != std::string::npos) // to check if it's an int or float
+                        { 
+                            Tokens.emplace_back(Token::Float, TempString);
+                        } 
+                        else
+                        {
+                            Tokens.emplace_back(Token::Int, TempString);
+                        }
+                    } 
+                }
+
+                else if (std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) // keywords 
                 { 
                     Tokens.emplace_back(Token::Keyword, TempString);
                     TempIDList.emplace_back(ID::KeywordArgs);
-                    TempString = "";
                 } 
                 else 
                 {
@@ -195,7 +209,6 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                         } 
                         else // clear TempString since we've used it
                         { 
-                            TempString = "";
                         }
                     } 
                     else
@@ -215,10 +228,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                                 Tokens.emplace_back(Token::Int, TempString);
                             }
                         }
-                        TempString = "";
                     }
                 }
                 Tokens.emplace_back(Token::Paren, "(");
+                TempString = "";
             }
 
             else if (
@@ -238,7 +251,6 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                         {
                             Tokens.emplace_back(Token::ArgumentObjects, TempString);
                         }
-                        Tokens.emplace_back(Token::Paren, ")");
                         break;
 
                     default:
@@ -258,10 +270,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                                 break;
                         }
                         TempString = "";
-                        Tokens.emplace_back(Token::Paren, ")");
                         SpecificTempID = SpecificID::None; // We already handle ints and floats here
                         break;
                 }
+                Tokens.emplace_back(Token::Paren, ")");
             }
 
             // Brackets
@@ -491,15 +503,19 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                             }
                         }
                     } 
+                    else if(Tokens.back().first == Lex::Token::Paren){
+                        // To prevent the code from going to else
+                    }
                     else
                     {
-                        throw error::RendorException((boost::format("Expected value in srithmethic operation; line %s") % std::to_string(LineNumber)).str());
+                        throw error::RendorException((boost::format("Expected value in arithmethic operation; line %s") % std::to_string(LineNumber)).str());
                     }
                     TempString = ""; 
                     TempString.push_back(LineofCode[i]); // to get the operator
                     Tokens.emplace_back(Token::Bop, TempString);
                     TempString = ""; 
                     SpecificTempID = SpecificID::Bop; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
+                    IsArith = true;
                 }
             }
             
@@ -562,6 +578,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     Tokens.emplace_back(Token::NewLine, "--NEWLINE--"); // to allow certain things in the parser like line numbers in errors
                     break;
             }
+            IsArith = false;
         }
     }
     return Tokens;
