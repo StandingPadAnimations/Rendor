@@ -45,30 +45,6 @@ namespace Lex{
         NewLine // 23
     };
 
-
-    enum class ID{
-        None,
-        Char,
-        KeywordArgs,
-        Number,
-        Comment,
-        Rdef,
-        VariableDef,
-    };
-
-    enum class SpecificID{
-        None,
-        CharDouble,
-        CharSingle,
-        CharTilda,
-        ForwardSlash,
-        Int,
-        Float,
-        Increment,
-        Decrement,
-        Bop
-    };
-
     // Lexer Class 
     class Lexer{
         private:
