@@ -39,7 +39,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     
     for (auto const& [token, value] : Tokens)
     {
-        std::cout << "Token: " << static_cast<std::underlying_type<Lex::ID>::type>(token) << " " << value << std::endl;
+        std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
         // Main Function 
         if (token == Lex::Token::EntryFunction)
         {
@@ -64,13 +64,25 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
         // Parens
         else if (token == Lex::Token::Paren)
         {
-            if (value == "(")
+            if (ParserTempID == TempID::ArithAssemble)
             {
-                InParen = true;
-            } 
-            else if (")")
+                auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
+
+                if (ParserTempID == TempID::ArithAssemble) // for arithmethic assembly
+                { 
+                    AssignmentNode.Value += " " + value;; // Add the value to variable
+                }
+            }
+            else
             {
-                InParen = false;
+                if (value == "(")
+                {
+                    InParen = true;
+                } 
+                else if (")")
+                {
+                    InParen = false;
+                }
             }
         }
         
@@ -266,7 +278,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 Type = "3";
                 break;
 
-            case VariableTypes::Arith:
+            case VariableTypes::Arith: 
                 Type = "4";
                 // return early because we need to convert to postfix notation
                 return (boost::format("CONST %s %s\nASSIGN %s") % Type % OperationToPostfix(AssignmentNode.Value) % AssignmentNode.VariableName).str();

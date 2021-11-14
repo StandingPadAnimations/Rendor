@@ -2,7 +2,7 @@
 
 void RENDOR_ECHO_FUNCTION (std::string_view EchoValue);
 
-void ExecuteByteCode (std::ifstream& File)
+void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 {
     std::map<std::string, std::unique_ptr<Variable>> Variables;
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)

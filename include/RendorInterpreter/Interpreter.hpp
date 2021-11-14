@@ -16,7 +16,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/finder.hpp>
 
-void ExecuteByteCode(std::ifstream& File);
+namespace engineinterpreter{
+    void ExecuteByteCode(std::ifstream& File);
+}
 
 
 #endif // INTERPRETER

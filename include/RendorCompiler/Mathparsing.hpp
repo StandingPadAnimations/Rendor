@@ -5,6 +5,7 @@
 #include <string_view>
 #include <list>
 #include <map>
+#include <stack>
 
 #include "Exceptions.hpp"
 

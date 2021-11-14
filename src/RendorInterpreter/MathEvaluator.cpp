@@ -49,7 +49,7 @@ std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string
             std::string Num2 = Stack.back();
             Stack.pop_back();
             std::string Num1 = Stack.back();
-            Stack.pop_back();
+            Stack.pop_back();  
             Stack.emplace_back(EvalNums(Num1, Num2, PartOfOperation));
         } 
         else
