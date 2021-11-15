@@ -71,13 +71,6 @@ namespace Lex{
 
     // Lexer Class 
     class Lexer{
-        private:
-            // * Keywords to check for 
-            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
-
-            // * Keywords to check for 
-            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
-
         public:            
             // * Tokenizes Lines of code from Rendor Files
             std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, std::string_view);
@@ -92,6 +85,13 @@ namespace Lex{
             explicit Lexer(const bool& CompileMode){
                 LexerCompileMode = CompileMode;
             };
+
+        private:
+            // * Keywords to check for 
+            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
+
+            // * Keywords to check for 
+            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
     };
 }
 #endif // * LEXER
