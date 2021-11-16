@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <sstream>
 #include <functional>
@@ -19,55 +20,43 @@
 namespace Lex{
     // Enum for tokens 
     enum class Token{
-        Import, // 0
-        PreProcessDefine, // 1
-        Comment, // 2
-        Int, // 3 
-        Float, // 4
-        String, // 5
-        Bool, // 6
-        Paren, // 7
-        Bracket, // 8
-        Operator, // 9
-        Keyword, // 10
-        Variable, // 11
-        FunctionCall, // 12
-        ComparisonObject, // 13
-        EntryFunction, // 14
-        EndOfProgram, // 15
-        ArgumentObjects, // 16
-        Bop, // 17
-        BopVariableRef, // 18
-        Increment, // 19
-        Decrement, // 20
-        CppCompileTypeHint, // 21
-        VariableReference, // 22
-        NewLine // 23
+        // Identifiers, symbols, and keywords
+        IDENTIFIER,
+        EQUAL,
+        LPAREN,
+        RPAREN,
+        LBRACE,
+        RBRACE,
+        KEYWORD,
+
+        // Variable Types
+        INT,
+        FLOAT
     };
 
     // Lexer Class 
     class Lexer{
-        private:
-            // * Keywords to check for 
-            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
-
-            // * Keywords to check for 
-            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
-
         public:            
-            // * Tokenizes Lines of code from Rendor Files
+            // Tokenizes Lines of code from Rendor Files
             std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, std::string_view);
 
-            // * Contains paths of imports to compile later 
+            // Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;
 
-            // * CompileVariable; Lexer changes behavior when in Cpp compile mode
+            // CompileVariable; Lexer changes behavior when in Cpp compile mode
             bool LexerCompileMode = false;
 
-            // * Constructer
+            // Constructer
             explicit Lexer(const bool& CompileMode){
                 LexerCompileMode = CompileMode;
             };
+            
+        private:
+            // Keywords to check for 
+            std::array<std::string, 5> Keywords {"while", "if", "return", "echo", "input"};
+
+            // Keywords to check for 
+            std::array<std::string, 8> Operators {"and", "or", "not", "is", "==", "!=", ">=", "<="};
     };
 }
 #endif // * LEXER
