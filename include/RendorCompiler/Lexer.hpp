@@ -20,14 +20,18 @@
 namespace Lex{
     // Enum for tokens 
     enum class Token{
-        // Identifiers, symbols, and keywords
+        // Identifiers, keywords, and functions
         IDENTIFIER,
+        BUILT_IN_FUNCTION,
+        KEYWORD,
+
+        // Symbols
         EQUAL,
         LPAREN,
         RPAREN,
         LBRACE,
         RBRACE,
-        KEYWORD,
+        NEWLINE,
 
         // Variable Types
         INT,
@@ -53,9 +57,11 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::array<std::string, 5> Keywords {"while", "if", "return", "echo", "input"};
+            std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "#rdef"};
 
-            // Keywords to check for 
+            std::array<std::string, 2> Functions {"echo", "input"};
+
+            // Operators to check for 
             std::array<std::string, 8> Operators {"and", "or", "not", "is", "==", "!=", ">=", "<="};
     };
 }
