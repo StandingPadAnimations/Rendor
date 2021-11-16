@@ -2,9 +2,7 @@
 
 void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 {
-    std::ifstream File(FileInput);
-    std::vector<std::string> ByteCode;
-    std::string AllCode;
+    
 
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
@@ -48,38 +46,42 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
             }
         }
     }
+
+    std::ifstream File(FileInput);
+    std::vector<std::string> ByteCode;
+    std::string AllCode;
     
+    {
+        for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
         {
-            for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
-            {
-                boost::algorithm::trim(PreProcessLine);
-                AllCode += PreProcessLine + "\n";
-            }
+            boost::algorithm::trim(PreProcessLine);
+            AllCode += PreProcessLine + ";";
         }
+
+
         // Tokenizes the AllCode string
+        Lex::Lexer RenLexer(CompileCppMode);
+        std::vector<std::pair<Lex::Token, std::string>> Tokens;
+        Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
+
+        // Parses
+        // ByteCode = Parser(Tokens); 
+
+        // // Adds it to output Cren File
+        // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+        // std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+        for (auto const& [token, value] : Tokens)
         {
-            Lex::Lexer RenLexer(CompileCppMode);
-            std::vector<std::pair<Lex::Token, std::string>> Tokens;
-            Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
-
-            // Parses
-            // ByteCode = Parser(Tokens); 
-
-            // // Adds it to output Cren File
-            // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            // std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
-            for (auto const& [token, value] : Tokens)
-            {
-                std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
-            }
+            std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
         }
-        if (DebugMode)
-        { 
-            std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
-            // for (auto const& command : ByteCode)
-            // {
-            //     std::cout << command << std::endl;
-            // }
-        }
+    }
+    if (DebugMode)
+    { 
+        std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
+        // for (auto const& command : ByteCode)
+        // {
+        //     std::cout << command << std::endl;
+        // }
+    }
     File.close();
 }
