@@ -32,10 +32,12 @@ namespace Lex{
         LBRACE = 6,
         RBRACE = 7,
         NEWLINE = 8, 
+        COMMA = 9,
 
         // Variable Types
-        INT = 9,
-        FLOAT = 10
+        INT = 10,
+        FLOAT = 11,
+        STRING = 12
     };
 
     // Lexer Class 
@@ -46,14 +48,6 @@ namespace Lex{
 
             // Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;
-
-            // CompileVariable; Lexer changes behavior when in Cpp compile mode
-            bool LexerCompileMode = false;
-
-            // Constructer
-            explicit Lexer(const bool& CompileMode){
-                LexerCompileMode = CompileMode;
-            };
             
         private:
             // Keywords to check for 
@@ -67,6 +61,7 @@ namespace Lex{
             enum class BufferID 
             {
                 None,
+                StringEnd,
                 CharSingle,
                 CharDouble,
                 CharTilda

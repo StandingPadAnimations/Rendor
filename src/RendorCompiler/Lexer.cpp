@@ -13,18 +13,25 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
         if 
         (((Code[Char] == ' ') ||
         (Code[Char] == ';')   ||
+        (Code[Char] == ',')   ||
         (Code[Char] == '(')   ||
         (Code[Char] == ')')   ||
         (Code[Char] == '{')   ||
         (Code[Char] == '}')   ||
         (Code[Char] == '='))  &&
-        (LexerBufferID == BufferID::None))
+        ((LexerBufferID == BufferID::None) ||
+        (LexerBufferID == BufferID::StringEnd)))
         {
             std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
 
-            if (Buffer.find_first_not_of(" (){}=;") == std::string::npos)
+            if (Buffer.find_first_not_of(" ;,(){}=") == std::string::npos)
             {
                 // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
+            }
+
+            else if (LexerBufferID == BufferID::StringEnd) 
+            {
+                LexerBufferID = BufferID::None; // resets BufferID when needed
             }
 
             // Keywords and functions
@@ -36,6 +43,18 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
             {
                 Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+            }
+
+            else if 
+            ((Buffer.find_last_not_of("1234567890") == std::string::npos) &&
+            (Buffer.find_last_not_of(".") == std::string::npos))
+            {
+                Tokens.emplace_back(Token::FLOAT, Buffer);
+            }
+
+            else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
+            {
+                Tokens.emplace_back(Token::INT, Buffer);
             }
 
             // Identifiers
@@ -51,6 +70,16 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             {
                 case ' ': 
                     break; // Point of lexer is to remove whitespace so parser has an easier time
+
+                case ';':
+                    Tokens.emplace_back(Token::NEWLINE, ";");
+                    ++StartIndex;
+                    break;
+
+                case ',':
+                    Tokens.emplace_back(Token::COMMA, ",");
+                    ++StartIndex;
+                    break;
 
                 case '(':
                     Tokens.emplace_back(Token::LPAREN, "(");
@@ -73,10 +102,6 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     Tokens.emplace_back(Token::EQUAL, "=");
                     break;
 
-                case ';':
-                    Tokens.emplace_back(Token::NEWLINE, ";");
-                    ++StartIndex;
-                    break;
             }
             
         }
@@ -103,10 +128,41 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                         LexerBufferID = BufferID::CharTilda;
                         break;
                 }
+                StartIndex = Code.find_first_not_of(' ', EndIndex);
             }
+
             else 
             {
+                char CharToCheck; // For checking matching char for closing string
+                switch (LexerBufferID){
+                    case BufferID::CharSingle:
+                        CharToCheck = '\'';
+                        break;
+                    
+                    case BufferID::CharDouble:
+                        CharToCheck = '"';
+                        break;
+
+                    case BufferID::CharTilda:
+                        CharToCheck = '`';
+                        break;
+                    
+                    default:
+                        break;
+                }
+
+                if (Code[Char] == CharToCheck)
+                {
+                    StartIndex = Code.find_first_not_of(CharToCheck, StartIndex); // To avoid tokenizing the ", ', or ` that starts a string
+                    std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+                    Tokens.emplace_back(Token::STRING, Buffer);
+                }
                 
+                else
+                {
+                    // Ignore 
+                }
+                LexerBufferID = BufferID::StringEnd;
             }
         }
         ++EndIndex;

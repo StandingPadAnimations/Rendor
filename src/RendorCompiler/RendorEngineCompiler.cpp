@@ -24,7 +24,6 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 
     // * Variables for command line arguments
     bool DebugMode = false;
-    bool CompileCppMode = false;
 
     if (argv[2] != NULL) // * for all arguments other then the file 
     { 
@@ -37,7 +36,6 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 
         else if (std::string(argv[2]) == "-cpp")
         {
-            CompileCppMode = true;
             if(
             (std::string(argv[3]) == "-debug") ||
             (std::string(argv[3]) == "-d"))
@@ -60,7 +58,7 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 
 
         // Tokenizes the AllCode string
-        Lex::Lexer RenLexer(CompileCppMode);
+        Lex::Lexer RenLexer;
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
         Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
