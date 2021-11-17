@@ -10,6 +10,7 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
     std::string AbsPathExt = AbsPath.extension().string();
     std::string AbsPathParentDir = AbsPath.parent_path().string();
     std::string AbsPathRenCache = AbsPathParentDir + "/.__rencache__";
+    std::ios_base::sync_with_stdio(false);
 
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
@@ -63,23 +64,31 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
         Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
         // Parses
-        // ByteCode = Parser(Tokens); 
+        ByteCode = Parser(Tokens); 
 
-        // // Adds it to output Cren File
-        // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-        // std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
-        for (auto const& [token, value] : Tokens)
+        // Adds it to output Cren File
+        if (ByteCode.size() > 0)
         {
-            std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+            std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+            for (auto const& Op : ByteCode)
+            {
+                CrenOutput << Op << std::endl;
+            }
         }
-    }
-    if (DebugMode)
-    { 
-        std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
-        // for (auto const& command : ByteCode)
-        // {
-        //     std::cout << command << std::endl;
-        // }
+    
+        if (DebugMode)
+        { 
+            std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
+            for (auto const& [token, value] : Tokens)
+            {
+                std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+            }
+            // for (auto const& command : ByteCode)
+            // {
+            //     std::cout << command << std::endl;
+            // }
+        }
     }
     File.close();
 }
