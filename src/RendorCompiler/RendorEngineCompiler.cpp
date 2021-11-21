@@ -84,10 +84,10 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
             {
                 std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
             }
-            // for (auto const& command : ByteCode)
-            // {
-            //     std::cout << command << std::endl;
-            // }
+            for (auto const& command : ByteCode)
+            {
+                std::cout << command << std::endl;
+            }
         }
     }
     File.close();

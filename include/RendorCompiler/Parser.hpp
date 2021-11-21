@@ -12,6 +12,8 @@
 
 #include <boost/format.hpp>
 
+using lt = Lex::Token;
+
 std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
 
 
@@ -29,7 +31,17 @@ enum class VariableTypes{
 
 enum class TempID{
     None,
-    ArithAssemble
+
+    // Definitions
+    ArithAssemble,
+    IdentifierDefinition,
+    VariableDefition,
+    FunctionDefiniton,
+    FunctionArgumentsDefinition,
+
+    // Function things
+    FunctionCall,
+    FunctionScope
 };
 
 enum class NodeType{
@@ -41,7 +53,9 @@ enum class NodeType{
     AssignVariable,
     RendorKeyWord,
     Increment,
-    Decrement
+    Decrement,
+    FunctionCall,
+    Edef,
 };
 
 struct Node{
@@ -60,19 +74,6 @@ struct Scope : Node{
     NodeType Type(){return NodeType::Scope;}
 };
 
-struct Rdef : Node{
-    Body MainFunctionBody;
-    NodeType Type(){return NodeType::Rdef;}
-};
-
-struct MarkRdef : Node{
-    NodeType Type(){return NodeType::MarkRdef;}
-};
-
-struct MarkGlobal : Node{
-    NodeType Type(){return NodeType::MarkGlobal;}
-};
-
 struct AssignVariable : Node{
     std::string VariableName;
     std::string Value;
@@ -89,6 +90,13 @@ struct RendorKeyWord : Node{
     NodeType Type(){return NodeType::RendorKeyWord;}
 };
 
+struct FunctionCall : Node{
+    std::string Function;
+    std::vector<std::string> Args;
+    explicit FunctionCall(std::string Function) : Function(Function){}
+    NodeType Type(){return NodeType::FunctionCall;}
+};
+
 struct Increment : Node{
     std::string Args;
     explicit Increment(std::string Args) : Args(Args){}
@@ -103,8 +111,16 @@ struct Decrement : Node{
 
 struct Main{
     Body Global;
-    Rdef MainFunction;
     std::vector<std::unique_ptr<Node>> *GlobalBody = &Global.ConnectedNodes;
-    std::vector<std::unique_ptr<Node>> *MainBody = &MainFunction.MainFunctionBody.ConnectedNodes;
+};
+
+struct Edef : Node{
+    std::string Name;
+    Body FunctionBody;
+    std::vector<std::string> Args;
+    std::vector<std::unique_ptr<Node>> *Body = &FunctionBody.ConnectedNodes;
+
+    explicit Edef(std::string Name) : Name(Name){}
+    NodeType Type(){return NodeType::Edef;}
 };
 #endif // * PARSER

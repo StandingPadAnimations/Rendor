@@ -10,8 +10,6 @@
 #include <functional>
 #include <string_view>
 
-#include "Exceptions.hpp"
-
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
@@ -37,7 +35,8 @@ namespace Lex{
         // Variable Types
         INT = 10,
         FLOAT = 11,
-        STRING = 12
+        STRING = 12,
+        BOOL = 13
     };
 
     // Lexer Class 

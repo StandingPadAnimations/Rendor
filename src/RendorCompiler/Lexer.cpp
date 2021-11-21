@@ -34,17 +34,19 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 LexerBufferID = BufferID::None; // resets BufferID when needed
             }
 
-            // Keywords and functions
+            // Keywords 
             else if (std::find(Keywords.begin(), Keywords.end(), Buffer) != Keywords.end()) // if it is a keyword
             {
                 Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
             }
             
+            // Functions
             else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
             {
                 Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
             }
 
+            // Floats 
             else if 
             ((Buffer.find_last_not_of("1234567890") == std::string::npos) &&
             (Buffer.find_last_not_of(".") == std::string::npos))
@@ -52,9 +54,18 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 Tokens.emplace_back(Token::FLOAT, Buffer);
             }
 
+            // Ints
             else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
             {
                 Tokens.emplace_back(Token::INT, Buffer);
+            }
+
+            // Booleans 
+            else if 
+            ((Buffer == "true") ||
+            (Buffer == "false"))
+            {
+                Tokens.emplace_back(Token::BOOL, Buffer);
             }
 
             // Identifiers

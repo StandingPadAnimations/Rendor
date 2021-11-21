@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors
+CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors -static
 
 BIN         := bin
 OBJDIR      := bin/RendorCompiler/ObjectFiles

@@ -1,6 +1,5 @@
 edef main()
 {
-    echo("Hello World")
-    echo('Hello World')
-    echo(`Hello World`)
+    world = "Hello World"
+    echo(world)
 }
