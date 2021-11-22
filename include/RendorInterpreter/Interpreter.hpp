@@ -15,6 +15,7 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/finder.hpp>
+#include <boost/circular_buffer.hpp>
 
 namespace engineinterpreter{
     void ExecuteByteCode(std::ifstream& File);

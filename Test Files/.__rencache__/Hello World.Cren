@@ -1,6 +1,6 @@
 0 LOAD 0
 5 DEFINE main
-10 CONST 0 Hello World
+10 CONST 2 Hello World
 15 ASSIGN world
 20 CALL echo
 25 CALL_ARG _&world

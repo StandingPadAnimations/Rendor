@@ -182,6 +182,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                     AssignmentNode.Value = value;
                     IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.VariableType = VariableTypes::Int;
                 }
                 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
@@ -200,6 +201,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                     AssignmentNode.Value = value;
                     IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.VariableType = VariableTypes::Float;
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
@@ -218,6 +220,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                     AssignmentNode.Value = value;
                     IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.VariableType = VariableTypes::String;
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
@@ -236,6 +239,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                     AssignmentNode.Value = value;
                     IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.VariableType = VariableTypes::Bool;
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
