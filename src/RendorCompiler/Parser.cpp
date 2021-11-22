@@ -267,26 +267,23 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
     //BYTECODE GENERATION-----------------------------------------------------------------------------------------------------
 
+    uint32_t ByteCodeNumber = 0;
 
     if (!IsScript)
     {
-        ByteCode.emplace_back("0 NOT_SCRIPT TRUE");
+        ByteCode.emplace_back((boost::format("%s NOT_SCRIPT TRUE") % ByteCodeNumber).str());
+        ByteCodeNumber += 5;
     }
 
-    uint32_t ByteCodeNumber = 0;
     ByteCode.emplace_back((boost::format("%s LOAD 0") % ByteCodeNumber).str()); // For Global Scope
-
     ByteCodeNumber += 5;
+
     for (const auto& Node : (*Script.GlobalBody))
     {
         ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
         ByteCodeNumber += 5;
     }
 
-    if (IsScript)
-    {
-        ByteCode.emplace_back("0 BEGIN_PROGRAM"); // Call main
-    }
     ByteCode.emplace_back("0 END 0"); // End Global Scope
 
     return ByteCode;
@@ -367,7 +364,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
             ByteCodeNumber += 5;
         }
 
-        return "FINALIZE_CALL";
+        return (boost::format("FINALIZE_CALL %s") % CallNode.Function).str();
     }
 
     return "ERROR";
