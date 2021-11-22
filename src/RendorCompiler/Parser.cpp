@@ -46,7 +46,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     {
         std::cout << "Token: " << static_cast<std::underlying_type<lt>::type>(token) << " " << value << std::endl;
         
-        std::vector<std::unique_ptr<Node>> *Scope = ScopeList.back();
+        std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
 
         switch (token)
         {
@@ -59,7 +59,9 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             // Functions and variables
             case lt::IDENTIFIER: // * user defined things 
             {
-                if (IdentifiersMap.find(value) == IdentifiersMap.end()) // if it's a new variable 
+                if 
+                ((IdentifiersMap.find(value) == IdentifiersMap.end()) &&
+                (ParserTempID == TempID::None)) // if it's a new variable 
                 {
                     ParserTempID = TempID::IdentifierDefinition;
                     IdentifiersMap[value] = 'N';
@@ -94,7 +96,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.emplace_back((boost::format("_&%s") % value).str()); // Add argument to Node
                 }
 
                 
@@ -262,6 +264,10 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
         }
     }
     
+
+    //BYTECODE GENERATION-----------------------------------------------------------------------------------------------------
+
+
     if (!IsScript)
     {
         ByteCode.emplace_back("0 NOT_SCRIPT TRUE");
@@ -277,8 +283,12 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
         ByteCodeNumber += 5;
     }
 
-    ByteCode.emplace_back("0 CALL main\nCALL_ARG \nFINALIZE_CALL"); // Call main
+    if (IsScript)
+    {
+        ByteCode.emplace_back("0 BEGIN_PROGRAM"); // Call main
+    }
     ByteCode.emplace_back("0 END 0"); // End Global Scope
+
     return ByteCode;
 }
 
@@ -315,18 +325,24 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 throw error::RendorException("Invalid node type; Assignment Variable Fail");
         }
 
-        return (boost::format("CONST %s %s\nASSIGN %s") % Type % AssignmentNode.Value % AssignmentNode.VariableName).str();
+        ByteCode.emplace_back((boost::format("%s CONST %s %s") % ByteCodeNumber % Type % AssignmentNode.Value).str());
+
+        ByteCodeNumber += 5;
+
+        return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
     else if (ClassType == NodeType::Edef)
     {
         auto& EdefNode = static_cast<Edef&>(*NodeClass); 
 
-        ByteCode.emplace_back((boost::format("DEFINE %s") % EdefNode.Name).str());
+        ByteCode.emplace_back((boost::format("%s DEFINE %s") % ByteCodeNumber % EdefNode.Name).str());
+        ByteCodeNumber += 5;
 
         for (const auto& Arg : EdefNode.Args) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("ARGUMENT %s") % Arg).str());
+            ByteCode.emplace_back((boost::format("%s ARGUMENT %s") % ByteCodeNumber % Arg).str());
+            ByteCodeNumber += 5;
         }
 
         for (const auto& Node : (*EdefNode.Body)) // actual body 
@@ -342,11 +358,13 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     {
         auto& CallNode = static_cast<FunctionCall&>(*NodeClass); 
 
-        ByteCode.emplace_back((boost::format("CALL %s") % CallNode.Function).str());
+        ByteCode.emplace_back((boost::format("%s CALL %s") % ByteCodeNumber % CallNode.Function).str());
+        ByteCodeNumber += 5;
 
         for (const auto& Arg : CallNode.Args) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("CALL_ARG %s") % Arg).str());
+            ByteCode.emplace_back((boost::format("%s CALL_ARG %s") % ByteCodeNumber % Arg).str());
+            ByteCodeNumber += 5;
         }
 
         return "FINALIZE_CALL";
