@@ -35,9 +35,6 @@ While the extension isn't required, it does make the code more readable in my op
 
 // Includes files needed for the main file
 
-
-// TODO: Make this more readable 
-// ! Make. It. Readable.
 #include <iostream>
 #include "RendorEngine.hpp"
 
