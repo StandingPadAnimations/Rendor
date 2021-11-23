@@ -20,5 +20,5 @@ Rendor is the successor to the EnderKnight programming language. It aims to fix 
 
 Officially this is called the Rendor Engine, named after the term render engine(since autocorrect always corrects Rendor to render)
 # Compiling requirements for building from source:
-* You have to compile using a C++17 compatible compiler. On Linux, Mac, and Windows(using gcc and make) you can use the make file 
+* You have to compile using a C++20 compatible compiler. On Linux, Mac, and Windows(using gcc and make) you can use the make file 
 * Boost 1.77 is a required dependency(You may need to edit the makefile's BOOSTFILE, BOOSTSYS, and LIBRARIES variables)

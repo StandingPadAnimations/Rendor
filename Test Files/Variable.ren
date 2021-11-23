@@ -1,4 +1,4 @@
-#rdef main(){
+edef main(){
     world = "Hello World"
     echo(world)
 
@@ -7,5 +7,10 @@
 
     num = world
     echo(num)
+
+    float = 1.0 
+    echo(float)
+
+    bool = true
+    echo(float)
 }
-#rdef_end

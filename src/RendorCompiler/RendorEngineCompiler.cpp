@@ -2,9 +2,7 @@
 
 void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 {
-    std::ifstream File(FileInput);
-    std::vector<std::string> ByteCode;
-    std::string AllCode;
+    
 
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
@@ -12,6 +10,7 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
     std::string AbsPathExt = AbsPath.extension().string();
     std::string AbsPathParentDir = AbsPath.parent_path().string();
     std::string AbsPathRenCache = AbsPathParentDir + "/.__rencache__";
+    std::ios_base::sync_with_stdio(false);
 
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
@@ -26,7 +25,6 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 
     // * Variables for command line arguments
     bool DebugMode = false;
-    bool CompileCppMode = false;
 
     if (argv[2] != NULL) // * for all arguments other then the file 
     { 
@@ -39,7 +37,6 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 
         else if (std::string(argv[2]) == "-cpp")
         {
-            CompileCppMode = true;
             if(
             (std::string(argv[3]) == "-debug") ||
             (std::string(argv[3]) == "-d"))
@@ -48,38 +45,51 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
             }
         }
     }
+
+    std::ifstream File(FileInput);
+    std::vector<std::string> ByteCode;
+    std::string AllCode;
     
+    {
+        for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
         {
-            for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
+            boost::algorithm::trim(PreProcessLine);
+            AllCode += PreProcessLine + ";";
+        }
+
+
+        // Tokenizes the AllCode string
+        Lex::Lexer RenLexer;
+        std::vector<std::pair<Lex::Token, std::string>> Tokens;
+        Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
+
+        // Parses
+        ByteCode = Parser(Tokens); 
+
+        // Adds it to output Cren File
+        if (ByteCode.size() > 0)
+        {
+            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+            std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+            for (auto const& Op : ByteCode)
             {
-                boost::algorithm::trim(PreProcessLine);
-                AllCode += PreProcessLine + "\n";
+                CrenOutput << Op << std::endl;
             }
         }
-        // Tokenizes the AllCode string
-        {
-            Lex::Lexer RenLexer(CompileCppMode);
-            std::vector<std::pair<Lex::Token, std::string>> Tokens;
-            Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
-
-            // Parses
-            // ByteCode = Parser(Tokens); 
-
-            // // Adds it to output Cren File
-            // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            // std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+    
+        if (DebugMode)
+        { 
+            std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
             for (auto const& [token, value] : Tokens)
             {
                 std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
             }
+            std::cout << " " << std::endl;
+            for (auto const& command : ByteCode)
+            {
+                std::cout << command << std::endl;
+            }
         }
-        if (DebugMode)
-        { 
-            std::cout << "----------------------------DEBUG MODE----------------------------" << std::endl;
-            // for (auto const& command : ByteCode)
-            // {
-            //     std::cout << command << std::endl;
-            // }
-        }
+    }
     File.close();
 }

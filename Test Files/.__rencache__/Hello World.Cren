@@ -1,0 +1,9 @@
+0 LOAD 0
+1 DEFINE main
+2 CONST 2 Hello World
+3 ASSIGN world
+4 CALL echo
+5 CALL_ARG _&world
+6 FINALIZE_CALL echo
+7 FUNCTION END
+0 END 0
