@@ -48,8 +48,8 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
 
             // Floats 
             else if 
-            ((Buffer.find_last_not_of("1234567890") == std::string::npos) &&
-            (Buffer.find_last_not_of(".") == std::string::npos))
+            ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
+            (Buffer.find_first_of(".") != std::string::npos))
             {
                 Tokens.emplace_back(Token::FLOAT, Buffer);
             }

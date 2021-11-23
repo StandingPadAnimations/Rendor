@@ -276,16 +276,16 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     if (!IsScript)
     {
         ByteCode.emplace_back((boost::format("%s NOT_SCRIPT TRUE") % ByteCodeNumber).str());
-        ByteCodeNumber += 5;
+        ++ByteCodeNumber;
     }
 
     ByteCode.emplace_back((boost::format("%s LOAD 0") % ByteCodeNumber).str()); // For Global Scope
-    ByteCodeNumber += 5;
+    ++ByteCodeNumber;
 
     for (const auto& Node : (*Script.GlobalBody))
     {
         ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
-        ByteCodeNumber += 5;
+        ++ByteCodeNumber;
     }
 
     ByteCode.emplace_back("0 END 0"); // End Global Scope
@@ -328,7 +328,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
 
         ByteCode.emplace_back((boost::format("%s CONST %s %s") % ByteCodeNumber % Type % AssignmentNode.Value).str());
 
-        ByteCodeNumber += 5;
+        ++ByteCodeNumber;
 
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
@@ -338,18 +338,18 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
         auto& EdefNode = static_cast<Edef&>(*NodeClass); 
 
         ByteCode.emplace_back((boost::format("%s DEFINE %s") % ByteCodeNumber % EdefNode.Name).str());
-        ByteCodeNumber += 5;
+        ++ByteCodeNumber;
 
         for (const auto& Arg : EdefNode.Args) // Arguments 
         {
             ByteCode.emplace_back((boost::format("%s ARGUMENT %s") % ByteCodeNumber % Arg).str());
-            ByteCodeNumber += 5;
+            ++ByteCodeNumber;
         }
 
         for (const auto& Node : (*EdefNode.Body)) // actual body 
         {
             ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
-            ByteCodeNumber += 5;
+            ++ByteCodeNumber;
         }
 
         return "FUNCTION END";
@@ -360,12 +360,12 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
         auto& CallNode = static_cast<FunctionCall&>(*NodeClass); 
 
         ByteCode.emplace_back((boost::format("%s CALL %s") % ByteCodeNumber % CallNode.Function).str());
-        ByteCodeNumber += 5;
+        ++ByteCodeNumber;
 
         for (const auto& Arg : CallNode.Args) // Arguments 
         {
             ByteCode.emplace_back((boost::format("%s CALL_ARG %s") % ByteCodeNumber % Arg).str());
-            ByteCodeNumber += 5;
+            ++ByteCodeNumber;
         }
 
         return (boost::format("FINALIZE_CALL %s") % CallNode.Function).str();

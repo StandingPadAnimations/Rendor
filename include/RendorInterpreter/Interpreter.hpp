@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 #include <functional>
+#include <optional>
 
 #include "Exceptions.hpp"
 
