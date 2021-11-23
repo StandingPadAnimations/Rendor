@@ -352,7 +352,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
             ByteCodeNumber += 5;
         }
 
-        return "SCOPE END";
+        return "FUNCTION END";
     }
 
     else if (ClassType == NodeType::FunctionCall)

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
+#include <functional>
 
 #include "Exceptions.hpp"
 
