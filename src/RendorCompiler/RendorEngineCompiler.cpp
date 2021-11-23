@@ -2,8 +2,6 @@
 
 void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
 {
-    
-
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
     bfs::path AbsPath(FileInput);

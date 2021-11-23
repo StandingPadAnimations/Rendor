@@ -2,4 +2,6 @@ edef main()
 {
     world = "Hello World"
     echo(world)
+
+    echo("LOL")
 }

@@ -65,13 +65,6 @@ namespace Lex{
                 CharDouble,
                 CharTilda
             };
-
-        private:
-            // * Keywords to check for 
-            std::string Keywords[5] {"while", "if", "return", "echo", "input"};
-
-            // * Keywords to check for 
-            std::string Operators[8] {"and", "or", "not", "is", "==", "!=", ">=", "<="};
     };
 }
 #endif // * LEXER
