@@ -1,585 +1,182 @@
 #include "RendorCompiler/Lexer.hpp"
 using namespace Lex;
 
-// TODO: Improve readability
-std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& Code, std::string_view ParentPath){ // ? Perhaps string_view be used over const std::string&
-    std::stringstream ss(Code);
-    std::string LineofCode;
+std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& Code, std::string_view ParentPath){
     std::vector<std::pair<Token, std::string>> Tokens;
-    std::vector<std::pair<Token, std::string>> MainFunction;
-    bool IsMainFunction = false;
-    bool IsArith = false;
-    unsigned int LineNumber = 0;
-    unsigned int SkipCount = 0;
+    BufferID LexerBufferID = BufferID::None;
+    size_t StartIndex = 0;
+    size_t EndIndex = 0;
 
-    while (std::getline(ss, LineofCode)) // TODO: This could definitely be improved. stringstreams take a lot of memory
+    for (size_t Char = 0; Char < Code.size(); ++Char)
     { 
-        ++LineNumber;
-        std::vector<ID> TempIDList {ID::None};
-        SpecificID SpecificTempID = SpecificID::None; 
-        std::string TempString = "";
-        ID TempID;
-
-        for (size_t i = 0; i < LineofCode.size(); ++i)
+        // When we come across a space, symbol, or newline
+        if 
+        (((Code[Char] == ' ') ||
+        (Code[Char] == ';')   ||
+        (Code[Char] == ',')   ||
+        (Code[Char] == '(')   ||
+        (Code[Char] == ')')   ||
+        (Code[Char] == '{')   ||
+        (Code[Char] == '}')   ||
+        (Code[Char] == '='))  &&
+        ((LexerBufferID == BufferID::None) ||
+        (LexerBufferID == BufferID::StringEnd)))
         {
-            TempID = TempIDList.back();
+            std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
 
-            if (SkipCount > 0)
-            { 
-                --SkipCount;
-                continue;
+            if (Buffer.find_first_not_of(" ;,(){}=") == std::string::npos)
+            {
+                // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
             }
 
-            // Processing for strings
-            else if (TempID == ID::Char) // TODO: Add variable strings. Syntax could be v"blah blah {random_variable} blah blah"
-            { 
-                switch (LineofCode[i])
-                {
-                    case '\"': // When it encounters a " char
-                        switch (SpecificTempID)
-                        {
-                            case SpecificID::CharDouble:
-                                Tokens.emplace_back(Token::String, TempString);
-                                TempIDList.pop_back();
-                                TempString = "";
-                                break;
-                            
-                            default:
-                                TempString.push_back(LineofCode[i]);
-                        }
-                        break;
+            else if (LexerBufferID == BufferID::StringEnd) 
+            {
+                LexerBufferID = BufferID::None; // resets BufferID when needed
+            }
 
-                    case '\'': // When it encounters a ' char
-                        switch (SpecificTempID)
-                        {
-                            case SpecificID::CharSingle:
-                                Tokens.emplace_back(Token::String, TempString);
-                                TempIDList.pop_back();
-                                TempString = "";
-                                break;
-                            
-                            default:
-                                TempString.push_back(LineofCode[i]);
-                        }
-                        break;
-
-                    case '`': // When it encounters a ` char
-                        switch (SpecificTempID)
-                        {
-                            case SpecificID::CharTilda:
-                                Tokens.emplace_back(Token::String, TempString);
-                                TempIDList.pop_back();
-                                TempString = "";
-                                break;
-                            
-                            default:
-                                TempString.push_back(LineofCode[i]);
-                        }
-                        break;
-
-                    default: // Otherwise
-                        TempString.push_back(LineofCode[i]);
-                }
+            // Keywords 
+            else if (std::find(Keywords.begin(), Keywords.end(), Buffer) != Keywords.end()) // if it is a keyword
+            {
+                Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
             }
             
-            // Checks for beginning and end of a string
-            else if (
-                ((LineofCode[i] == '\"') || 
-                (LineofCode[i] == '\'') || 
-                (LineofCode[i] == '`')) && 
-                ((TempID == ID::None) || 
-                (TempID == ID::KeywordArgs) || 
-                (TempID == ID::VariableDef)))
+            // Functions
+            else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
+            {
+                Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+            }
+
+            // Floats 
+            else if 
+            ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
+            (Buffer.find_first_of(".") != std::string::npos))
+            {
+                Tokens.emplace_back(Token::FLOAT, Buffer);
+            }
+
+            // Ints
+            else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
+            {
+                Tokens.emplace_back(Token::INT, Buffer);
+            }
+
+            // Booleans 
+            else if 
+            ((Buffer == "true") ||
+            (Buffer == "false"))
+            {
+                Tokens.emplace_back(Token::BOOL, Buffer);
+            }
+
+            // Identifiers
+            else 
+            {
+                Tokens.emplace_back(Token::IDENTIFIER, std::string{Buffer});
+            }
+
+            StartIndex = Code.find_first_not_of(' ', EndIndex);
+
+            // Tokenizing the characthers we stop on 
+            switch (Code[Char])
+            {
+                case ' ': 
+                    break; // Point of lexer is to remove whitespace so parser has an easier time
+
+                case ';':
+                    Tokens.emplace_back(Token::NEWLINE, ";");
+                    ++StartIndex;
+                    break;
+
+                case ',':
+                    Tokens.emplace_back(Token::COMMA, ",");
+                    ++StartIndex;
+                    break;
+
+                case '(':
+                    Tokens.emplace_back(Token::LPAREN, "(");
+                    ++StartIndex;
+                    break;
+
+                case ')':
+                    Tokens.emplace_back(Token::RPAREN, ")");
+                    break;
+
+                case '{':
+                    Tokens.emplace_back(Token::LBRACE, "{");
+                    break;
+
+                case '}':
+                    Tokens.emplace_back(Token::RBRACE, "}");
+                    break;
+
+                case '=':
+                    Tokens.emplace_back(Token::EQUAL, "=");
+                    break;
+
+            }
+            
+        }
+
+        // quotes 
+        else if 
+        ((Code[Char] == '\'') ||
+        (Code[Char] == '"')  ||
+        (Code[Char] == '`'))
+        {
+            if (LexerBufferID == BufferID::None) // Start of a string 
+            {
+                switch (Code[Char])
                 {
-                TempIDList.emplace_back(ID::Char);
-                TempString = "";
-
-                // * Defines what should end string
-                switch (LineofCode[i])
-                {
-                    case '\'': 
-                        SpecificTempID = SpecificID::CharSingle; // SpecificTempID prevents strings from closing with the wrong char 
+                    case '\'':
+                        LexerBufferID = BufferID::CharSingle;
                         break;
-
-                    case '\"':
-                        SpecificTempID = SpecificID::CharDouble;
+                    
+                    case '"':
+                        LexerBufferID = BufferID::CharDouble;
                         break;
-
+                        
                     case '`':
-                        SpecificTempID = SpecificID::CharTilda;
+                        LexerBufferID = BufferID::CharTilda;
                         break;
                 }
+                StartIndex = Code.find_first_not_of(' ', EndIndex);
             }
 
-            // Spaces in places other then strings 
-            else if (
-            (LineofCode[i] == ' ') &&
-            (TempID != ID::Char))
+            else 
             {
-                continue;
-            }
-
-            // Checks for operators
-            else if (
-            (std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators)) && 
-            (TempID == ID::KeywordArgs)
-            )
-            {
-                Tokens.emplace_back(Token::Operator, TempString);
-                TempString = "";
-
-                // To account for chars not being added when a operator is found
-                TempString.push_back(LineofCode[i]);
-            }
-
-            // Comments and division
-            // TODO: Add multiline comments
-            else if (
-            (LineofCode[i] == '/') && 
-            (TempID != ID::Char))
-            {
-                if (LineofCode[i+1] == '/') // Comments
-                { 
-                    TempID = ID::Comment;
-                    break;
-                } 
-                else
-                { // * Division 
-                    if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
-                    { 
-                        Tokens.emplace_back(Token::BopVariableRef, TempString);
-                    } 
-                    else
-                    {
-                        if (TempString.find_first_of(".") != std::string::npos) // to check if it's an int or float
-                        { 
-                            Tokens.emplace_back(Token::Float, TempString);
-                        } 
-                        else
-                        {
-                            Tokens.emplace_back(Token::Int, TempString);
-                        }
-                    }
-
-                    TempString = ""; 
-                    TempString.push_back(LineofCode[i]); // to get the operator
-                    Tokens.emplace_back(Token::Bop, TempString);
-                    TempString = ""; 
-                    SpecificTempID = SpecificID::Bop; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
-                }
-            }
-
-            // Checks for parens
-            // ! Parens don't operate well for math operations
-            // TODO: Fix paren code for math 
-            else if (
-            (LineofCode[i] == '(') && 
-            (TempID != ID::Char))
-            {
-                if(IsArith){
-                    if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
-                    { 
-                        Tokens.emplace_back(Token::BopVariableRef, TempString);
-                    } 
-                    else
-                    {
-                        if (TempString.find_first_of(".") != std::string::npos) // to check if it's an int or float
-                        { 
-                            Tokens.emplace_back(Token::Float, TempString);
-                        } 
-                        else
-                        {
-                            Tokens.emplace_back(Token::Int, TempString);
-                        }
-                    } 
-                }
-
-                else if (std::find(std::begin(Keywords), std::end(Keywords), TempString) != std::end(Keywords)) // keywords 
-                { 
-                    Tokens.emplace_back(Token::Keyword, TempString);
-                    TempIDList.emplace_back(ID::KeywordArgs);
-                } 
-                else 
-                {
-                    if (TempID == ID::Rdef) // rdef
-                    {
-                        if (TempString != "rdefmain") // if the main function isn't #rdef main
-                        { 
-                            throw error::RendorException((boost::format("rdef defined without the name main on line %s") % LineNumber).str());
-                        } 
-                        else // clear TempString since we've used it
-                        { 
-                        }
-                    } 
-                    else
-                    {
-                        if (TempString.find_first_not_of("1234567890.") != std::string::npos) // this checks TempString to see if there's a variable or number 
-                        { 
-                            Tokens.emplace_back(Token::BopVariableRef, TempString);
-                        } 
-                        else
-                        {
-                            if (TempString.find_first_of(".") != std::string::npos) // to check if it's an int or float
-                            { 
-                                Tokens.emplace_back(Token::Float, TempString);
-                            } 
-                            else
-                            {
-                                Tokens.emplace_back(Token::Int, TempString);
-                            }
-                        }
-                    }
-                }
-                Tokens.emplace_back(Token::Paren, "(");
-                TempString = "";
-            }
-
-            else if (
-            (LineofCode[i] == ')') && 
-            (TempID != ID::Char))
-            {
-                // TODO: Make this better
-                switch (TempID)
-                {
-                    case ID::KeywordArgs:
-                        if (TempString.size() == 0)
-                        { 
-                            auto& LastToken = Tokens.back();
-                            LastToken.first = Token::ArgumentObjects;
-                        } 
-                        else
-                        {
-                            Tokens.emplace_back(Token::ArgumentObjects, TempString);
-                        }
+                char CharToCheck; // For checking matching char for closing string
+                switch (LexerBufferID){
+                    case BufferID::CharSingle:
+                        CharToCheck = '\'';
                         break;
-
-                    default:
-                        switch (SpecificTempID) // To check for ints and floats that already exist in the code
-                        { 
-                            case SpecificID::Int:
-                                Tokens.emplace_back(Token::Int, TempString);
-                                TempIDList.pop_back();
-                                break;
-
-                            case SpecificID::Float:
-                                Tokens.emplace_back(Token::Float, TempString);
-                                TempIDList.pop_back();
-                                break;
-
-                            default:
-                                break;
-                        }
-                        TempString = "";
-                        SpecificTempID = SpecificID::None; // We already handle ints and floats here
-                        break;
-                }
-                Tokens.emplace_back(Token::Paren, ")");
-            }
-
-            // Brackets
-            // TODO: Make sure this works with new Paren code when it's done 
-            else if (
-                ((LineofCode[i] == '{') || 
-                (LineofCode[i] == '}')) && 
-            (TempID != ID::Char))
-            {
-                switch (LineofCode[i])
-                {
-                    case '{':
-                        switch (TempID)
-                        {
-                            // Whenever { is used outside of a string, TempID will always be ID::KeywordArgs or ID::Rdef
-                            case ID::Rdef:
-                            case ID::KeywordArgs:
-                                Tokens.emplace_back(Token::Bracket, "{");
-                                TempIDList.pop_back();
-                                TempString = "";
-                                break;
-                            
-                            default:
-                                throw error::RendorException((boost::format("Random { found on line %s") % LineNumber).str());
-                        }
-                        break;
-
-                    case '}':
-                        Tokens.emplace_back(Token::Bracket, "}");
-                        break;
-                }
-            }
-
-            // Rendor -> Cpp Compiler Hints
-            else if (
-            (LineofCode[i] == '~') &&
-            (TempID != ID::Char))
-            {
-                if (LexerCompileMode)
-                {
-                    Tokens.emplace_back(Token::CppCompileTypeHint, LineofCode);
-                    break;
-                } 
-                else 
-                {
-                    break;
-                }
-            }
-
-            // Preprocessor definitions 
-            // TODO: Make this easier to read for the love of God
-            // ? Things here could be optimized better, esspecially for import paths 
-            else if(
-            (LineofCode[i] == '#') && 
-            (TempID != ID::Char))
-            {
-                size_t IndexofSpace = LineofCode.find_first_of(' ');
-                std::string PreProcessFunctionName = LineofCode.substr(0, IndexofSpace);
-
-                if (PreProcessFunctionName == "#rdef")
-                {
-                    IsMainFunction = true;
-                    Tokens.emplace_back(Token::EntryFunction, "MainStart");
-                    TempIDList.emplace_back(ID::KeywordArgs);
-                    TempIDList.emplace_back(ID::Rdef);
-                }
-                
-                else if (PreProcessFunctionName == "#rdef_end")
-                {
-                    if (IsMainFunction)
-                    { 
-                        IsMainFunction = false;
-                    } 
-                    else
-                    {
-                        throw error::RendorException((boost::format("End of main function found without declaration of the beggining; Line %s") % LineNumber).str());
-                    }
-                    Tokens.emplace_back(Token::EndOfProgram, "MainEnd");
-                }
-
-                else if (PreProcessFunctionName == "#import")
-                {
-                    // TODO: Improve getting the import, this sucks
-                    // ! This sucks so much I have to add this. Do better next time future me
-                    size_t IndexOfImportString = LineofCode.find_first_of("\""); 
-                    size_t IndexOfImportStringEnd = LineofCode.find_last_of("\"");
-                    std::string FileImport = LineofCode.substr(IndexOfImportString, IndexOfImportStringEnd);
-
-                    FileImport.erase(std::remove(FileImport.begin(), FileImport.end(), '\"'), FileImport.end());
-                    std::string ImportPath = (boost::format("%s/%s.ren") % ParentPath % FileImport).str();
                     
-                    if (boost::filesystem::exists(ImportPath))
-                    {
-                        boost::filesystem::path PathofImport(ImportPath); // ? Is there a way to get the file path without creating a new boost::filesystem::path object?
-                        Tokens.emplace_back(Token::Import, PathofImport.string());
-                        Imports.emplace_back(PathofImport);
-                    }
-                    else
-                    {
-                        throw error::RendorException((boost::format("Can't import non-existent file; Line %s") % LineNumber).str());
-                    }
-                    break;
-                }
-            }
-            
-            // TODO: Improve this to make operators work better. It would also be nice to have stuff like if(!random_booL) as an option in Rendor
-            // For if statement operators 
-            else if( 
-                ((LineofCode[i] == '=') || 
-                (LineofCode[i] == '!') || 
-                (LineofCode[i] == '>') ||
-                (LineofCode[i] == '<')) && 
-            (TempID == ID::KeywordArgs))
-            {
-                if (TempString.find_first_not_of("=!><") == std::string::npos)
-                {
-                    TempString.push_back(LineofCode[i]);
-                    if (std::find(std::begin(Operators), std::end(Operators), TempString) != std::end(Operators))
-                    {
-                        Tokens.emplace_back(Token::Operator, TempString);
-                        TempString = "";
-                    }
-                } 
-                else
-                {
-                    Tokens.emplace_back(Token::ComparisonObject, TempString);
-                    TempString = "";
-                    TempString.push_back(LineofCode[i]);
-                }
-            }
+                    case BufferID::CharDouble:
+                        CharToCheck = '"';
+                        break;
 
-            // For variable assignment. It's more readable like this. 
-            else if (
-            (LineofCode[i] == '=') && 
-            (TempID == ID::None))
-            { 
-                if (TempString.find_first_of("&") != std::string::npos)
-                {
-                    std::cout << (boost::format("WARNING: & found in variable on line %s; May caused undefined behavior at runtime") % std::to_string(LineNumber)).str() << std::endl;
-                }
-                Tokens.emplace_back(Token::Variable, TempString);
-                TempIDList.emplace_back(ID::VariableDef);
-                TempID = TempIDList.back();
-                TempString = "";
-            }
-
-            // ints and floats
-            else if( 
-                ((std::isdigit(LineofCode[i])) || 
-                ((LineofCode[i] == '.') && // * TempID should be ID::Number when it encounters a . in a float
-                (TempID == ID::Number))) && // ? this is to avoid future chain function calls from being assigned as floats but I feel like I could do better
-            (TempID != ID::Char))
-            {
-                TempIDList.emplace_back(ID::Number);
-                TempID = TempIDList.back();
-                TempString.push_back(LineofCode[i]);
-
-                switch (LineofCode[i])
-                {
-                    case '.':
-                        SpecificTempID = SpecificID::Float;
+                    case BufferID::CharTilda:
+                        CharToCheck = '`';
                         break;
                     
                     default:
-                        switch (SpecificTempID)
-                        {
-                            case SpecificID::Int:
-                            case SpecificID::Float:
-                                break;
-                            
-                            default:
-                                SpecificTempID = SpecificID::Int;
-                        }
+                        break;
                 }
-            }
-            
-            // Binary operators
-            else if (
-            (LineofCode[i] == '^') ||
-            (LineofCode[i] == '*') || 
-            (LineofCode[i] == '+') ||
-            (LineofCode[i] == '-'))
-            {
-                if ( // Negative numbers
-                (LineofCode[i] == '-') &&
-                (TempID != ID::Number) &&
-                (TempString.size() == 0)
-                )
+
+                if (Code[Char] == CharToCheck)
                 {
-                    TempString.push_back(LineofCode[i]);
+                    StartIndex = Code.find_first_not_of(CharToCheck, StartIndex); // To avoid tokenizing the ", ', or ` that starts a string
+                    std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+                    Tokens.emplace_back(Token::STRING, Buffer);
                 }
-                else if ( // Increment
-                    ((LineofCode[i] == '+') && 
-                    (LineofCode[i+1] == '+'))
-                )
-                {
-                    SpecificTempID = SpecificID::Increment;
-                    ++SkipCount;
-                    continue;
-                }
-                else if ( // Decrement
-                    ((LineofCode[i] == '-') &&
-                    (LineofCode[i+1] == '-'))
-                )
-                {
-                    SpecificTempID = SpecificID::Increment;
-                    ++SkipCount;
-                    continue;
-                }
-                else
-                { // Everything else
-                    if (TempString.size() > 0)
-                    {
-                        if (TempString.find_first_not_of("1234567890.-") != std::string::npos)
-                        {
-                            Tokens.emplace_back(Token::VariableReference, TempString);
-                        }
-                        else
-                        {
-                            if (TempString.find_first_of(".") != std::string::npos)
-                            {
-                                Tokens.emplace_back(Token::Float, TempString);
-                            } 
-                            else
-                            {
-                                Tokens.emplace_back(Token::Int, TempString);
-                            }
-                        }
-                    } 
-                    else if(Tokens.back().first == Lex::Token::Paren){
-                        // To prevent the code from going to else
-                    }
-                    else
-                    {
-                        throw error::RendorException((boost::format("Expected value in arithmethic operation; line %s") % std::to_string(LineNumber)).str());
-                    }
-                    TempString = ""; 
-                    TempString.push_back(LineofCode[i]); // to get the operator
-                    Tokens.emplace_back(Token::Bop, TempString);
-                    TempString = ""; 
-                    SpecificTempID = SpecificID::Bop; // To avoid issues with ints at the end of lines being assigned as floats and vice versa
-                    IsArith = true;
-                }
-            }
-            
-            else
-            {
-                // * Push chars in a temporary string
-                TempString.push_back(LineofCode[i]);
-            }
-        
-        }
-
-        // Extra tokens not handled earlier
-        // ? I feel like this could be made better 
-        if (TempID != ID::Comment)
-        {
-            switch (TempID)
-            {
-                case ID::Number:
-                    if (TempString.size() > 0) // if there actually is anything worth tokenizing 
-                    { 
-                        switch (SpecificTempID)
-                        {
-                            case SpecificID::Int:
-                                Tokens.emplace_back(Token::Int, TempString);
-                                break;
-
-                            case SpecificID::Float:
-                                Tokens.emplace_back(Token::Float, TempString);
-                                break;
-
-                            case SpecificID::Bop:
-                                Tokens.emplace_back(Token::VariableReference, TempString);
-                                break;
-
-                            default:
-                                break;
-                        }
-                    }
-                    Tokens.emplace_back(Token::NewLine, "--NEWLINE--"); // to allow certain things in the parser like line numbers in errors
-                    break;
                 
-                case ID::VariableDef:
-                    Tokens.emplace_back(Token::VariableReference, TempString);
-                    break;
-
-                default: // Increment amd Decrement handling
-                    switch (SpecificTempID)
-                    {
-                        case SpecificID::Increment:
-                            Tokens.emplace_back(Token::Increment, TempString);
-                            break;
-
-                        case SpecificID::Decrement:
-                            Tokens.emplace_back(Token::Decrement, TempString);
-                            break;
-
-                        default:
-                            break;
-                    }
-                    Tokens.emplace_back(Token::NewLine, "--NEWLINE--"); // to allow certain things in the parser like line numbers in errors
-                    break;
+                else
+                {
+                    // Ignore 
+                }
+                LexerBufferID = BufferID::StringEnd;
             }
-            IsArith = false;
         }
+        ++EndIndex;
     }
-    return Tokens;
+    return Tokens; 
 }

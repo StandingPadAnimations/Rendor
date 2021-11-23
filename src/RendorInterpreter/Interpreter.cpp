@@ -1,136 +1,250 @@
 #include "RendorInterpreter/Interpreter.hpp"
 
-void RENDOR_ECHO_FUNCTION (std::string_view EchoValue);
+// the actual loop function 
+static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex);
+
+// All built in functions
+std::optional<Variable> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
 
 void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 {
-    std::map<std::string, std::unique_ptr<Variable>> Variables;
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
 
-    Variables["CONSTANT"] = std::make_unique<Variable>("CONSTANT");
-    Variables["CONSTANT"]->ValueClass = std::make_unique<Constant>("NULL", '-');
-    
-    for (std::string ByteCodeOperation; std::getline(File, ByteCodeOperation);)
+    std::vector<std::string> ByteCode;
+    size_t StartIndex = 0; // Index of the main function 
+
     {
-        int ByteCodeSize = ByteCodeOperation.size();
+        std::string ByteCodeOperation;
+        while (std::getline(File, ByteCodeOperation))
+        {
+            ByteCode.emplace_back(ByteCodeOperation);
+        }
+    }
+
+    ByteCodeLoop(true, ByteCode, StartIndex);
+    ByteCodeLoop(false, ByteCode, StartIndex);
+
+    File.close();
+}
+
+static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex)
+{
+    static std::vector<std::map<std::string, std::unique_ptr<Variable>>> VariablesCallStack(691);
+
+    VariablesCallStack.emplace_back(std::map<std::string, std::unique_ptr<Variable>>()); // Create new map
+
+    std::map<std::string, std::unique_ptr<Variable>> *Variables = &VariablesCallStack.back();
+
+    // Functions
+    static std::map<std::string, std::vector<std::string>> FunctionArgs {{"echo", {"EchoValue"}}};
+    static std::map<std::string, std::function<std::optional<Variable>(std::vector<std::string>)>> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}};
+    static std::map<std::string, int> UserDefinedFunctions; 
+
+    // Constant related stuff. These aren't static because they don't need to be
+    boost::circular_buffer_space_optimized<std::string> Constants(2);
+    int ConstantIndex = 0;
+
+    // Call Stack and scope related stuff. Scope is not static as we would rather start in the global scope
+    static std::vector<std::pair<std::string, std::vector<std::string>>> CallStack(690); // stores name and arguments
+    uint32_t Scope = 0;
+
+    for (size_t Op = StartIndex; Op < ByteCode.size(); ++Op)
+    {
+        std::string *ByteCodeOperation = &ByteCode[Op]; 
+        int ByteCodeSize = ByteCodeOperation->size();
         if (ByteCodeSize == 0)
         {
             continue;
         }
-        size_t ByteCodeSpaceIndex = ByteCodeOperation.find_first_of(" ");
-        std::string_view Command(ByteCodeOperation.c_str(), ByteCodeSpaceIndex);
-        std::string_view Args(ByteCodeOperation.c_str() + ByteCodeSpaceIndex + 1, ByteCodeSize - (ByteCodeSpaceIndex + 1));
+        size_t ByteCodeSpaceIndex = ByteCodeOperation->find_first_of(" ", 0);
+        size_t CommandSpaceIndex = ByteCodeOperation->find_first_of(" ", ByteCodeSpaceIndex + 1);
 
+        std::string_view Index(ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
+        std::string_view Command(ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->begin() + CommandSpaceIndex);
+        std::string_view Args(ByteCodeOperation->begin() + (CommandSpaceIndex + 1), ByteCodeOperation->end());
 
-        if (Command == "CONST") // when a constant is declared 
-        { 
-            auto& ConstantVariable = *Variables["CONSTANT"];
-            auto& ConstantValueClass = dynamic_cast<Constant&>(*ConstantVariable.ValueClass); // get the Constant object from the CONSTANT variable 
-            bool AlreadyHandled = false; // to prevent segementation fault errors that occur
-
-            switch (Args[0])
+        if (DefineMode)
+        {
+            if (Command == "DEFINE") // define functions
             {
-                case '0':
-                    ConstantValueClass.ConstVariableType = 'N';
-                    break;
-                case '1':
-                    ConstantValueClass.ConstVariableType = 'F';
-                    break;
-                case '2':
-                    ConstantValueClass.ConstVariableType = 'S';
-                    break;
-                case '3':
-                    ConstantValueClass.ConstVariableType = 'B';
-                    break;
-                
-                case '4':
-                    const std::string Result = PostFixEval(Args.substr(2, Args.size()-2), Variables); 
-                    if (Result.find_first_of(".") == std::string::npos)
+                UserDefinedFunctions[std::string{Args}] = std::stoi(std::string{Index});
+                if (Args == "main")
+                {
+                    StartIndex = std::stoi(std::string{Index});
+                }
+                ++Scope;
+            }
+
+            else if (Command == "FUNCTION") // end scope
+            {
+                --Scope;
+            }
+
+            else if // Global constants
+            ((Command == "CONST") &&
+            (Scope == 0))
+            {
+                Constants.push_back(std::string{Args});
+                switch (ConstantIndex)
+                {
+                    case 0:
                     {
-                        ConstantValueClass.ConstVariableType = 'N';
-                    } 
-                    else
-                    {
-                        ConstantValueClass.ConstVariableType = 'F';
+                        ++ConstantIndex;
+                        break;
                     }
-                    ConstantValueClass.Value = Result;
-                    AlreadyHandled = true;
-                    break;
+                    
+                    case 1:
+                    {
+                        --ConstantIndex;
+                        break;
+                    }
+                }
             }
-            if ( // Checks if variable is a copy of another
-            (Args[2] == '_') && 
-            (Args[3] == '&')) 
-            { 
-                const auto CopiedVariableName = std::string{Args.substr(4, Args.size()-4)};
 
-                if(AlreadyHandled){ // to see if it was alreday added by the switch statement above
-                    continue;
-                }
-                else if(Variables.count(CopiedVariableName) == 0){ // Checks if variable exists in the first place to avoid segementation fault errors
-                    throw error::RendorException((boost::format("Variable %s does not exist!") % CopiedVariableName).str());
-                }
-
-                const auto& CopiedVariable = (*Variables[CopiedVariableName]); // if above checks pass, then retrive variable from map
-                ConstantValueClass.Value = CopiedVariable.ValueClass->Value;
-            } 
-            else if(!AlreadyHandled)
+            else if // Global variables
+            ((Command == "ASSIGN") &&
+            (Scope == 0))
             {
-                ConstantValueClass.Value = std::string{Args.substr(2, Args.size()-2)};
+                std::string Name{Args};
+                std::string_view Value{Args.begin() + 2, Args.end()};
+                (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+
+                switch (Constants[ConstantIndex][0])
+                {
+                    case '0':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Int>(std::string{Value});
+                        break;
+                    }
+                    case '1':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Float>(std::string{Value});
+                        break;
+                    }
+                    case '2':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<String>(std::string{Value});
+                        break;
+                    }
+                    case '3':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Bool>(std::string{Value});
+                        break;
+                    }
+                }
             }
-        }
-
-        else if (Command == "ASSIGN")
-        {  
-            Variables[std::string{Args}] = std::make_unique<Variable>(std::string{Args});
-
-            auto& VariableBeingAssigned = *Variables[std::string{Args}];
-            const auto& ConstantValueClass = dynamic_cast<Constant&>(*Variables["CONSTANT"]->ValueClass); // get the Constant object from the CONSTANT variable 
             
-            switch (ConstantValueClass.ConstVariableType)
+            else // We don't care currently
             {
-                case 'N':
-                    VariableBeingAssigned.ValueClass = std::make_unique<Int>(ConstantValueClass.Value);
-                    break;
-                case 'F':
-                    VariableBeingAssigned.ValueClass = std::make_unique<Float>(ConstantValueClass.Value);
-                    break;
-                case 'S':
-                    VariableBeingAssigned.ValueClass = std::make_unique<String>(ConstantValueClass.Value);
-                    break;
-                case 'B':
-                    VariableBeingAssigned.ValueClass = std::make_unique<Bool>(ConstantValueClass.Value);
-                    break;
-                case 'A':
-                    throw error::RendorException("WTH Error; Arithmethic should have already been converted to int/float. Please report this as an issue on the Rendor Github.");
+
             }
         }
-
-        else if (Command == "ECHO")
+        else
         {
-            const auto& EchoArgs = (*Variables[std::string{Args}]);
-            RENDOR_ECHO_FUNCTION(EchoArgs.ValueClass->Value); 
-        }
+            if (Command == "CONST") // Constants 
+            {
+                Constants.push_back(std::string{Args});
 
-        else if (Command == "INCREMENT")
-        {
-            auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
-            int ValueOfVariable = IncrementedVariable.RetriveVariable();
-            ++ValueOfVariable;
-            IncrementedVariable.Value = std::to_string(ValueOfVariable);
-        }
+                if (Constants.size() == 2)
+                {
+                    switch (ConstantIndex)
+                    {
+                        case 0:
+                        {
+                            ++ConstantIndex;
+                            break;
+                        }
+                        
+                        case 1:
+                        {
+                            --ConstantIndex;
+                            break;
+                        }
+                    }
+                }
+            }
 
-        else if (Command == "DECREMENT")
-        {
-            auto& IncrementedVariable = dynamic_cast<Int&>(*Variables[std::string{Args}]->ValueClass);
-            int ValueOfVariable = IncrementedVariable.RetriveVariable();
-            --ValueOfVariable;
-            IncrementedVariable.Value = std::to_string(ValueOfVariable);
+            else if (Command == "ASSIGN") // Assigning variables
+            {
+                std::string Name{Args};
+                std::string VariableValue = Constants[ConstantIndex];
+                std::string_view Value{VariableValue.begin() + 2, VariableValue.end()};
+                (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+
+                switch (Constants[ConstantIndex][0])
+                {
+                    case '0':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Int>(std::string{Value});
+                        break;
+                    }
+                    case '1':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Float>(std::string{Value});
+                        break;
+                    }
+                    case '2':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<String>(std::string{Value});
+                        break;
+                    }
+                    case '3':
+                    {
+                        (*Variables)[Name]->ValueClass = std::make_unique<Bool>(std::string{Value});
+                        break;
+                    }
+                }
+            }
+
+            else if (Command == "CALL") // Calling functions
+            {
+                if (FunctionArgs.find(std::string{Args}) == FunctionArgs.end())
+                {
+                    throw error::RendorException((boost::format("Function %s does not exist") % Args).str());
+                }
+                else 
+                {
+                    CallStack.emplace_back(std::string{Args}, std::vector<std::string>());
+                    ++Scope;
+                }
+            }
+
+            else if (Command == "CALL_ARG") // Arguments for functions
+            {
+                if 
+                ((Args[0] == '_') &&
+                (Args[1] == '&'))
+                {
+                    std::string_view Variable(Args.begin() + 2, Args.end());
+                    CallStack.back().second.emplace_back((*Variables)[std::string{Variable}]->ValueClass->Value); // Add argument
+                }
+                else
+                {
+                    CallStack.back().second.emplace_back(std::string{Args}); // Add argument
+                }
+            }
+
+            else if (Command == "FINALIZE_CALL")
+            {
+                if (BuiltInFunctions.find(std::string{Args}) != BuiltInFunctions.end())
+                {
+                    BuiltInFunctions[std::string{Args}](CallStack.back().second);
+                }
+            }
+
+            else if (Command == "FUNCTION") // Ending a function 
+            {
+                if (Args == "END")
+                {
+                    VariablesCallStack.pop_back(); // remove local scope variables 
+                }
+            }
         }
     }
-    File.close();
 }
 
-void RENDOR_ECHO_FUNCTION (std::string_view EchoValue)
+std::optional<Variable> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs)
 {
-    std::cout << EchoValue << std::endl;
+    std::cout << EchoArgs[0] << std::endl;
+    return {};
 }

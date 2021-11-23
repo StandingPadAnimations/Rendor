@@ -1,6 +1,6 @@
 #include "RendorInterpreter/MathEvaluator.hpp"
 
-std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
+static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
 {
     std::string Answer;
     long double N1 = std::stold(Num1);
