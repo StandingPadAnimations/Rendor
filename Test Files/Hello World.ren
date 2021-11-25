@@ -4,7 +4,6 @@ edef main()
     echo(world)
     echo("calling lol...")
     lol("we're in lol", 1, 1.0)
-    lol("again", 2, 2.5)
     echo("done c:")
 }
 
@@ -12,6 +11,7 @@ edef lol(world, num, xd)
 {
     echo(world)
     echo(num)
+    lol("again", 2, 2.5)
     echo(xd)
 }
 
