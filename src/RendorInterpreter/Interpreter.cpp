@@ -292,7 +292,7 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
 
                 else if (UserDefinedFunctions.find(std::string{Args}) != UserDefinedFunctions.end())
                 {
-                    ByteCodeLoop(false, ByteCode, UserDefinedFunctions[std::string{Args}]);
+                    ByteCodeLoop(false, ByteCode, UserDefinedFunctions[std::string{Args}]); // recursion to call function 
                 }
 
                 else 

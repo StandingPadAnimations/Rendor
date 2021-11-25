@@ -69,7 +69,8 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 }
 
                 else if 
-                ((IdentifiersMap.find(value) == IdentifiersMap.end()) &&
+                (((IdentifiersMap.find(value) == IdentifiersMap.end()) ||
+                (IdentifiersMap[value] != 'F')) &&
                 (ParserTempID == TempID::None)) // if it's a new variable 
                 {
                     ParserTempID = TempID::IdentifierDefinition;
