@@ -92,7 +92,7 @@ struct RendorKeyWord : Node{
 
 struct FunctionCall : Node{
     std::string Function;
-    std::vector<std::string> Args;
+    std::vector<std::pair<int, std::string>> Args;
     explicit FunctionCall(std::string Function) : Function(Function){}
     NodeType Type(){return NodeType::FunctionCall;}
 };

@@ -46,6 +46,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     for (auto const& [token, value] : Tokens)
     {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
+        // std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
 
         switch (token)
         {
@@ -117,7 +118,38 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                         throw error::RendorException((boost::format("Identifier Error: %s does not exist! Line %s") % value % LineNumber).str());
                     }
 
-                    FunctionNode.Args.emplace_back((boost::format("_&%s") % value).str()); // Add argument to Node
+                    switch (IdentifiersMap[value])
+                    {
+                        case 'I':
+                        {
+                            FunctionNode.Args.emplace_back(0, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            break;
+                        }
+
+                        case 'D':
+                        {
+                            FunctionNode.Args.emplace_back(1, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            break;
+                        }
+
+                        case 'S':
+                        {
+                            FunctionNode.Args.emplace_back(2, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            break;
+                        }
+
+                        case 'B':
+                        {
+                            FunctionNode.Args.emplace_back(3, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            break;
+                        }
+
+                        case 'N':
+                        {
+                            FunctionNode.Args.emplace_back(4, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            break;
+                        }
+                    }
                 }
 
                 
@@ -125,6 +157,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
                     EdefNode.Args.emplace_back(value); // Add argument to Node
+                    IdentifiersMap[value] = 'N';
                 }
                 break;
             }
@@ -147,6 +180,20 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else 
                 {
                     throw error::RendorException((boost::format("Syntax Error: = found on line %s, expected variable definition") % LineNumber).str());
+                }
+                break;
+            }
+
+            case lt::COMMA:
+            {
+                if (ParserTempID == TempID::FunctionCall)
+                {
+                    // Do nothing 
+                }
+
+                else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Defining a funcion 
+                {
+                    // Do nothing
                 }
                 break;
             }
@@ -223,7 +270,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(0, value); // Add argument to Node
                 }
                 break;
             }
@@ -242,7 +289,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(1, value); // Add argument to Node
                 }
                 break;
             }
@@ -261,7 +308,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(2, value); // Add argument to Node
                 }
                 break;
             }
@@ -280,7 +327,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(3, value); // Add argument to Node
                 }
                 break;
             }
@@ -400,9 +447,9 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
         ByteCode.emplace_back((boost::format("%s CALL %s") % ByteCodeNumber % CallNode.Function).str());
         ++ByteCodeNumber;
 
-        for (const auto& Arg : CallNode.Args) // Arguments 
+        for (const auto& [type, arg] : CallNode.Args) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("%s CALL_ARG %s") % ByteCodeNumber % Arg).str());
+            ByteCode.emplace_back((boost::format("%s CALL_ARG %s %s") % ByteCodeNumber % type % arg).str());
             ++ByteCodeNumber;
         }
 

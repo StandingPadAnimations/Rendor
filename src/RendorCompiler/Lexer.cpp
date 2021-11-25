@@ -61,13 +61,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
                 (Buffer.find_first_of(".") != std::string::npos))
                 {
-                    Tokens.emplace_back(Token::FLOAT, Buffer);
+                    Tokens.emplace_back(Token::FLOAT, std::string{Buffer});
                 }
 
                 // Ints
                 else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
                 {
-                    Tokens.emplace_back(Token::INT, Buffer);
+                    Tokens.emplace_back(Token::INT, std::string{Buffer});
                 }
 
                 // Booleans 
@@ -75,7 +75,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 ((Buffer == "true") ||
                 (Buffer == "false"))
                 {
-                    Tokens.emplace_back(Token::BOOL, Buffer);
+                    Tokens.emplace_back(Token::BOOL, std::string{Buffer});
                 }
 
                 // Identifiers
@@ -128,7 +128,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             
         }
 
-        if
+        else if
         ((Code[Char] == '/') &&
         (Code[Char + 1] == '/'))
         {
@@ -185,13 +185,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                     StartIndex = Code.find_first_not_of(CharToCheck, StartIndex); // To avoid tokenizing the ", ', or ` that starts a string
                     std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
                     Tokens.emplace_back(Token::STRING, Buffer);
+                    LexerBufferID = BufferID::StringEnd;
                 }
                 
                 else
                 {
                     // Ignore 
                 }
-                LexerBufferID = BufferID::StringEnd;
             }
         }
         ++EndIndex;

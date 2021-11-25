@@ -6,6 +6,10 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
 // All built in functions
 std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
 
+/* -------------------------------------------------------------------------- */
+/*                          Execute ByteCode Function                         */
+/* -------------------------------------------------------------------------- */
+
 void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
@@ -26,6 +30,9 @@ void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 
     File.close();
 }
+
+
+/* ------------------------------ ByteCode Loop ----------------------------- */
 
 static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex)
 {
@@ -53,6 +60,8 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
     uint32_t Scope = 0;
     VariablesCallStack.emplace_back(VariableScopeMap()); // Create new map
     VariableScopeMap *Variables = &VariablesCallStack.back();
+    std::string CurrentScope;
+    size_t ArgumentIndex = 0;
 
     if (!Variables) 
     {
@@ -78,16 +87,26 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
         {
             if (Command == "DEFINE") // define functions
             {
-                UserDefinedFunctions[std::string{Args}] = std::stoi(std::string{Index});
+                CurrentScope = std::string{Args};
+                UserDefinedFunctions[CurrentScope] = std::stoi(std::string{Index});
+                FunctionArgs[CurrentScope];
+
                 if (Args == "main")
                 {
                     StartIndex = std::stoi(std::string{Index});
                 }
+
                 ++Scope;
+            }
+
+            else if (Command == "ARGUMENT") 
+            {
+                FunctionArgs[CurrentScope].emplace_back(std::string{Args});
             }
 
             else if (Command == "FUNCTION") // end scope
             {
+                CurrentScope = "";
                 --Scope;
             }
 
@@ -251,20 +270,24 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
             else if (Command == "CALL_ARG") // Arguments for functions
             {
                 if 
-                ((Args[0] == '_') &&
-                (Args[1] == '&'))
+                ((Args[2] == '_') &&
+                (Args[3] == '&'))
                 {
-                    std::string_view Variable(Args.begin() + 2, Args.end());
+                    char Type = Args[0];
+                    std::string_view Variable(Args.begin() + 4, Args.end());
+
                     if 
                     ((Variables->find(std::string{Variable}) == Variables->end()) &&
                     (VariablesCallStack[0].find(std::string{Variable}) != VariablesCallStack[0].end()))
                     {
-                        CallStack.back().second.emplace_back(VariablesCallStack[0][std::string{Variable}]->m_ValueClass->m_Value); // Add argument
+                        std::string Value = (boost::format("%s %s") % Type % VariablesCallStack[0][std::string{Variable}]->m_ValueClass->m_Value).str();
+                        CallStack.back().second.emplace_back(Value); // Add argument
                     }
 
                     else if (Variables->find(std::string{Variable}) != Variables->end())
                     {
-                        CallStack.back().second.emplace_back((*Variables)[std::string{Variable}]->m_ValueClass->m_Value); // Add argument
+                        std::string Value = (boost::format("%s %s") % Type % (*Variables)[std::string{Variable}]->m_ValueClass->m_Value).str();
+                        CallStack.back().second.emplace_back(Value); // Add argument
                     }
 
                     else 
@@ -274,19 +297,27 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                 }
                 else
                 {
-                    CallStack.back().second.emplace_back(std::string{Args}); // Add argument
+                    std::string_view Value(Args.begin(), Args.end());
+                    CallStack.back().second.emplace_back(std::string{Value}); // Add argument
                 }
             }
 
             else if (Command == "FINALIZE_CALL")
             {
+                /* ------------------------- Checking Argument amout ------------------------ */
+                size_t FunctionArgsSize = FunctionArgs[std::string{Args}].size();
+                if (CallStack.back().second.size() > FunctionArgsSize)
+                {
+                    throw error::RendorException((boost::format("\"%s\" takes %s argument(s); Too many arguments supplied") % Args % FunctionArgsSize).str());
+                }
+                else if (CallStack.back().second.size() < FunctionArgsSize)
+                {
+                    throw error::RendorException((boost::format("\"%s\" takes %s argument(s); Too little arguments supplied") % Args % FunctionArgsSize).str());
+                }
+
+                /* -------------------- Calling the functions themselves -------------------- */
                 if (BuiltInFunctions.find(std::string{Args}) != BuiltInFunctions.end())
                 {
-                    size_t FunctionArgsSize = FunctionArgs[std::string{Args}].size();
-                    if (CallStack.back().second.size() > FunctionArgsSize)
-                    {
-                        throw error::RendorException((boost::format("\"%s\" takes %s argument(s); Too many arguments supplied") % Args % FunctionArgsSize).str());
-                    }
                     BuiltInFunctions[std::string{Args}](CallStack.back().second);
                 }
 
@@ -310,6 +341,45 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                 }
             }
 
+            else if (Command == "ARGUMENT")
+            {
+                std::string *Value = &CallStack.back().second[ArgumentIndex];
+                std::string_view FinalValue(Value->begin() + 2, Value->end());
+
+                if (Variables->find(std::string{Args}) == Variables->end())
+                {
+                    (*Variables)[std::string{Args}] = std::make_unique<Variable>(std::string{Args}); // Create variable object
+                }
+                else {
+                    throw error::RendorException((boost::format("Function Call Error: \"%s\" has somehow been defined!") % Args).str());
+                }
+
+                switch ((*Value)[0])
+                {
+                    case '0':
+                    {
+                        (*Variables)[std::string{Args}]->m_ValueClass = std::make_unique<Int>(std::string{FinalValue});
+                        break;
+                    }
+                    case '1':
+                    {
+                        (*Variables)[std::string{Args}]->m_ValueClass = std::make_unique<Float>(std::string{FinalValue});
+                        break;
+                    }
+                    case '2':
+                    {
+                        (*Variables)[std::string{Args}]->m_ValueClass = std::make_unique<String>(std::string{FinalValue});
+                        break;
+                    }
+                    case '3':
+                    {
+                        (*Variables)[std::string{Args}]->m_ValueClass = std::make_unique<Bool>(std::string{FinalValue});
+                        break;
+                    }
+                }
+                ++ArgumentIndex;
+            }
+
             else 
             {
                 throw error::RendorException((boost::format("Error: Can not reconize \"%s\"") % (*ByteCodeOperation)).str());
@@ -318,8 +388,13 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                             Built In Functions                             */
+/* -------------------------------------------------------------------------- */
+
 std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs)
 {
-    std::cout << EchoArgs[0] << std::endl;
+    std::string_view EchoString(EchoArgs[0].begin() + 2, EchoArgs[0].end());
+    std::cout << EchoString << std::endl;
     return {};
 }
