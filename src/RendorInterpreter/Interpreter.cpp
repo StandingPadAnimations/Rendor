@@ -256,7 +256,7 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                         (*Variables)[Name]->m_ValueClass = std::make_unique<Bool>(std::string{Value});
                         break;
                     }
-                    case '5':
+                    case '4':
                     {
                         VariableBeingDefined = Name;
                     }
@@ -280,13 +280,30 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
 
             else if (Command == "CALL_ARG") // Arguments for functions
             {
-                if 
-                ((Args[2] == '_') &&
-                (Args[3] == '&'))
+                char Type;
+                char UnderScore;
+                char Ambersand;
+                std::string_view Variable(Args.begin() + 4, Args.end());
+                if(Args[0] == '-')
                 {
-                    char Type = Args[0];
-                    std::string_view Variable(Args.begin() + 4, Args.end());
+                    Type = Args[1];
+                    Variable = {Args.begin() + 5, Args.end()};
+                    UnderScore = Args[3];
+                    Ambersand = Args[4];
+                }
 
+                else if(Args[0] != '-')
+                {
+                    Type = Args[0];
+                    Variable = {Args.begin() + 4, Args.end()};
+                    UnderScore = Args[2];
+                    Ambersand = Args[3];
+                }
+
+                if 
+                ((UnderScore == '_') &&
+                (Ambersand == '&'))
+                {
                     if 
                     ((Variables->find(std::string{Variable}) == Variables->end()) &&
                     (VariablesCallStack[0].find(std::string{Variable}) != VariablesCallStack[0].end()))
@@ -306,6 +323,7 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                         throw error::RendorException((boost::format("Variable \"%s\" has not been defined") % Variable).str());
                     }
                 }
+            
                 else
                 {
                     std::string_view Value(Args.begin(), Args.end());

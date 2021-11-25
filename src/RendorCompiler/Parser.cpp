@@ -79,8 +79,11 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % LastIdentifier % LineNumber).str());
                 }
                 
+
                 /* -------------------------------- functions ------------------------------- */
-                else if (IdentifiersMap[value] == 'F')
+                else if 
+                ((IdentifiersMap.find(value) != IdentifiersMap.end()) &&
+                (IdentifiersMap.at(value) == 'F'))
                 {
                     Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
                     ParserTempID = TempID::FunctionCall;
@@ -89,14 +92,14 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 /* -------------------------------- not known ------------------------------- */
                 else if 
                 (((IdentifiersMap.find(value) == IdentifiersMap.end()) ||
-                (IdentifiersMap[value] != 'F')) &&
+                ((IdentifiersMap.find(value) != IdentifiersMap.end()) &&
+                (IdentifiersMap.at(value) != 'F'))) &&
                 (ParserTempID == TempID::None)) // if it's a new variable 
                 {
                     ParserTempID = TempID::IdentifierDefinition;
                     IdentifiersMap[value] = 'N';
                     LastIdentifier = value;
                 }
-
                 /* --------------------------- defining functions --------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // functions
                 {
@@ -167,7 +170,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                         case 'N':
                         {
-                            FunctionNode.Args.emplace_back(4, (boost::format("_&%s") % value).str()); // Add argument to Node
+                            FunctionNode.Args.emplace_back(-1, (boost::format("_&%s") % value).str()); // Add argument to Node
                             break;
                         }
                     }
@@ -475,7 +478,7 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 break;
 
             case VariableTypes::Function:
-                Type = 5; // 4 is reserved for arguments 
+                Type = 4; 
                 break;
 
             case VariableTypes::Arith: 

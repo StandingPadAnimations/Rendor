@@ -1,6 +1,6 @@
 0 LOAD 0
 1 DEFINE main
-2 CONST 5 input
+2 CONST 4 input
 3 ASSIGN UserUnput
 4 CALL input
 5 CALL_ARG 2 Say something: 

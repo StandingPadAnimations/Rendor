@@ -1,18 +1,12 @@
 edef main() 
 {
-    world = "Hello World"
-    echo(world)
-    echo("calling lol...")
-    lol("we're in lol", 1, 1.0)
-    echo("done c:")
+    lol("we're in lol", 1)
 }
 
-edef lol(world, num, xd)
+edef lol(world, num)
 {
     echo(world)
     echo(num)
-    lol("again", 2, 2.5)
-    echo(xd)
 }
 
 
