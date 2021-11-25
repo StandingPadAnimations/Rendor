@@ -1,10 +1,16 @@
 #include "RendorInterpreter/Interpreter.hpp"
 
-// the actual loop function 
+/* -------------------------------------------------------------------------- */
+/*                             Foward Declarations                            */
+/* -------------------------------------------------------------------------- */
+
+/* ------------------------------ Bytecode loop ----------------------------- */
 static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex);
 
-// All built in functions
+
+/* --------------------------- Built in functions --------------------------- */
 std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
+std::optional<std::unique_ptr<Type>> RENDOR_INPUT_FUNCTION (std::vector<std::string> InputArgs);
 
 /* -------------------------------------------------------------------------- */
 /*                          Execute ByteCode Function                         */
@@ -45,9 +51,9 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
     static std::vector<VariableScopeMap> VariablesCallStack;
 
     // Functions
-    static std::map<std::string, StringVector> FunctionArgs {{"echo", {"EchoValue"}}};
-    static std::map<std::string, RendorFunctionPtr> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}};
-    static std::map<std::string, size_t> UserDefinedFunctions; 
+    static std::map<std::string, StringVector> FunctionArgs {{"echo", {"EchoValue"}}, {"input", {"InputValue"}}};
+    static std::map<std::string, RendorFunctionPtr> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}, {"input", RENDOR_INPUT_FUNCTION}};
+    static std::map<std::string, size_t> UserDefinedFunctions;
 
     // Constant related stuff. These aren't static because they don't need to be
     boost::circular_buffer_space_optimized<std::string> Constants(2);
@@ -62,6 +68,7 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
     VariableScopeMap *Variables = &VariablesCallStack.back();
     std::string CurrentScope;
     size_t ArgumentIndex = 0;
+    std::string VariableBeingDefined;
 
     if (!Variables) 
     {
@@ -249,6 +256,10 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                         (*Variables)[Name]->m_ValueClass = std::make_unique<Bool>(std::string{Value});
                         break;
                     }
+                    case '5':
+                    {
+                        VariableBeingDefined = Name;
+                    }
                 }
             }
 
@@ -318,7 +329,22 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                 /* -------------------- Calling the functions themselves -------------------- */
                 if (BuiltInFunctions.find(std::string{Args}) != BuiltInFunctions.end())
                 {
-                    BuiltInFunctions[std::string{Args}](CallStack.back().second);
+                    std::optional<std::unique_ptr<Type>> ReturnValue = BuiltInFunctions[std::string{Args}](CallStack.back().second);
+
+
+                    /* -------------- Passing return types from built in functions -------------- */
+                    if(VariableBeingDefined.size()) 
+                    {
+                        if (ReturnValue.has_value())
+                        {
+                            (*Variables)[VariableBeingDefined]->m_ValueClass = std::move(ReturnValue.value());
+                            VariableBeingDefined = "";
+                        }
+                        else 
+                        {
+                            throw error::RendorException((boost::format("Function \"%s\" did not return anything for \"%s\"") % Args % VariableBeingDefined).str());
+                        }
+                    }
                 }
 
                 else if (UserDefinedFunctions.find(std::string{Args}) != UserDefinedFunctions.end())
@@ -397,4 +423,15 @@ std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::stri
     std::string_view EchoString(EchoArgs[0].begin() + 2, EchoArgs[0].end());
     std::cout << EchoString << std::endl;
     return {};
+}
+
+std::optional<std::unique_ptr<Type>> RENDOR_INPUT_FUNCTION (std::vector<std::string> InputArgs)
+{
+    std::string_view EchoString(InputArgs[0].begin() + 2, InputArgs[0].end());
+    std::string InputString;
+    
+    std::cout << EchoString;
+    std::getline(std::cin, InputString);
+
+    return std::make_unique<String>(InputString);
 }

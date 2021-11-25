@@ -23,6 +23,7 @@ enum class VariableTypes{
     String,
     Bool,
     Arith,
+    Function,
     IntStatic,
     FloatStatic,
     StringStatic,

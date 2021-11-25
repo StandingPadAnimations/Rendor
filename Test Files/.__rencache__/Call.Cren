@@ -1,0 +1,18 @@
+0 LOAD 0
+1 DEFINE main
+2 CONST 5 input
+3 ASSIGN UserUnput
+4 CALL input
+5 CALL_ARG 2 Say something: 
+6 FINALIZE_CALL input
+7 CALL echo
+8 CALL_ARG 2 This should print input
+9 FINALIZE_CALL echo
+10 CALL echo
+11 CALL_ARG 0 _&UserUnput
+12 FINALIZE_CALL echo
+13 CALL echo
+14 CALL_ARG 2 c:
+15 FINALIZE_CALL echo
+16 FUNCTION END
+0 END 0

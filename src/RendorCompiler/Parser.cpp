@@ -22,8 +22,15 @@ break;
 To avoid issues with scopes
 ----------------------------------------------------------------*/
 
+/* -------------------------------------------------------------------------- */
+/*                             Foward declarations                            */
+/* -------------------------------------------------------------------------- */
 std::string ByteCodeGen (const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode, uint32_t& ByteCodeNumber);
 
+
+/* -------------------------------------------------------------------------- */
+/*                               Parser function                              */
+/* -------------------------------------------------------------------------- */
 std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
 {
     // Node related stuff
@@ -61,14 +68,25 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break; 
             }
 
-            // Functions and variables
+            /* -------------------------------------------------------------------------- */
+            /*                           Functions and variables                          */
+            /* -------------------------------------------------------------------------- */
             case lt::IDENTIFIER: // * user defined things 
             {
+                /* ------------ if found during definition of another identifier ------------ */
                 if (ParserTempID == TempID::IdentifierDefinition)
                 {
                     throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % LastIdentifier % LineNumber).str());
                 }
-
+                
+                /* -------------------------------- functions ------------------------------- */
+                else if (IdentifiersMap[value] == 'F')
+                {
+                    Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
+                    ParserTempID = TempID::FunctionCall;
+                }
+                
+                /* -------------------------------- not known ------------------------------- */
                 else if 
                 (((IdentifiersMap.find(value) == IdentifiersMap.end()) ||
                 (IdentifiersMap[value] != 'F')) &&
@@ -79,6 +97,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     LastIdentifier = value;
                 }
 
+                /* --------------------------- defining functions --------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // functions
                 {
                     if (IdentifiersMap.find(value) != IdentifiersMap.end())
@@ -93,6 +112,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     IdentifiersMap[value] = 'F';
                 }
 
+                /* ---------------------------- copying variables --------------------------- */
                 else if (ParserTempID == TempID::VariableDefition) // copying variables
                 {
                     if (IdentifiersMap.find(value) == IdentifiersMap.end()) // if it's a new variable 
@@ -109,6 +129,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     }
                 }
 
+                /* -------------------------- if it is an argument -------------------------- */
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
@@ -152,7 +173,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     }
                 }
 
-                
+                /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
                 else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Function arguments 
                 {
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
@@ -162,14 +183,29 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
-            case lt::BUILT_IN_FUNCTION: // * built in functions
+            /* -------------------------------------------------------------------------- */
+            /*                             Built in functions                             */
+            /* -------------------------------------------------------------------------- */
+            case lt::BUILT_IN_FUNCTION: 
             {
+                if(ParserTempID == TempID::VariableDefition)
+                {
+                    char Identifier = 'I';
+                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
+                    AssignmentNode.Value = value;
+                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.VariableType = VariableTypes::Function;
+                }
                 Scope->push_back(std::make_unique<FunctionCall>(value));
                 ParserTempID = TempID::FunctionCall;
                 break;
             }
 
-            // Symbols
+            /* -------------------------------------------------------------------------- */
+            /*                                   Symbols                                  */
+            /* -------------------------------------------------------------------------- */
+
+            /* ---------------------------------- Equal --------------------------------- */
             case lt::EQUAL: // * = sign 
             {
                 if (ParserTempID == TempID::IdentifierDefinition)
@@ -184,6 +220,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* ---------------------------------- Comma --------------------------------- */
             case lt::COMMA:
             {
                 if (ParserTempID == TempID::FunctionCall)
@@ -198,6 +235,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* --------------------------------- L paren -------------------------------- */
             case lt::LPAREN: // * ( sign 
             {
                 if (ParserTempID == TempID::FunctionCall)
@@ -217,6 +255,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* --------------------------------- R paren -------------------------------- */
             case lt::RPAREN: // * ) sign
             {
                 if (ParserTempID == TempID::FunctionArgumentsDefinition)
@@ -230,6 +269,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* --------------------------------- L brace -------------------------------- */
             case lt::LBRACE: // * { sign
             {
                 if (ParserTempID == TempID::FunctionScope)
@@ -248,6 +288,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* --------------------------------- R brace -------------------------------- */
             case lt::RBRACE: // * } sign
             {
                 --ScopeLevel;
@@ -255,7 +296,11 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
-            // Types
+            /* -------------------------------------------------------------------------- */
+            /*                                    Types                                   */
+            /* -------------------------------------------------------------------------- */
+
+            /* ----------------------------------- int ---------------------------------- */
             case lt::INT: 
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
@@ -275,6 +320,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* ---------------------------------- float --------------------------------- */
             case lt::FLOAT:
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
@@ -294,6 +340,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* --------------------------------- string --------------------------------- */
             case lt::STRING:
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
@@ -312,7 +359,8 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 }
                 break;
             }
-                
+            
+            /* ---------------------------------- bool ---------------------------------- */
             case lt::BOOL:
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
@@ -332,6 +380,9 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* -------------------------------------------------------------------------- */
+            /*                                  Keywords                                  */
+            /* -------------------------------------------------------------------------- */
             case lt::KEYWORD: // * keywords
             {
                 if (value == "edef")
@@ -346,46 +397,65 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 break;
             }
 
+            /* -------------------------------------------------------------------------- */
+            /*                           Anything not supported                           */
+            /* -------------------------------------------------------------------------- */
             default:
                 throw error::RendorException("Not supported yet");
         }
     }
     
 
-    //BYTECODE GENERATION-----------------------------------------------------------------------------------------------------
+    /* -------------------------------------------------------------------------- */
+    /*                             ByteCode generation                            */
+    /* -------------------------------------------------------------------------- */
 
     std::cout << "Generating bytecode..." << std::endl;
 
     uint32_t ByteCodeNumber = 0;
-
+    
+    /* ----------------------------- Is it a script ----------------------------- */
     if (!IsScript)
     {
         ByteCode.emplace_back((boost::format("%s NOT_SCRIPT TRUE") % ByteCodeNumber).str());
         ++ByteCodeNumber;
     }
 
-    ByteCode.emplace_back((boost::format("%s LOAD 0") % ByteCodeNumber).str()); // For Global Scope
+    /* -------------------------- Loading global scope -------------------------- */
+    ByteCode.emplace_back((boost::format("%s LOAD 0") % ByteCodeNumber).str()); 
     ++ByteCodeNumber;
 
+    /* ---------------- Generating the bytecode from the AST tree --------------- */
     for (const auto& Node : (*Script.GlobalBody))
     {
         ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
         ++ByteCodeNumber;
     }
 
-    ByteCode.emplace_back("0 END 0"); // End Global Scope
+    /* ------------------------- ending the global scope ------------------------ */
+    ByteCode.emplace_back("0 END 0"); 
 
+    /* ----------------------------- return bytecode ---------------------------- */
     return ByteCode;
 }
+
+
+/* -------------------------------------------------------------------------- */
+/*                      Bytecode Generation loop function                     */
+/* -------------------------------------------------------------------------- */
 
 std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode, uint32_t& ByteCodeNumber)
 {
 
+    /* -------------------------------------------------------------------------- */
+    /*                             assigning variables                            */
+    /* -------------------------------------------------------------------------- */
     if (ClassType == NodeType::AssignVariable) 
     {
         auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass); 
         int Type;
 
+        /* ------------------------------- Check type ------------------------------- */
         switch (AssignmentNode.VariableType)
         {
             case VariableTypes::Int:
@@ -404,6 +474,10 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 Type = 3;
                 break;
 
+            case VariableTypes::Function:
+                Type = 5; // 4 is reserved for arguments 
+                break;
+
             case VariableTypes::Arith: 
                 throw error::RendorException("Arithmethic not supported yet");
 
@@ -411,13 +485,20 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
                 throw error::RendorException("Invalid node type; Assignment Variable Fail");
         }
 
-        ByteCode.emplace_back((boost::format("%s CONST %s %s") % ByteCodeNumber % Type % AssignmentNode.Value).str());
+        /* ---------------------------- generate bytecode --------------------------- */
+        if (AssignmentNode.Value.size())
+        {
+            ByteCode.emplace_back((boost::format("%s CONST %s %s") % ByteCodeNumber % Type % AssignmentNode.Value).str());
+        }
 
         ++ByteCodeNumber;
 
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
+    /* -------------------------------------------------------------------------- */
+    /*                             defining functions                             */
+    /* -------------------------------------------------------------------------- */
     else if (ClassType == NodeType::Edef)
     {
         auto& EdefNode = static_cast<Edef&>(*NodeClass); 
