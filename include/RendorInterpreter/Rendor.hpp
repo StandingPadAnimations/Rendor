@@ -18,8 +18,8 @@ enum class VariableType{
 struct Type {
     virtual VariableType TypeOfVariable() = 0;
     
-    std::string Value;
-    explicit Type(const std::string& Value) : Value(Value){}
+    std::string m_Value;
+    explicit Type(const std::string& Value) : m_Value(Value){}
 };
 
 struct NullType : Type{
@@ -35,7 +35,7 @@ struct Int : Type{
     explicit Int(std::string Value) : Type(Value){}
     
     inline int RetriveVariable(){
-        return std::stoi(Value);
+        return std::stoi(m_Value);
     }
 };
 
@@ -44,7 +44,7 @@ struct Float : Type{
     explicit Float(std::string Value) : Type(Value){}
 
     inline float RetriveVariable(){
-        return std::stof(Value);
+        return std::stof(m_Value);
     }
 };
 
@@ -53,7 +53,7 @@ struct String : Type{
     explicit String(std::string Value) : Type(Value){}
 
     inline std::string RetriveVariable(){
-        return Value;
+        return m_Value;
     }
 };
 
@@ -62,7 +62,7 @@ struct Bool : Type{
     explicit Bool(std::string Value) : Type(Value){}
 
     inline bool RetriveVariable(){
-        if(Value == "true"){
+        if(m_Value == "true"){
             return true;
         }
         else{
@@ -71,20 +71,10 @@ struct Bool : Type{
     }
 };
 
-struct Constant : Type{
-    VariableType TypeOfVariable(){return VariableType::Constant;}
-    char ConstVariableType;
-    explicit Constant(std::string Value, char ConstVariableType) : Type(Value), ConstVariableType(ConstVariableType){}
-
-    inline std::string RetriveVariable(){
-        return Value;
-    }
-};
-
 struct Variable{
-    std::string Name;
-    std::unique_ptr<Type> ValueClass;
-    explicit Variable(std::string Name) : Name(Name){}
+    std::string m_Name;
+    std::unique_ptr<Type> m_ValueClass;
+    explicit Variable(std::string Name) : m_Name(Name){}
 };
 
 #endif // Rendor API

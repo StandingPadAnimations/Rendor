@@ -62,13 +62,13 @@ std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string
                 const auto& CopiedVariable = (*Variables[CopiedVariableName]);
 
                 if ( // confirm if variable can be operated on 
-                (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Int) &&
-                (CopiedVariable.ValueClass->TypeOfVariable() != VariableType::Float)
+                (CopiedVariable.m_ValueClass->TypeOfVariable() != VariableType::Int) &&
+                (CopiedVariable.m_ValueClass->TypeOfVariable() != VariableType::Float)
                 )
                 {
                     throw error::RendorException((boost::format("%s is not an int or float!") % CopiedVariableName).str());
                 }
-                Stack.emplace_back(CopiedVariable.ValueClass->Value);
+                Stack.emplace_back(CopiedVariable.m_ValueClass->m_Value);
             } 
             else
             {

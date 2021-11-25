@@ -4,7 +4,7 @@
 static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex);
 
 // All built in functions
-std::optional<Variable> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
+std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
 
 void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 {
@@ -29,24 +29,35 @@ void engineinterpreter::ExecuteByteCode (std::ifstream& File)
 
 static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, size_t& StartIndex)
 {
-    static std::vector<std::map<std::string, std::unique_ptr<Variable>>> VariablesCallStack(691);
+    // Shortens type names 
+    using VariableScopeMap   = std::map<std::string, std::unique_ptr<Variable>>;
+    using StringVector       = std::vector<std::string>;
+    using RendorFunctionPtr  = std::function<std::optional<std::unique_ptr<Type>>(StringVector)>;
 
-    VariablesCallStack.emplace_back(std::map<std::string, std::unique_ptr<Variable>>()); // Create new map
-
-    std::map<std::string, std::unique_ptr<Variable>> *Variables = &VariablesCallStack.back();
+    // Variable related stuff
+    static std::vector<VariableScopeMap> VariablesCallStack;
 
     // Functions
-    static std::map<std::string, std::vector<std::string>> FunctionArgs {{"echo", {"EchoValue"}}};
-    static std::map<std::string, std::function<std::optional<Variable>(std::vector<std::string>)>> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}};
-    static std::map<std::string, int> UserDefinedFunctions; 
+    static std::map<std::string, StringVector> FunctionArgs {{"echo", {"EchoValue"}}};
+    static std::map<std::string, RendorFunctionPtr> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}};
+    static std::map<std::string, size_t> UserDefinedFunctions; 
 
     // Constant related stuff. These aren't static because they don't need to be
     boost::circular_buffer_space_optimized<std::string> Constants(2);
     int ConstantIndex = 0;
 
-    // Call Stack and scope related stuff. Scope is not static as we would rather start in the global scope
-    static std::vector<std::pair<std::string, std::vector<std::string>>> CallStack(690); // stores name and arguments
+    // Call Stack and scope related stuff
+    static std::vector<std::pair<std::string, StringVector>> CallStack; // stores name and arguments
+
+    // Non static stuff
     uint32_t Scope = 0;
+    VariablesCallStack.emplace_back(VariableScopeMap()); // Create new map
+    VariableScopeMap *Variables = &VariablesCallStack.back();
+
+    if (!Variables) 
+    {
+        throw error::RendorException("Interpreter Error: RendorEngineVM ptr \"Variables\" is NULL");
+    }
 
     for (size_t Op = StartIndex; Op < ByteCode.size(); ++Op)
     {
@@ -56,12 +67,12 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
         {
             continue;
         }
-        size_t ByteCodeSpaceIndex = ByteCodeOperation->find_first_of(" ", 0);
-        size_t CommandSpaceIndex = ByteCodeOperation->find_first_of(" ", ByteCodeSpaceIndex + 1);
+        size_t ByteCodeSpaceIndex  = ByteCodeOperation->find_first_of(" ", 0);
+        size_t CommandSpaceIndex   = ByteCodeOperation->find_first_of(" ", ByteCodeSpaceIndex + 1);
 
-        std::string_view Index(ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
-        std::string_view Command(ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->begin() + CommandSpaceIndex);
-        std::string_view Args(ByteCodeOperation->begin() + (CommandSpaceIndex + 1), ByteCodeOperation->end());
+        std::string_view Index    (ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
+        std::string_view Command  (ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->begin() + CommandSpaceIndex);
+        std::string_view Args     (ByteCodeOperation->begin() + (CommandSpaceIndex + 1), ByteCodeOperation->end());
 
         if (DefineMode)
         {
@@ -85,18 +96,21 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
             (Scope == 0))
             {
                 Constants.push_back(std::string{Args});
-                switch (ConstantIndex)
+                if (Constants.size() == 2)
                 {
-                    case 0:
+                    switch (ConstantIndex)
                     {
-                        ++ConstantIndex;
-                        break;
-                    }
-                    
-                    case 1:
-                    {
-                        --ConstantIndex;
-                        break;
+                        case 0:
+                        {
+                            ++ConstantIndex;
+                            break;
+                        }
+                        
+                        case 1:
+                        {
+                            --ConstantIndex;
+                            break;
+                        }
                     }
                 }
             }
@@ -106,29 +120,37 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
             (Scope == 0))
             {
                 std::string Name{Args};
-                std::string_view Value{Args.begin() + 2, Args.end()};
-                (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+                std::string VariableValue = Constants[ConstantIndex];
+                std::string_view Value{VariableValue.begin() + 2, VariableValue.end()};
+
+                if (Variables->find(Name) == Variables->end())
+                {
+                    (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+                }
+                else {
+                    // Ignore variable creation 
+                }
 
                 switch (Constants[ConstantIndex][0])
                 {
                     case '0':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Int>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Int>(std::string{Value});
                         break;
                     }
                     case '1':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Float>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Float>(std::string{Value});
                         break;
                     }
                     case '2':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<String>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<String>(std::string{Value});
                         break;
                     }
                     case '3':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Bool>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Bool>(std::string{Value});
                         break;
                     }
                 }
@@ -136,7 +158,7 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
             
             else // We don't care currently
             {
-
+                continue;
             }
         }
         else
@@ -164,33 +186,48 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                 }
             }
 
+            else if (Command == "DEFINE") // define functions
+            {
+                if (UserDefinedFunctions.find(std::string{Args}) == UserDefinedFunctions.end())
+                {
+                    throw error::RendorException((boost::format("Function %s has not been defined!") % Args).str());
+                }
+            }
+
             else if (Command == "ASSIGN") // Assigning variables
             {
                 std::string Name{Args};
                 std::string VariableValue = Constants[ConstantIndex];
                 std::string_view Value{VariableValue.begin() + 2, VariableValue.end()};
-                (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+
+                if (Variables->find(Name) == Variables->end())
+                {
+                    (*Variables)[Name] = std::make_unique<Variable>(Name); // Create variable object
+                }
+                else {
+                    // Ignore variable creation 
+                }
 
                 switch (Constants[ConstantIndex][0])
                 {
                     case '0':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Int>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Int>(std::string{Value});
                         break;
                     }
                     case '1':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Float>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Float>(std::string{Value});
                         break;
                     }
                     case '2':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<String>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<String>(std::string{Value});
                         break;
                     }
                     case '3':
                     {
-                        (*Variables)[Name]->ValueClass = std::make_unique<Bool>(std::string{Value});
+                        (*Variables)[Name]->m_ValueClass = std::make_unique<Bool>(std::string{Value});
                         break;
                     }
                 }
@@ -198,9 +235,11 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
 
             else if (Command == "CALL") // Calling functions
             {
-                if (FunctionArgs.find(std::string{Args}) == FunctionArgs.end())
+                if 
+                ((BuiltInFunctions.find(std::string{Args}) == BuiltInFunctions.end()) &&
+                (UserDefinedFunctions.find(std::string{Args}) == UserDefinedFunctions.end()))
                 {
-                    throw error::RendorException((boost::format("Function %s does not exist") % Args).str());
+                    throw error::RendorException((boost::format("Call error: Function \"%s\" does not exist") % Args).str());
                 }
                 else 
                 {
@@ -216,7 +255,22 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
                 (Args[1] == '&'))
                 {
                     std::string_view Variable(Args.begin() + 2, Args.end());
-                    CallStack.back().second.emplace_back((*Variables)[std::string{Variable}]->ValueClass->Value); // Add argument
+                    if 
+                    ((Variables->find(std::string{Variable}) == Variables->end()) &&
+                    (VariablesCallStack[0].find(std::string{Variable}) != VariablesCallStack[0].end()))
+                    {
+                        CallStack.back().second.emplace_back(VariablesCallStack[0][std::string{Variable}]->m_ValueClass->m_Value); // Add argument
+                    }
+
+                    else if (Variables->find(std::string{Variable}) != Variables->end())
+                    {
+                        CallStack.back().second.emplace_back((*Variables)[std::string{Variable}]->m_ValueClass->m_Value); // Add argument
+                    }
+
+                    else 
+                    {
+                        throw error::RendorException((boost::format("Variable \"%s\" has not been defined") % Variable).str());
+                    }
                 }
                 else
                 {
@@ -228,22 +282,43 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
             {
                 if (BuiltInFunctions.find(std::string{Args}) != BuiltInFunctions.end())
                 {
+                    size_t FunctionArgsSize = FunctionArgs[std::string{Args}].size();
+                    if (CallStack.back().second.size() > FunctionArgsSize)
+                    {
+                        throw error::RendorException((boost::format("\"%s\" takes %s argument(s); Too many arguments supplied") % Args % FunctionArgsSize).str());
+                    }
                     BuiltInFunctions[std::string{Args}](CallStack.back().second);
+                }
+
+                else if (UserDefinedFunctions.find(std::string{Args}) != UserDefinedFunctions.end())
+                {
+                    ByteCodeLoop(false, ByteCode, UserDefinedFunctions[std::string{Args}]);
+                }
+
+                else 
+                {
+                    throw error::RendorException((boost::format("Finalize Call Error: Function \"%s\" does not exist") % Args).str());
                 }
             }
 
-            else if (Command == "FUNCTION") // Ending a function 
+            else if (Command == "FUNCTION") // Ending a function  
             {
                 if (Args == "END")
                 {
                     VariablesCallStack.pop_back(); // remove local scope variables 
+                    return;
                 }
+            }
+
+            else 
+            {
+                throw error::RendorException((boost::format("Error: Can not reconize \"%s\"") % (*ByteCodeOperation)).str());
             }
         }
     }
 }
 
-std::optional<Variable> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs)
+std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs)
 {
     std::cout << EchoArgs[0] << std::endl;
     return {};

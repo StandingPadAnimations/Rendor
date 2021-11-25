@@ -59,14 +59,18 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
+
+        std::cout << "Tokenizing..." << std::endl;
         Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
 
         // Parses
+        std::cout << "Generating AST tree..." << std::endl;
         ByteCode = Parser(Tokens); 
 
         // Adds it to output Cren File
         if (ByteCode.size() > 0)
         {
+            std::cout << "Outputing bytecode..." << std::endl;
             std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
             std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
             for (auto const& Op : ByteCode)

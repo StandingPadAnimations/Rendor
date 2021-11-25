@@ -20,7 +20,8 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
         (Code[Char] == '}')   ||
         (Code[Char] == '='))  &&
         ((LexerBufferID == BufferID::None) ||
-        (LexerBufferID == BufferID::StringEnd)))
+        (LexerBufferID == BufferID::StringEnd) ||
+        LexerBufferID == BufferID::Comment))
         {
             std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
 
@@ -29,49 +30,59 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
             }
 
-            else if (LexerBufferID == BufferID::StringEnd) 
+            else if (LexerBufferID == BufferID::StringEnd)
             {
                 LexerBufferID = BufferID::None; // resets BufferID when needed
             }
 
-            // Keywords 
-            else if (std::find(Keywords.begin(), Keywords.end(), Buffer) != Keywords.end()) // if it is a keyword
-            {
-                Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
-            }
-            
-            // Functions
-            else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
-            {
-                Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
-            }
-
-            // Floats 
             else if 
-            ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
-            (Buffer.find_first_of(".") != std::string::npos))
+            ((LexerBufferID == BufferID::Comment) &&
+            (Code[Char] == ';'))
             {
-                Tokens.emplace_back(Token::FLOAT, Buffer);
+                LexerBufferID = BufferID::None; // resets BufferID when needed
             }
 
-            // Ints
-            else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
+            else if (LexerBufferID == BufferID::None) // Everything that requires the BufferID to be None
             {
-                Tokens.emplace_back(Token::INT, Buffer);
-            }
+                // Keywords 
+                if (std::find(Keywords.begin(), Keywords.end(), Buffer) != Keywords.end()) // if it is a keyword
+                {
+                    Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
+                }
+                
+                // Functions
+                else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
+                {
+                    Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+                }
 
-            // Booleans 
-            else if 
-            ((Buffer == "true") ||
-            (Buffer == "false"))
-            {
-                Tokens.emplace_back(Token::BOOL, Buffer);
-            }
+                // Floats 
+                else if 
+                ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
+                (Buffer.find_first_of(".") != std::string::npos))
+                {
+                    Tokens.emplace_back(Token::FLOAT, Buffer);
+                }
 
-            // Identifiers
-            else 
-            {
-                Tokens.emplace_back(Token::IDENTIFIER, std::string{Buffer});
+                // Ints
+                else if (Buffer.find_last_not_of("1234567890") == std::string::npos)
+                {
+                    Tokens.emplace_back(Token::INT, Buffer);
+                }
+
+                // Booleans 
+                else if 
+                ((Buffer == "true") ||
+                (Buffer == "false"))
+                {
+                    Tokens.emplace_back(Token::BOOL, Buffer);
+                }
+
+                // Identifiers
+                else 
+                {
+                    Tokens.emplace_back(Token::IDENTIFIER, std::string{Buffer});
+                }
             }
 
             StartIndex = Code.find_first_not_of(' ', EndIndex);
@@ -115,6 +126,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
 
             }
             
+        }
+
+        if
+        ((Code[Char] == '/') &&
+        (Code[Char + 1] == '/'))
+        {
+            LexerBufferID = BufferID::Comment;
         }
 
         // quotes 

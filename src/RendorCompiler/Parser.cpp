@@ -33,6 +33,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     // Parser related stuff
     TempID ParserTempID = TempID::None;
     std::map<std::string, char> IdentifiersMap; // Defines identifiers
+    std::string LastIdentifier;
     uint32_t LineNumber = 1;
 
     uint32_t ScopeLevel = 0;
@@ -43,15 +44,18 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     std::vector<std::string> ByteCode;
     
     for (auto const& [token, value] : Tokens)
-    {
-        std::cout << "Token: " << static_cast<std::underlying_type<lt>::type>(token) << " " << value << std::endl;
-        
+    {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
 
         switch (token)
         {
             case lt::NEWLINE: // * Newlines
             {
+                if (ParserTempID != TempID::FunctionScope)
+                {
+                    ParserTempID = TempID::None;
+                }
+
                 ++LineNumber;
                 break; 
             }
@@ -59,17 +63,27 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             // Functions and variables
             case lt::IDENTIFIER: // * user defined things 
             {
-                if 
+                if (ParserTempID == TempID::IdentifierDefinition)
+                {
+                    throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % LastIdentifier % LineNumber).str());
+                }
+
+                else if 
                 ((IdentifiersMap.find(value) == IdentifiersMap.end()) &&
                 (ParserTempID == TempID::None)) // if it's a new variable 
                 {
                     ParserTempID = TempID::IdentifierDefinition;
                     IdentifiersMap[value] = 'N';
+                    LastIdentifier = value;
                 }
 
                 else if (ParserTempID == TempID::FunctionDefiniton) // functions
                 {
-                    if (value == "main")
+                    if (IdentifiersMap.find(value) != IdentifiersMap.end())
+                    {
+                        throw error::RendorException((boost::format("Redefinition Error: %s is already defined!; Line %s") % value % LineNumber).str());
+                    }
+                    else if (value == "main")
                     {
                         IsScript = true; // This is a script and not a library or module 
                     }
@@ -89,13 +103,19 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     }
                     else // if variable does not exist 
                     {
-                        throw error::RendorException((boost::format("Identifier %s not defined; Line %s") % value % LineNumber).str());
+                        throw error::RendorException((boost::format("Identifier Error: Identifier %s not defined; Line %s") % value % LineNumber).str());
                     }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
+
+                    if (IdentifiersMap.find(value) == IdentifiersMap.end())
+                    {
+                        throw error::RendorException((boost::format("Identifier Error: %s does not exist! Line %s") % value % LineNumber).str());
+                    }
+
                     FunctionNode.Args.emplace_back((boost::format("_&%s") % value).str()); // Add argument to Node
                 }
 
@@ -121,11 +141,11 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 if (ParserTempID == TempID::IdentifierDefinition)
                 {
                     ParserTempID = TempID::VariableDefition;
-                    Scope->push_back(std::make_unique<AssignVariable>(std::prev(IdentifiersMap.end())->first));
+                    Scope->push_back(std::make_unique<AssignVariable>(LastIdentifier));
                 }
                 else 
                 {
-                    throw error::RendorException((boost::format("Random = found on line %s") % LineNumber).str());
+                    throw error::RendorException((boost::format("Syntax Error: = found on line %s, expected variable definition") % LineNumber).str());
                 }
                 break;
             }
@@ -136,9 +156,15 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     // Do nothing 
                 }
-                if (ParserTempID == TempID::FunctionDefiniton) // Defining a funcion 
+                else if (ParserTempID == TempID::FunctionDefiniton) // Defining a funcion 
                 {
                     ParserTempID = TempID::FunctionArgumentsDefinition;
+                }
+                else if (ParserTempID == TempID::IdentifierDefinition)
+                {
+                    Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
+                    ParserTempID = TempID::FunctionCall;
+                    IdentifiersMap.erase(LastIdentifier);
                 }
                 break;
             }
@@ -148,6 +174,10 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 if (ParserTempID == TempID::FunctionArgumentsDefinition)
                 {
                     ParserTempID = TempID::FunctionScope;
+                }
+                else if (ParserTempID == TempID::FunctionCall)
+                {
+                    ParserTempID = TempID::None;
                 }
                 break;
             }
@@ -162,6 +192,10 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     // Add it as a scope
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
                     ScopeList.emplace_back(EdefNode.Body);
+                }
+
+                else {
+                    throw error::RendorException((boost::format("Syntax Error: { found outside of function scope; Line %s") % LineNumber).str());
                 }
                 break;
             }
@@ -256,6 +290,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     ParserTempID = TempID::FunctionDefiniton;
                 }
+
                 else 
                 {
                     throw error::RendorException("Not supported yet");
@@ -270,6 +305,8 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     
 
     //BYTECODE GENERATION-----------------------------------------------------------------------------------------------------
+
+    std::cout << "Generating bytecode..." << std::endl;
 
     uint32_t ByteCodeNumber = 0;
 

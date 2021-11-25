@@ -63,7 +63,8 @@ namespace Lex{
                 StringEnd,
                 CharSingle,
                 CharDouble,
-                CharTilda
+                CharTilda,
+                Comment
             };
     };
 }
