@@ -1,11 +1,13 @@
 edef main() 
 {
-    lol("we're in lol", 1)
+    UserInput = input("Say Something fool: ")
+    lol(UserInput, 100)
 }
 
 edef lol(world, num)
 {
     echo(world)
+    num = sum(num)
     echo(num)
 }
 

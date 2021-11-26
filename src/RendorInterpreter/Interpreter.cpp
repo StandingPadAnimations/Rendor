@@ -9,8 +9,9 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
 
 
 /* --------------------------- Built in functions --------------------------- */
-std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION (std::vector<std::string> EchoArgs);
+std::optional<std::unique_ptr<Type>> RENDOR_ECHO_FUNCTION  (std::vector<std::string> EchoArgs);
 std::optional<std::unique_ptr<Type>> RENDOR_INPUT_FUNCTION (std::vector<std::string> InputArgs);
+std::optional<std::unique_ptr<Type>> RENDOR_SUM_FUNCTION   (std::vector<std::string> SumArgs);
 
 /* -------------------------------------------------------------------------- */
 /*                          Execute ByteCode Function                         */
@@ -51,8 +52,13 @@ static void ByteCodeLoop(bool DefineMode, std::vector<std::string> ByteCode, siz
     static std::vector<VariableScopeMap> VariablesCallStack;
 
     // Functions
-    static std::map<std::string, StringVector> FunctionArgs {{"echo", {"EchoValue"}}, {"input", {"InputValue"}}};
-    static std::map<std::string, RendorFunctionPtr> BuiltInFunctions {{"echo", RENDOR_ECHO_FUNCTION}, {"input", RENDOR_INPUT_FUNCTION}};
+    static std::map<std::string, StringVector> FunctionArgs{{"echo",  {"EchoArgs"}}, 
+                                                            {"input", {"InputArgs"}}, 
+                                                            {"sum",   {"SumArgs"}}};
+                                                                
+    static std::map<std::string, RendorFunctionPtr> BuiltInFunctions{{"echo",  RENDOR_ECHO_FUNCTION}, 
+                                                                    {"input",  RENDOR_INPUT_FUNCTION}, 
+                                                                    {"sum",    RENDOR_SUM_FUNCTION}};
     static std::map<std::string, size_t> UserDefinedFunctions;
 
     // Constant related stuff. These aren't static because they don't need to be
@@ -452,4 +458,14 @@ std::optional<std::unique_ptr<Type>> RENDOR_INPUT_FUNCTION (std::vector<std::str
     std::getline(std::cin, InputString);
 
     return std::make_unique<String>(InputString);
+}
+
+std::optional<std::unique_ptr<Type>> RENDOR_SUM_FUNCTION (std::vector<std::string> SumArgs)
+{
+    std::string SumString{SumArgs[0].begin() + 2, SumArgs[0].end()};
+    int64_t SumNumber = std::stol(SumString);
+
+    SumNumber = (SumNumber *  (SumNumber + 1)) / 2;
+
+    return std::make_unique<Int>(std::to_string(SumNumber));
 }

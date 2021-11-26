@@ -52,7 +52,8 @@ namespace Lex{
             // Keywords to check for 
             std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "#rdef"};
 
-            std::array<std::string, 2> Functions {"echo", "input"};
+            // Functions
+            std::array<std::string, 3> Functions {"echo", "input", "sum"};
 
             // Operators to check for 
             std::array<std::string, 8> Operators {"and", "or", "not", "is", "==", "!=", ">=", "<="};

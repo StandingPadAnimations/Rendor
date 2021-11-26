@@ -10,7 +10,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
     for (size_t Char = 0; Char < Code.size(); ++Char)
     { 
         // When we come across a space, symbol, or newline
-        if 
+        if  
         (((Code[Char] == ' ') ||
         (Code[Char] == ';')   ||
         (Code[Char] == ',')   ||
