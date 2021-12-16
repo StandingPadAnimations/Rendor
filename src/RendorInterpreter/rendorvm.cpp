@@ -49,4 +49,9 @@ int main (int argc, char *argv[])
         std::cout << exp.what() << std::endl;
         return EXIT_FAILURE;
     }
+    catch (...)
+    {
+        std::cout << "Unknown Error Occured" << std::endl;
+        return EXIT_FAILURE;
+    }
 }

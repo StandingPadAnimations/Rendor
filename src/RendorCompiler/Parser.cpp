@@ -25,7 +25,8 @@ To avoid issues with scopes
 /* -------------------------------------------------------------------------- */
 /*                             Foward declarations                            */
 /* -------------------------------------------------------------------------- */
-std::string ByteCodeGen (const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode, uint32_t& ByteCodeNumber);
+static std::string ByteCodeGen (const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode);
+static void DeltaOptimizer (std::vector<std::string>& ByteCode);
 
 
 /* -------------------------------------------------------------------------- */
@@ -41,6 +42,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     TempID ParserTempID = TempID::None;
     std::map<std::string, char> IdentifiersMap; // Defines identifiers
     std::string LastIdentifier;
+    std::string LastOp = "";
     uint32_t LineNumber = 1;
 
     uint32_t ScopeLevel = 0;
@@ -59,7 +61,9 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
         {
             case lt::NEWLINE: // * Newlines
             {
-                if (ParserTempID != TempID::FunctionScope)
+                if 
+                ((ParserTempID != TempID::FunctionScope) &&
+                (ParserTempID != TempID::IfElseScope))
                 {
                     ParserTempID = TempID::None;
                 }
@@ -82,7 +86,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                 /* -------------------------------- functions ------------------------------- */
                 else if 
-                ((IdentifiersMap.find(value) != IdentifiersMap.end()) &&
+                ((IdentifiersMap.contains(value)) &&
                 (IdentifiersMap.at(value) == 'F'))
                 {
                     Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
@@ -91,8 +95,8 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 
                 /* -------------------------------- not known ------------------------------- */
                 else if 
-                (((IdentifiersMap.find(value) == IdentifiersMap.end()) ||
-                ((IdentifiersMap.find(value) != IdentifiersMap.end()) &&
+                (((!IdentifiersMap.contains(value)) ||
+                ((IdentifiersMap.contains(value))   &&
                 (IdentifiersMap.at(value) != 'F'))) &&
                 (ParserTempID == TempID::None)) // if it's a new variable 
                 {
@@ -103,7 +107,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 /* --------------------------- defining functions --------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // functions
                 {
-                    if (IdentifiersMap.find(value) != IdentifiersMap.end())
+                    if (IdentifiersMap.contains(value))
                     {
                         throw error::RendorException((boost::format("Redefinition Error: %s is already defined!; Line %s") % value % LineNumber).str());
                     }
@@ -118,12 +122,9 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 /* ---------------------------- copying variables --------------------------- */
                 else if (ParserTempID == TempID::VariableDefition) // copying variables
                 {
-                    if (IdentifiersMap.find(value) == IdentifiersMap.end()) // if it's a new variable 
+                    if (IdentifiersMap.contains(value)) // if it's a new variable 
                     {
-                        char Identifier = IdentifiersMap[value]; // retrive the current type of the variable being copied
                         auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                        IdentifiersMap[AssignmentNode.VariableName] = Identifier;
-
                         AssignmentNode.Value = (boost::format("_&%s") % value).str();
                     }
                     else // if variable does not exist 
@@ -137,43 +138,12 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
 
-                    if (IdentifiersMap.find(value) == IdentifiersMap.end())
+                    if (!IdentifiersMap.contains(value))
                     {
                         throw error::RendorException((boost::format("Identifier Error: %s does not exist! Line %s") % value % LineNumber).str());
                     }
 
-                    switch (IdentifiersMap[value])
-                    {
-                        case 'I':
-                        {
-                            FunctionNode.Args.emplace_back(0, (boost::format("_&%s") % value).str()); // Add argument to Node
-                            break;
-                        }
-
-                        case 'D':
-                        {
-                            FunctionNode.Args.emplace_back(1, (boost::format("_&%s") % value).str()); // Add argument to Node
-                            break;
-                        }
-
-                        case 'S':
-                        {
-                            FunctionNode.Args.emplace_back(2, (boost::format("_&%s") % value).str()); // Add argument to Node
-                            break;
-                        }
-
-                        case 'B':
-                        {
-                            FunctionNode.Args.emplace_back(3, (boost::format("_&%s") % value).str()); // Add argument to Node
-                            break;
-                        }
-
-                        case 'N':
-                        {
-                            FunctionNode.Args.emplace_back(-1, (boost::format("_&%s") % value).str()); // Add argument to Node
-                            break;
-                        }
-                    }
+                    FunctionNode.Args.emplace_back((boost::format("_&%s") % value).str()); // Add argument to Node
                 }
 
                 /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
@@ -182,6 +152,13 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
                     EdefNode.Args.emplace_back(value); // Add argument to Node
                     IdentifiersMap[value] = 'N';
+                }
+
+                /* ------------------------------ if statements ----------------------------- */
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    IfElseNode.Conditions.emplace_back("_&" + value); // Add condition 
                 }
                 break;
             }
@@ -193,10 +170,8 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if(ParserTempID == TempID::VariableDefition)
                 {
-                    char Identifier = 'I';
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = value;
-                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
+                    AssignmentNode.Value = "_$" + value;
                     AssignmentNode.VariableType = VariableTypes::Function;
                 }
                 Scope->push_back(std::make_unique<FunctionCall>(value));
@@ -216,6 +191,21 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     ParserTempID = TempID::VariableDefition;
                     Scope->push_back(std::make_unique<AssignVariable>(LastIdentifier));
                 }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    
+                    if (LastOp == "=")
+                    {
+                        IfElseNode.Conditions.emplace_back((boost::format("%s=") % LastOp).str());
+                        LastOp = "";
+                    }
+                    else {
+                        LastOp = value;
+                    }
+                }
+
                 else 
                 {
                     throw error::RendorException((boost::format("Syntax Error: = found on line %s, expected variable definition") % LineNumber).str());
@@ -245,15 +235,22 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     // Do nothing 
                 }
+
                 else if (ParserTempID == TempID::FunctionDefiniton) // Defining a funcion 
                 {
                     ParserTempID = TempID::FunctionArgumentsDefinition;
                 }
+
                 else if (ParserTempID == TempID::IdentifierDefinition)
                 {
                     Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
                     ParserTempID = TempID::FunctionCall;
                     IdentifiersMap.erase(LastIdentifier);
+                }
+
+                else if (ParserTempID == TempID::IfStatementDefinition)
+                {
+                    ParserTempID = TempID::ConditionDefinition;
                 }
                 break;
             }
@@ -265,6 +262,12 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     ParserTempID = TempID::FunctionScope;
                 }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    ParserTempID = TempID::IfElseScope;
+                }
+
                 else if (ParserTempID == TempID::FunctionCall)
                 {
                     ParserTempID = TempID::None;
@@ -285,8 +288,18 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                     ScopeList.emplace_back(EdefNode.Body);
                 }
 
+                else if (ParserTempID == TempID::IfElseScope)
+                {
+                    ParserTempID = TempID::None;
+                    ++ScopeLevel;
+
+                    // Add it as a scope
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    ScopeList.emplace_back(IfElseNode.Body);
+                }
+
                 else {
-                    throw error::RendorException((boost::format("Syntax Error: { found outside of function scope; Line %s") % LineNumber).str());
+                    throw error::RendorException((boost::format("Syntax Error: { found outside of function/if/else scope; Line %s") % LineNumber).str());
                 }
                 break;
             }
@@ -318,7 +331,13 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(0, value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    IfElseNode.Conditions.emplace_back(value); // Add condition 
                 }
                 break;
             }
@@ -338,7 +357,13 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(1, value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    IfElseNode.Conditions.emplace_back(value); // Add condition 
                 }
                 break;
             }
@@ -350,7 +375,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     char Identifier = 'S';
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = value;
+                    AssignmentNode.Value = "_S" + value;
                     IdentifiersMap[AssignmentNode.VariableName] = Identifier;
                     AssignmentNode.VariableType = VariableTypes::String;
                 }
@@ -358,7 +383,13 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(2, value); // Add argument to Node
+                    FunctionNode.Args.emplace_back("_S" + value); // Add argument to Node
+                }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    IfElseNode.Conditions.emplace_back("_S" + value); // Add condition 
                 }
                 break;
             }
@@ -378,7 +409,13 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(3, value); // Add argument to Node
+                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                }
+
+                else if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    IfElseNode.Conditions.emplace_back(value); // Add condition 
                 }
                 break;
             }
@@ -391,6 +428,14 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 if (value == "edef")
                 {
                     ParserTempID = TempID::FunctionDefiniton;
+                }
+
+                else if 
+                ((value == "if") ||
+                (value == "else"))
+                {
+                    Scope->push_back(std::make_unique<IfElse>());
+                    ParserTempID = TempID::IfStatementDefinition;
                 }
 
                 else 
@@ -412,32 +457,24 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     /* -------------------------------------------------------------------------- */
     /*                             ByteCode generation                            */
     /* -------------------------------------------------------------------------- */
-
     std::cout << "Generating bytecode..." << std::endl;
-
-    uint32_t ByteCodeNumber = 0;
-    
     /* ----------------------------- Is it a script ----------------------------- */
     if (!IsScript)
     {
-        ByteCode.emplace_back((boost::format("%s NOT_SCRIPT TRUE") % ByteCodeNumber).str());
-        ++ByteCodeNumber;
+        ByteCode.emplace_back("NOT_SCRIPT TRUE");
     }
-
     /* -------------------------- Loading global scope -------------------------- */
-    ByteCode.emplace_back((boost::format("%s LOAD 0") % ByteCodeNumber).str()); 
-    ++ByteCodeNumber;
+    ByteCode.emplace_back("LOAD 0");
 
     /* ---------------- Generating the bytecode from the AST tree --------------- */
     for (const auto& Node : (*Script.GlobalBody))
     {
-        ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
-        ++ByteCodeNumber;
+        ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
     }
-
     /* ------------------------- ending the global scope ------------------------ */
-    ByteCode.emplace_back("0 END 0"); 
-
+    ByteCode.emplace_back("END 0"); 
+    /* ---------------------------- Optimize bytecode --------------------------- */
+    DeltaOptimizer(ByteCode);
     /* ----------------------------- return bytecode ---------------------------- */
     return ByteCode;
 }
@@ -447,7 +484,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 /*                      Bytecode Generation loop function                     */
 /* -------------------------------------------------------------------------- */
 
-std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode, uint32_t& ByteCodeNumber)
+static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode)
 {
 
     /* -------------------------------------------------------------------------- */
@@ -456,46 +493,12 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     if (ClassType == NodeType::AssignVariable) 
     {
         auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass); 
-        int Type;
-
-        /* ------------------------------- Check type ------------------------------- */
-        switch (AssignmentNode.VariableType)
-        {
-            case VariableTypes::Int:
-                Type = 0;
-                break;
-            
-            case VariableTypes::Float:
-                Type = 1;
-                break;
-
-            case VariableTypes::String:
-                Type = 2;
-                break;
-
-            case VariableTypes::Bool:
-                Type = 3;
-                break;
-
-            case VariableTypes::Function:
-                Type = 4; 
-                break;
-
-            case VariableTypes::Arith: 
-                throw error::RendorException("Arithmethic not supported yet");
-
-            default:
-                throw error::RendorException("Invalid node type; Assignment Variable Fail");
-        }
 
         /* ---------------------------- generate bytecode --------------------------- */
         if (AssignmentNode.Value.size())
         {
-            ByteCode.emplace_back((boost::format("%s CONST %s %s") % ByteCodeNumber % Type % AssignmentNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST %s") % AssignmentNode.Value).str());
         }
-
-        ++ByteCodeNumber;
-
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
@@ -506,19 +509,16 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     {
         auto& EdefNode = static_cast<Edef&>(*NodeClass); 
 
-        ByteCode.emplace_back((boost::format("%s DEFINE %s") % ByteCodeNumber % EdefNode.Name).str());
-        ++ByteCodeNumber;
+        ByteCode.emplace_back((boost::format("DEFINE %s") % EdefNode.Name).str());
 
-        for (const auto& Arg : EdefNode.Args) // Arguments 
+        for (std::vector<std::string>::reverse_iterator Arg = EdefNode.Args.rbegin(); Arg != EdefNode.Args.rend(); ++Arg) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("%s ARGUMENT %s") % ByteCodeNumber % Arg).str());
-            ++ByteCodeNumber;
+            ByteCode.emplace_back((boost::format("ARGUMENT %s") % *Arg).str());
         }
 
         for (const auto& Node : (*EdefNode.Body)) // actual body 
         {
-            ByteCode.emplace_back((boost::format("%s %s") % ByteCodeNumber % ByteCodeGen(Node->Type(), Node, ByteCode, ByteCodeNumber)).str());
-            ++ByteCodeNumber;
+            ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
         }
 
         return "FUNCTION END";
@@ -528,17 +528,105 @@ std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& 
     {
         auto& CallNode = static_cast<FunctionCall&>(*NodeClass); 
 
-        ByteCode.emplace_back((boost::format("%s CALL %s") % ByteCodeNumber % CallNode.Function).str());
-        ++ByteCodeNumber;
+        ByteCode.emplace_back((boost::format("CALL %s") % CallNode.Function).str());
 
-        for (const auto& [type, arg] : CallNode.Args) // Arguments 
+        for (const auto& arg : CallNode.Args) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("%s CALL_ARG %s %s") % ByteCodeNumber % type % arg).str());
-            ++ByteCodeNumber;
+            ByteCode.emplace_back((boost::format("CALL_ARG %s") % arg).str());
+
         }
 
         return (boost::format("FINALIZE_CALL %s") % CallNode.Function).str();
     }
 
+    /* -------------------------------------------------------------------------- */
+    /*                         Defining if-else statements                        */
+    /* -------------------------------------------------------------------------- */
+    else if (ClassType == NodeType::IfElse)
+    {
+        auto& IfElseNode = static_cast<IfElse&>(*NodeClass); 
+
+        /* --------------------------- Generate Conditions -------------------------- */
+        std::string * Conditon1 = &IfElseNode.Conditions[0];
+        std::string * Conditon2 = &IfElseNode.Conditions[2];
+        std::string * Op        = &IfElseNode.Conditions[1];
+
+        ByteCode.emplace_back((boost::format("CONST %s") % (*Conditon1)).str());
+        ByteCode.emplace_back((boost::format("CONST %s") % (*Conditon2)).str());
+
+        if ((*Op) == "==")
+        {
+            ByteCode.emplace_back("OPERATOR EQUAL");
+        }
+        else if ((*Op) == "!=")
+        {
+            ByteCode.emplace_back("OPERATOR NOT_EQUAL");
+        }
+        else if ((*Op) == ">")
+        {
+            ByteCode.emplace_back("OPERATOR GREATER_THAN");
+        }
+        else if ((*Op) == "<")
+        {
+            ByteCode.emplace_back("OPERATOR LESS_THAN");
+        }
+        else if ((*Op) == ">=")
+        {
+            ByteCode.emplace_back("OPERATOR GREATER_OR_EQUAL");
+        }
+        else if ((*Op) == "<=")
+        {
+            ByteCode.emplace_back("OPERATOR LESS_OR_EQUAL");
+        }
+        ByteCode.emplace_back("JMP_IF_FALSE ");
+        
+        /* -------------------- For the JMP_IF_FALSE instruction -------------------- */
+        size_t IndexOfJMP = ByteCode.size() - 1;
+        
+        for (const auto& Node : (*IfElseNode.Body)) // actual body 
+        {
+            ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
+        }
+
+        ByteCode[IndexOfJMP] += std::to_string(ByteCode.size() - 1);
+        return "ENDIF STATE";
+    }
+
     return "ERROR";
+}
+
+static void DeltaOptimizer(std::vector<std::string>& ByteCode)
+{
+    std::string SavedString = "";
+    for (auto ByteCodeOp = ByteCode.begin(); ByteCodeOp != ByteCode.end();)
+    {
+        size_t ByteCodeSpaceIndex  = ByteCodeOp->find_first_of(" ");
+        std::string_view Command  (ByteCodeOp->begin(), ByteCodeOp->begin() + ByteCodeSpaceIndex);
+        std::string_view Args     (ByteCodeOp->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOp->end());
+
+        if (Command == "CONST")
+        {
+            if 
+            ((Args[0] == '_') &&
+            (Args[1] == '$'))
+            {
+                SavedString = *(ByteCodeOp + 1);
+                
+                // Erase const instruction 
+                ByteCode.erase(ByteCodeOp);
+
+                // Erase assign instruction
+                ByteCode.erase(ByteCodeOp);
+            }
+        }
+        else if (Command == "FINALIZE_CALL")
+        {
+            if (SavedString.size())
+            {
+                ByteCode.insert(ByteCodeOp + 1, SavedString);
+                SavedString = "";
+            }
+        }
+        ++ByteCodeOp;
+    }
 }

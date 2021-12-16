@@ -19,24 +19,25 @@ namespace Lex{
     // Enum for tokens 
     enum class Token{
         // Identifiers, keywords, and functions
-        IDENTIFIER = 0, // Note: While values in enums don't need to be assigned, it makes reading the token output easier
+        IDENTIFIER        = 0, 
         BUILT_IN_FUNCTION = 1,
-        KEYWORD = 2,
+        KEYWORD           = 2,
+        OPERATOR          = 3,
 
         // Symbols
-        EQUAL = 3,
-        LPAREN = 4,
-        RPAREN = 5,
-        LBRACE = 6,
-        RBRACE = 7,
-        NEWLINE = 8, 
-        COMMA = 9,
+        EQUAL             = 4,
+        LPAREN            = 5,
+        RPAREN            = 6,
+        LBRACE            = 7,
+        RBRACE            = 8,
+        NEWLINE           = 9, 
+        COMMA             = 10,
 
         // Variable Types
-        INT = 10,
-        FLOAT = 11,
-        STRING = 12,
-        BOOL = 13
+        INT               = 11,
+        FLOAT             = 12,
+        STRING            = 13,
+        BOOL              = 14
     };
 
     // Lexer Class 
@@ -50,13 +51,13 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "#rdef"};
+            std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "else"};
 
             // Functions
             std::array<std::string, 3> Functions {"echo", "input", "sum"};
 
             // Operators to check for 
-            std::array<std::string, 8> Operators {"and", "or", "not", "is", "==", "!=", ">=", "<="};
+            std::array<std::string, 4> Operators {"and", "or", "not", "is"};
 
             enum class BufferID 
             {

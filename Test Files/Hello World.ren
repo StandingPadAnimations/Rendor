@@ -1,14 +1,13 @@
 edef main() 
 {
-    UserInput = input("Say Something fool: ")
-    lol(UserInput, 100)
-}
-
-edef lol(world, num)
-{
-    echo(world)
-    num = sum(num)
+    num = input("Say a number: ")
     echo(num)
+    world = 1
+    lol(world, num)
 }
 
-
+edef lol(foo, bar)
+{
+    echo(foo)
+    echo(bar)
+}

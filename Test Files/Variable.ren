@@ -1,16 +1,5 @@
 edef main(){
     world = "Hello World"
-    echo(world)
-
-    world = 1
-    echo(world)
-
     num = world
     echo(num)
-
-    float = 1.0 
-    echo(float)
-
-    bool = true
-    echo(float)
 }

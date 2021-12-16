@@ -3,10 +3,13 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
 
 #include "RendorCompiler/Lexer.hpp"
 #include "RendorCompiler/Parser.hpp"
 #include "RendorInterpreter/Interpreter.hpp"
+#include "cpp-terminal/base.hpp"
 
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3

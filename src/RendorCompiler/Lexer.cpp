@@ -10,6 +10,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
     for (size_t Char = 0; Char < Code.size(); ++Char)
     { 
         // When we come across a space, symbol, or newline
+        if 
+        ((LexerBufferID == BufferID::Comment) &&
+        (Code[Char] != ';'))
+        {
+            continue;
+        }
+        
         if  
         (((Code[Char] == ' ') ||
         (Code[Char] == ';')   ||
@@ -52,6 +59,11 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
                 
                 // Functions
                 else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
+                {
+                    Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+                }
+
+                else if (std::find(Operators.begin(), Operators.end(), Buffer) != Operators.end()) // if it is a built in function
                 {
                     Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
                 }

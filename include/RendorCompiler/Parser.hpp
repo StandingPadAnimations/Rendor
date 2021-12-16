@@ -42,7 +42,12 @@ enum class TempID{
 
     // Function things
     FunctionCall,
-    FunctionScope
+    FunctionScope,
+
+    // If-else statements 
+    IfStatementDefinition,
+    ConditionDefinition,
+    IfElseScope
 };
 
 enum class NodeType{
@@ -52,7 +57,7 @@ enum class NodeType{
     MarkRdef,
     MarkGlobal,
     AssignVariable,
-    RendorKeyWord,
+    IfElse,
     Increment,
     Decrement,
     FunctionCall,
@@ -84,16 +89,16 @@ struct AssignVariable : Node{
     NodeType Type(){return NodeType::AssignVariable;}
 };
 
-struct RendorKeyWord : Node{
-    std::string KeyWord;
-    std::string Args;
-    explicit RendorKeyWord(std::string KeyWord) : KeyWord(KeyWord){}
-    NodeType Type(){return NodeType::RendorKeyWord;}
+struct IfElse : Node{
+    std::vector<std::string> Conditions;
+    Body IfElseBody;
+    std::vector<std::unique_ptr<Node>> *Body = &IfElseBody.ConnectedNodes;
+    NodeType Type(){return NodeType::IfElse;}
 };
 
 struct FunctionCall : Node{
     std::string Function;
-    std::vector<std::pair<int, std::string>> Args;
+    std::vector<std::string> Args;
     explicit FunctionCall(std::string Function) : Function(Function){}
     NodeType Type(){return NodeType::FunctionCall;}
 };

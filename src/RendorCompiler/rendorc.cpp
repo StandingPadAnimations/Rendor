@@ -42,12 +42,22 @@ int main (int argc, char *argv[])
 {
     try
     {
-        RendorEngineCompiler::run(argv[1], argv);
+        std::string File;
+        if (!argv[1])
+        {
+            File = "";
+        }
+        else 
+        {
+            File = argv[1];
+        }
+
+        RendorEngineCompiler::run(File, argv);
         return EXIT_SUCCESS;
     }
     catch (const std::exception& exp)
     {             
-        std::cout << exp.what() << std::endl;   
+        std::cout << exp.what() << Term::color(Term::style::reset) << std::endl;   
         return EXIT_FAILURE;
     }
     return 0;

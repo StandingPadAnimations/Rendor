@@ -5,7 +5,7 @@ BIN         := bin
 OBJDIR      := bin/RendorCompiler/ObjectFiles
 SRC         := src/RendorCompiler
 INCLUDE     := include
-LIBRARIES   := 
+LIBRARIES   := g++
 
 EXECUTABLE  := RendorCompiler/rendorc
 
@@ -24,8 +24,9 @@ run: clean all
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
-$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp 
+$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
+	
 
 clean:
 	-rm $(OBJDIR)/*.o

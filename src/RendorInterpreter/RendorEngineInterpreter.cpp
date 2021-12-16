@@ -41,7 +41,7 @@ void RendorEngineInterpreter::run (const std::string FilePath)
 
     if (File.is_open()) 
     {
-        engineinterpreter::ExecuteByteCode(File);
+        Interpreter::ExecuteByteCode(File);
     } 
     else 
     {
