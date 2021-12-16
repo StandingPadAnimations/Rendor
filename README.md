@@ -22,3 +22,4 @@ Officially this is called the Rendor Engine, named after the term render engine(
 # Compiling requirements for building from source:
 * You have to compile using a C++20 compatible compiler. On Linux, Mac, and Windows(using gcc and make) you can use the make file 
 * Boost 1.77 is a required dependency(You may need to edit the makefile's BOOSTFILE and BOOSTSYS variables)
+* The compiler uses the cpp-terminal library(https://github.com/jupyter-xeus/cpp-terminal), but it comes bundled with it
