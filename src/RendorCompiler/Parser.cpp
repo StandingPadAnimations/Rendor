@@ -36,9 +36,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     uint32_t ScopeLevel = 0;
 
     bool IsScript = false;
-
-    // Bytecode vector
-    std::vector<std::string> ByteCode;
     
     for (auto const& [token, value] : Tokens)
     {        
@@ -810,7 +807,7 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         case NodeType::String:
         {
             auto& StringNode = static_cast<String&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST %s") % StringNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST _S%s") % StringNode.Value).str());
             break;
         }
 
@@ -833,9 +830,9 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node); 
 
             ByteCode.emplace_back((boost::format("CALL %s") % FunctionCallNode.Function).str());
-            for (const auto& arg : FunctionCallNode.Args) // Arguments 
+            for (const auto& Arg : FunctionCallNode.Args) // Arguments 
             {
-                ByteCode.emplace_back((boost::format("CALL_ARG %s") % arg).str());
+                TypeConstants(Arg->Type, Arg);
             }
             ByteCode.emplace_back((boost::format("FINALIZE_CALL %s") % FunctionCallNode.Function).str());
         }
