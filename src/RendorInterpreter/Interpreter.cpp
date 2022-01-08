@@ -81,23 +81,38 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         else if 
         (Command == "CONST")
         {
-            Constants.push_back(CreateConstant(Args));
-            /* -------------------------- Change ConstantIndex -------------------------- */
-            if (Constants.size() == 2)
+            switch (RendorStateID)
             {
-                switch (ConstantIndex)
+                /* ----------------------------- Function Calls ----------------------------- */
+                case RendorState::FunctionCall:
                 {
-                    case 0:
+                    FunctionArgsCallStack.back().push_back(CreateConstant(Args));
+                    break;
+                }
+
+                /* ------------------------------ Default stuff ----------------------------- */
+                default:
+                {
+                    Constants.push_back(CreateConstant(Args));
+                    /* -------------------------- Change ConstantIndex -------------------------- */
+                    if (Constants.size() == 2)
                     {
-                        ++ConstantIndex;
-                        break;
+                        switch (ConstantIndex)
+                        {
+                            case 0:
+                            {
+                                ++ConstantIndex;
+                                break;
+                            }
+                            
+                            case 1:
+                            {
+                                --ConstantIndex;
+                                break;
+                            }
+                        }
                     }
-                    
-                    case 1:
-                    {
-                        --ConstantIndex;
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -132,17 +147,13 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             if ((BuiltInFunctions.contains(std::string{Args})) || (UserDefinedFunctions.contains(std::string{Args})))
             {
+                RendorStateID = RendorState::FunctionCall;
                 FunctionArgsCallStack.emplace_back(TypePtrVector());
             }
             else 
             {
                 throw error::RendorException("Function does not exist!");
             }
-        }
-
-        else if (Command == "CALL_ARG")
-        {
-            FunctionArgsCallStack.back().push_back(CreateConstant(Args));
         }
 
         else if (Command == "FINALIZE_CALL")
@@ -165,6 +176,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
             // Clean up when done 
             FunctionArgsCallStack.pop_back(); // Remove arguments from memory 
+            RendorStateID = RendorState::None;
         }
 
         else if (Command == "ARGUMENT")

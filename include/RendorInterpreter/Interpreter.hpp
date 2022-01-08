@@ -98,6 +98,14 @@ class Interpreter
         static void GarbageCollector();
         static TypeObjectPtr CreateConstant(std::string_view Constant);
         static void MarkConstantBlack(TypeObjectPtr& Const);
+
+        enum class RendorState
+        {
+            None,
+            FunctionCall
+        };
+
+        static RendorState RendorStateID;
 };
 
 #endif // INTERPRETER
