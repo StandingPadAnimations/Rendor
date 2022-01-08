@@ -1,6 +1,2 @@
 LOAD 0
-DEFINE main
-CALL echo
-CALL_ARG _SHello World
-FINALIZE_CALL echo
 FUNCTION END

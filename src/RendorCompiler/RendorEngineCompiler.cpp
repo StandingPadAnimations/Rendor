@@ -64,6 +64,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
+        Parser RenParser;
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         std::cout << color(fg::green) << "Tokenizing..." << std::endl;
@@ -71,7 +72,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
 
         // Parses
         std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
-        ByteCode = Parser(Tokens); 
+        ByteCode = RenParser.ASTGeneration(Tokens); 
 
         // Adds it to output Cren File
         if (ByteCode.size() > 0)

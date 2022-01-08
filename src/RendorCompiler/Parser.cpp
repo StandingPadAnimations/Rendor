@@ -16,31 +16,23 @@ Also, use braces in each case of the switch statement like so:
 case x:
 {
     ...
+    break;
 }
-break;
 
 To avoid issues with scopes
 ----------------------------------------------------------------*/
 
 /* -------------------------------------------------------------------------- */
-/*                             Foward declarations                            */
-/* -------------------------------------------------------------------------- */
-static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass, std::vector<std::string>& ByteCode);
-static void TypeConstants(const NodeObject& Node, std::vector<std::string>& ByteCode);
-
-/* -------------------------------------------------------------------------- */
 /*                               Parser function                              */
 /* -------------------------------------------------------------------------- */
-std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
+std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
 {
     // Node related stuff
-    Main Script;
     std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
 
     // Parser related stuff
     TempID ParserTempID = TempID::None;
     uint32_t LineNumber = 1;
-
     uint32_t ScopeLevel = 0;
 
     bool IsScript = false;
@@ -51,7 +43,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
     for (auto const& [token, value] : Tokens)
     {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
-        // std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+        std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
 
         switch (token)
         {
@@ -229,11 +221,15 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
                     if (Scope->back()->Type == NodeType::FunctionCall)
                     {
                         auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
-                        if (FunctionNode.Args.back()->Type == NodeType::Reference)
+
+                        if (FunctionNode.Args.size())
                         {
-                            auto& ReferenceNode = static_cast<Reference&>(*FunctionNode.Args.back());
-                            std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
-                            FunctionNode.Args.back() = std::move(FunctionCallNode);
+                            if (FunctionNode.Args.back()->Type == NodeType::Reference)
+                            {
+                                auto& ReferenceNode = static_cast<Reference&>(*FunctionNode.Args.back());
+                                std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
+                                FunctionNode.Args.back() = std::move(FunctionCallNode);
+                            }
                         }
                     }
                 }
@@ -687,7 +683,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
     /* ---------------- Generating the bytecode from the AST tree --------------- */
     for (const auto& Node : (*Script.GlobalBody))
     {
-        ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
+        ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
     }
     /* ------------------------- ending the global scope ------------------------ */
     ByteCode.emplace_back("END 0"); 
@@ -702,7 +698,7 @@ std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::str
 /*                      Bytecode Generation loop function                     */
 /* -------------------------------------------------------------------------- */
 
-static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass, std::vector<std::string>& ByteCode)
+std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass)
 {
 
     /* -------------------------------------------------------------------------- */
@@ -711,7 +707,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
     if (ClassType == NodeType::AssignVariable) 
     {
         auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass); 
-        TypeConstants(AssignmentNode.Value, ByteCode);
+        TypeConstants(AssignmentNode.Type, AssignmentNode.Value);
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
@@ -731,7 +727,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
 
         for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
         {
-            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
+            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
         }
 
         return "FUNCTION END";
@@ -739,7 +735,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
 
     else if (ClassType == NodeType::FunctionCall)
     {
-        TypeConstants(NodeClass, ByteCode);
+        TypeConstants(NodeClass->Type, NodeClass);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -749,8 +745,8 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
     {
         auto& IfElseNode = static_cast<IfElse&>(*NodeClass); 
         auto& ConditionNode = static_cast<Condition&>(*NodeClass); 
-        TypeConstants(ConditionNode.Condition1, ByteCode);
-        TypeConstants(ConditionNode.Condition2, ByteCode);
+        TypeConstants(ConditionNode.Type, ConditionNode.Condition1);
+        TypeConstants(ConditionNode.Type, ConditionNode.Condition2);
 
         if (ConditionNode.Operator->Operator == "==")
         {
@@ -783,7 +779,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
         
         for (const auto& Node : IfElseNode.IfElseBody.ConnectedNodes) // actual body 
         {
-            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
+            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
         }
 
         ByteCode[IndexOfJMP] += std::to_string(ByteCode.size() - 1);
@@ -793,9 +789,9 @@ static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& Node
     return "ERROR";
 }
 
-static void TypeConstants(const NodeObject& Node, std::vector<std::string>& ByteCode)
+void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
 {
-    switch (Node->Type)
+    switch (ClassType)
     {
         case NodeType::Int:
         {

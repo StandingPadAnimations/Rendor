@@ -17,6 +17,19 @@
 
 using lt = Lex::Token;
 
-std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
+class Parser
+{
+    public:
+        static std::vector<std::string> ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
+    
+    private:
+        inline static Main Script;
+        inline static std::vector<std::string> ByteCode;
+        static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
+        static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
+        static void DeltaInspectAST(Main& AST);
+
+};
+
 
 #endif // * PARSER
