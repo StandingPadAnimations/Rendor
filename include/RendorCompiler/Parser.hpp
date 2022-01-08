@@ -92,7 +92,7 @@ struct AssignVariable : Node{
 struct IfElse : Node{
     std::vector<std::string> Conditions;
     Body IfElseBody;
-    std::vector<std::unique_ptr<Node>> *Body = &IfElseBody.ConnectedNodes;
+    std::vector<std::unique_ptr<Node>> *ScopedBody = &IfElseBody.ConnectedNodes;
     NodeType Type(){return NodeType::IfElse;}
 };
 
@@ -124,7 +124,7 @@ struct Edef : Node{
     std::string Name;
     Body FunctionBody;
     std::vector<std::string> Args;
-    std::vector<std::unique_ptr<Node>> *Body = &FunctionBody.ConnectedNodes;
+    std::vector<std::unique_ptr<Node>> *ScopedBody = &FunctionBody.ConnectedNodes;
 
     explicit Edef(std::string Name) : Name(Name){}
     NodeType Type(){return NodeType::Edef;}

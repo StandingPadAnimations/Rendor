@@ -285,7 +285,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                     // Add it as a scope
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
-                    ScopeList.emplace_back(EdefNode.Body);
+                    ScopeList.emplace_back(EdefNode.ScopedBody);
                 }
 
                 else if (ParserTempID == TempID::IfElseScope)
@@ -295,7 +295,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                     // Add it as a scope
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    ScopeList.emplace_back(IfElseNode.Body);
+                    ScopeList.emplace_back(IfElseNode.ScopedBody);
                 }
 
                 else {
@@ -516,7 +516,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
             ByteCode.emplace_back((boost::format("ARGUMENT %s") % *Arg).str());
         }
 
-        for (const auto& Node : (*EdefNode.Body)) // actual body 
+        for (const auto& Node : (*EdefNode.ScopedBody)) // actual body 
         {
             ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
         }
@@ -583,7 +583,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
         /* -------------------- For the JMP_IF_FALSE instruction -------------------- */
         size_t IndexOfJMP = ByteCode.size() - 1;
         
-        for (const auto& Node : (*IfElseNode.Body)) // actual body 
+        for (const auto& Node : (*IfElseNode.ScopedBody)) // actual body 
         {
             ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
         }

@@ -1,3 +1,5 @@
+#include "RendorCompiler/Lexer.hpp"
+#include "RendorCompiler/Parser.hpp"
 #include "RendorEngine.hpp"
 using Term::color;
 using Term::fg;

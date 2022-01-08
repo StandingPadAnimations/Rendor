@@ -6,9 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "RendorCompiler/Lexer.hpp"
-#include "RendorCompiler/Parser.hpp"
-#include "RendorInterpreter/Interpreter.hpp"
 #include "cpp-terminal/base.hpp"
 
 // Boost libraries and macros
