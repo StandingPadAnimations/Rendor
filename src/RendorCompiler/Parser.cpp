@@ -241,11 +241,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 else if (ParserTempID == TempID::IdentifierDefinition)
                 {
                     /* ---------------- Check if the last node is an assign node ---------------- */
-                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    if (Scope->back()->Type == NodeType::Reference)
                     {
                         /* ------------------------ Create FunctionCall Node ------------------------ */
-                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(AssignVariableNode.VariableName);
+                        auto& AssignVariableNode = static_cast<Reference&>(*Scope->back());
+                        std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(AssignVariableNode.Value);
                         
                         /* ------------------------------ Replace Node ------------------------------ */
                         Scope->back() = std::move(FunctionCallNode);
@@ -297,11 +297,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
 
                             case NodeType::Reference:
                             {
+                                std::cout << "HELLO" << std::endl;
                                 auto& ReferenceNode = static_cast<Reference&>(*AssignVariableNode.Value);
-                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(ReferenceNode.Value);
-                                ArithmethicNode->Value += value;
+                                std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
 
-                                AssignVariableNode.Value = std::move(ArithmethicNode);
+                                AssignVariableNode.Value = std::move(FunctionCallNode);
                                 break;
                             }
 
@@ -396,14 +396,32 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                    AssignVariableNode.Value = std::make_unique<Int>(value);
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        AssignVariableNode.Value = std::make_unique<Int>(value);
+                    }
                 }
                 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.push_back(std::make_unique<Int>(value)); // Add argument to Node
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        if (AssignVariableNode.Value->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*AssignVariableNode.Value);
+                            FunctionNode.Args.push_back(std::make_unique<Int>(value)); // Add argument to Node
+                        }
+                    }
+                    else 
+                    {
+                        if (Scope->back()->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
+                            FunctionNode.Args.push_back(std::make_unique<Int>(value)); // Add argument to Node
+                        }
+                    }
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -448,14 +466,32 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                    AssignVariableNode.Value = std::make_unique<Double>(value);
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        AssignVariableNode.Value = std::make_unique<Double>(value);
+                    }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.push_back(std::make_unique<Double>(value)); // Add argument to Node
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        if (AssignVariableNode.Value->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*AssignVariableNode.Value);
+                            FunctionNode.Args.push_back(std::make_unique<Double>(value)); // Add argument to Node
+                        }
+                    }
+                    else 
+                    {
+                        if (Scope->back()->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
+                            FunctionNode.Args.push_back(std::make_unique<Double>(value)); // Add argument to Node
+                        }
+                    }
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -500,14 +536,32 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                    AssignVariableNode.Value = std::make_unique<String>(value);
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        AssignVariableNode.Value = std::make_unique<String>(value);
+                    }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.push_back(std::make_unique<String>(value)); // Add argument to Node
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        if (AssignVariableNode.Value->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*AssignVariableNode.Value);
+                            FunctionNode.Args.push_back(std::make_unique<String>(value)); // Add argument to Node
+                        }
+                    }
+                    else 
+                    {
+                        if (Scope->back()->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
+                            FunctionNode.Args.push_back(std::make_unique<String>(value)); // Add argument to Node
+                        }
+                    }
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -552,14 +606,32 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                    AssignVariableNode.Value = std::make_unique<Bool>(value);
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        AssignVariableNode.Value = std::make_unique<Bool>(value);
+                    }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.push_back(std::make_unique<Bool>(value)); // Add argument to Node
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        if (AssignVariableNode.Value->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*AssignVariableNode.Value);
+                            FunctionNode.Args.push_back(std::make_unique<Bool>(value)); // Add argument to Node
+                        }
+                    }
+                    else 
+                    {
+                        if (Scope->back()->Type == NodeType::FunctionCall)
+                        {
+                            auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
+                            FunctionNode.Args.push_back(std::make_unique<Bool>(value)); // Add argument to Node
+                        }
+                    }
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -733,6 +805,7 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
     else if (ClassType == NodeType::FunctionCall)
     {
         TypeConstants(NodeClass->Type, NodeClass);
+        return "";
     }
 
     /* -------------------------------------------------------------------------- */
