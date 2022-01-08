@@ -44,20 +44,14 @@ int main (int argc, char *argv[])
     try
     {
         std::string File = "._.";
-        std::string RendorExecutable = argv[0]; 
         std::vector<std::string> Arguments;
 
         if (argc > 1) {
-            Arguments.assign(argv + 1, argv + argc);
+            Arguments.assign(argv, argv + argc);
             if (argc >= 2)
             {
-                File = Arguments[0];
+                File = Arguments[1];
             }
-        }
-
-        if (RendorExecutable != RENDOR_BINARY_NAME)
-        {
-            std::cout << Term::color(Term::fg::red) << "Dealing with renamed version of rendorc. Version is: " << RENDOR_VERSION << Term::color(Term::style::reset) << std::endl;
         }
 
         RendorEngineCompiler::run(File, Arguments);

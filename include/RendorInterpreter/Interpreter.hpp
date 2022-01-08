@@ -105,7 +105,7 @@ class Interpreter
             FunctionCall
         };
 
-        static RendorState RendorStateID;
+        inline static RendorState RendorStateID = RendorState::None;
 };
 
 #endif // INTERPRETER

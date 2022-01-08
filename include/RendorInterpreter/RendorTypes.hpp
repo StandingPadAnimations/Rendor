@@ -41,7 +41,7 @@ enum class GCColor
 struct Type 
 {
     virtual VariableType TypeOfVariable(){return VariableType::NullType;};
-    virtual bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator){return false;};
+    virtual bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator) = 0;
 
     std::string m_Value;
     std::string m_ID;

@@ -16,7 +16,6 @@
 namespace bfs = boost::filesystem;
 
 #define RENDOR_VERSION 0
-#define RENDOR_BINARY_NAME "rendorc.exe"
 
 struct RendorEngineInterpreter{
     static void run(const std::string);

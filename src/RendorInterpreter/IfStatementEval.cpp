@@ -46,7 +46,6 @@ bool Int::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Comparis
             ((ConvertedValue  != std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))) ||
             ((ConvertedValue  != std::holds_alternative<bool>(Const2Converted))    && (std::get<bool>(Const2Converted))))
             {
-            {
                 return true;
             }
             break;
@@ -95,7 +94,6 @@ bool Int::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Comparis
             }
             break;
         }
-    }
     }
     /* --------------------------- If it was not valid -------------------------- */
     return false; 

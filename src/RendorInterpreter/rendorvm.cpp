@@ -36,12 +36,21 @@ While the extension isn't required, it does make the code more readable in my op
 #include <fstream>
 
 #include "RendorEngine.hpp"
+#include "Exceptions.hpp"
 
 int main (int argc, char *argv[])
 {
     try 
     {
-        RendorEngineInterpreter::run(argv[1]);
+        std::vector<std::string> Arguments;
+        if (argc > 1) {
+            Arguments.assign(argv, argv + argc);
+        } else
+        {
+            throw error::RendorException("Need a file input");
+        }
+
+        RendorEngineInterpreter::run(Arguments[1]);
         return EXIT_SUCCESS;
     }
     catch (std::exception& exp)

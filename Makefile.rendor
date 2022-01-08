@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors -Wimplicit-fallthrough -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors -Wextra -static -static-libgcc -static-libstdc++ 
 
 BIN         := bin
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
@@ -26,6 +26,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
+	@echo 
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 $(OBJECTS): $(OBJDIR)/%.o: $(TERM_OBJS) $(SRC)/%.cpp 
