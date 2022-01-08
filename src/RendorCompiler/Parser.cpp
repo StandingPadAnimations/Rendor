@@ -775,8 +775,8 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
     /* -------------------------------------------------------------------------- */
     if (ClassType == NodeType::AssignVariable) 
     {
-        auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass); 
-        TypeConstants(AssignmentNode.Type, AssignmentNode.Value);
+        auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass);
+        TypeConstants(AssignmentNode.Value->Type, AssignmentNode.Value);
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 

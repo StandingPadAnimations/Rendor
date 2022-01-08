@@ -1,5 +1,8 @@
 LOAD 0
 DEFINE main
+CALL input
+CONST _SSay a number: 
+FINALIZE_CALL input
 ASSIGN num
 CALL echo
 CONST _SHello World
