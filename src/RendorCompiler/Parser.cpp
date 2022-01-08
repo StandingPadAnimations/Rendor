@@ -25,14 +25,13 @@ To avoid issues with scopes
 /* -------------------------------------------------------------------------- */
 /*                             Foward declarations                            */
 /* -------------------------------------------------------------------------- */
-static std::string ByteCodeGen (const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode);
-static void DeltaOptimizer (std::vector<std::string>& ByteCode);
-
+static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass, std::vector<std::string>& ByteCode);
+static void TypeConstants(const NodeObject& Node, std::vector<std::string>& ByteCode);
 
 /* -------------------------------------------------------------------------- */
 /*                               Parser function                              */
 /* -------------------------------------------------------------------------- */
-std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
+std::vector<std::string> Parser(const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
 {
     // Node related stuff
     Main Script;
@@ -40,9 +39,6 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
     // Parser related stuff
     TempID ParserTempID = TempID::None;
-    std::map<std::string, char> IdentifiersMap; // Defines identifiers
-    std::string LastIdentifier;
-    std::string LastOp = "";
     uint32_t LineNumber = 1;
 
     uint32_t ScopeLevel = 0;
@@ -80,70 +76,29 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 /* ------------ if found during definition of another identifier ------------ */
                 if (ParserTempID == TempID::IdentifierDefinition)
                 {
-                    throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % LastIdentifier % LineNumber).str());
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        /* ------------------------ Create FunctionCall Node ------------------------ */
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % AssignVariableNode.VariableName % LineNumber).str());
+                    }
                 }
-                
 
-                /* -------------------------------- functions ------------------------------- */
-                else if 
-                ((IdentifiersMap.contains(value)) &&
-                (IdentifiersMap.at(value) == 'F'))
-                {
-                    Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
-                    ParserTempID = TempID::FunctionCall;
-                }
-                
-                /* -------------------------------- not known ------------------------------- */
-                else if 
-                (((!IdentifiersMap.contains(value)) ||
-                ((IdentifiersMap.contains(value))   &&
-                (IdentifiersMap.at(value) != 'F'))) &&
-                (ParserTempID == TempID::None)) // if it's a new variable 
-                {
-                    ParserTempID = TempID::IdentifierDefinition;
-                    IdentifiersMap[value] = 'N';
-                    LastIdentifier = value;
-                }
-                /* --------------------------- defining functions --------------------------- */
+                /* -------------------------- function definitions -------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // functions
                 {
-                    if (IdentifiersMap.contains(value))
-                    {
-                        throw error::RendorException((boost::format("Redefinition Error: %s is already defined!; Line %s") % value % LineNumber).str());
-                    }
-                    else if (value == "main")
+                    if (value == "main")
                     {
                         IsScript = true; // This is a script and not a library or module 
                     }
                     Scope->push_back(std::make_unique<Edef>(value));
-                    IdentifiersMap[value] = 'F';
-                }
-
-                /* ---------------------------- copying variables --------------------------- */
-                else if (ParserTempID == TempID::VariableDefition) // copying variables
-                {
-                    if (IdentifiersMap.contains(value)) // if it's a new variable 
-                    {
-                        auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                        AssignmentNode.Value = (boost::format("_&%s") % value).str();
-                    }
-                    else // if variable does not exist 
-                    {
-                        throw error::RendorException((boost::format("Identifier Error: Identifier %s not defined; Line %s") % value % LineNumber).str());
-                    }
                 }
 
                 /* -------------------------- if it is an argument -------------------------- */
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-
-                    if (!IdentifiersMap.contains(value))
-                    {
-                        throw error::RendorException((boost::format("Identifier Error: %s does not exist! Line %s") % value % LineNumber).str());
-                    }
-
-                    FunctionNode.Args.emplace_back((boost::format("_&%s") % value).str()); // Add argument to Node
+                    FunctionNode.Args.push_back(std::make_unique<Reference>(value)); // Add argument to Node
                 }
 
                 /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
@@ -151,14 +106,49 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 {
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
                     EdefNode.Args.emplace_back(value); // Add argument to Node
-                    IdentifiersMap[value] = 'N';
                 }
 
                 /* ------------------------------ if statements ----------------------------- */
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    IfElseNode.Conditions.emplace_back("_&" + value); // Add condition 
+                    
+                    /* ---------------------- If there's nothing in vector ---------------------- */
+                    if (IfElseNode.Conditions.size() == 0)
+                    {
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                    }
+                    else 
+                    {
+                        /* ------------- If previous condition node is already finished ------------- */
+                        if 
+                        ((IfElseNode.Conditions.back()->Condition1) &&
+                        (IfElseNode.Conditions.back()->Condition2)  &&
+                        (IfElseNode.Conditions.back()->Operator))
+                        {
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value); // Add it as first condition no questions asked
+                            break;
+                        }
+                    }
+
+                    /* ---------------------------- Adding Conditions --------------------------- */
+                    if (IfElseNode.Conditions.back()->Operator)
+                    {
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Reference>(value);
+                    }
+                    else 
+                    {
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value);
+                    }
+                }
+                
+                /* ----------------------------- Add as variable ---------------------------- */
+                else 
+                {
+                    Scope->push_back(std::make_unique<Reference>(value));
+                    ParserTempID = TempID::IdentifierDefinition;
                 }
                 break;
             }
@@ -171,10 +161,12 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 if(ParserTempID == TempID::VariableDefition)
                 {
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = "_$" + value;
-                    AssignmentNode.VariableType = VariableTypes::Function;
+                    AssignmentNode.Value = std::make_unique<FunctionCall>(value);
                 }
-                Scope->push_back(std::make_unique<FunctionCall>(value));
+                else
+                {
+                    Scope->push_back(std::make_unique<FunctionCall>(value));
+                }
                 ParserTempID = TempID::FunctionCall;
                 break;
             }
@@ -188,22 +180,22 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if (ParserTempID == TempID::IdentifierDefinition)
                 {
+                    auto& ReferenceNode = static_cast<Reference&>(*Scope->back());
+                    Scope->back() = std::make_unique<AssignVariable>(ReferenceNode.Value); 
                     ParserTempID = TempID::VariableDefition;
-                    Scope->push_back(std::make_unique<AssignVariable>(LastIdentifier));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    auto& ConditionNode = static_cast<Condition&>(*IfElseNode.Conditions.back());
                     
-                    if (LastOp == "=")
+                    if(!ConditionNode.Operator)
                     {
-                        IfElseNode.Conditions.emplace_back((boost::format("%s=") % LastOp).str());
-                        LastOp = "";
+                        ConditionNode.Operator = std::make_unique<BiOp>();
                     }
-                    else {
-                        LastOp = value;
-                    }
+                    
+                    (*ConditionNode.Operator).Operator += value;
                 }
 
                 else 
@@ -231,26 +223,102 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             /* --------------------------------- L paren -------------------------------- */
             case lt::LPAREN: // * ( sign 
             {
+                /* -------------------- function calls in function calls -------------------- */
                 if (ParserTempID == TempID::FunctionCall)
                 {
-                    // Do nothing 
+                    if (Scope->back()->Type == NodeType::FunctionCall)
+                    {
+                        auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
+                        if (FunctionNode.Args.back()->Type == NodeType::Reference)
+                        {
+                            auto& ReferenceNode = static_cast<Reference&>(*FunctionNode.Args.back());
+                            std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
+                            FunctionNode.Args.back() = std::move(FunctionCallNode);
+                        }
+                    }
                 }
 
+                /* --------------------------- Defining functions --------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // Defining a funcion 
                 {
                     ParserTempID = TempID::FunctionArgumentsDefinition;
                 }
-
+                
+                /* -------------------- Function Calls in the main scope -------------------- */
                 else if (ParserTempID == TempID::IdentifierDefinition)
                 {
-                    Scope->push_back(std::make_unique<FunctionCall>(LastIdentifier));
-                    ParserTempID = TempID::FunctionCall;
-                    IdentifiersMap.erase(LastIdentifier);
+                    /* ---------------- Check if the last node is an assign node ---------------- */
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        /* ------------------------ Create FunctionCall Node ------------------------ */
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(AssignVariableNode.VariableName);
+                        
+                        /* ------------------------------ Replace Node ------------------------------ */
+                        Scope->back() = std::move(FunctionCallNode);
+                        ParserTempID = TempID::FunctionCall;
+                    }
                 }
 
+                /* ------------------------- Defining if statements ------------------------- */
                 else if (ParserTempID == TempID::IfStatementDefinition)
                 {
                     ParserTempID = TempID::ConditionDefinition;
+                }
+
+                /* ------------------------------- Arithmethic ------------------------------ */
+                else if (ParserTempID == TempID::VariableDefition)
+                {
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        
+                        switch (AssignVariableNode.Value->Type)
+                        {
+                            case NodeType::Arithmethic:
+                            {
+                                auto& ArithmethicNode = static_cast<Arithmethic&>(*AssignVariableNode.Value);
+                                ArithmethicNode.Value += value;
+                                break;
+                            }
+
+                            case NodeType::Int:
+                            {
+                                auto& IntNode = static_cast<Int&>(*AssignVariableNode.Value);
+                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(IntNode.Value);
+                                ArithmethicNode->Value += value;
+
+                                AssignVariableNode.Value = std::move(ArithmethicNode);
+                                break;
+                            }
+
+                            case NodeType::Double:
+                            {
+                                auto& DoubleNode = static_cast<Double&>(*AssignVariableNode.Value);
+                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(DoubleNode.Value);
+                                ArithmethicNode->Value += value;
+
+                                AssignVariableNode.Value = std::move(ArithmethicNode);
+                                break;
+                            }
+
+                            case NodeType::Reference:
+                            {
+                                auto& ReferenceNode = static_cast<Reference&>(*AssignVariableNode.Value);
+                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(ReferenceNode.Value);
+                                ArithmethicNode->Value += value;
+
+                                AssignVariableNode.Value = std::move(ArithmethicNode);
+                                break;
+                            }
+
+                            default:
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    break;
                 }
                 break;
             }
@@ -278,6 +346,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             /* --------------------------------- L brace -------------------------------- */
             case lt::LBRACE: // * { sign
             {
+                /* --------------------------- Defining functions --------------------------- */
                 if (ParserTempID == TempID::FunctionScope)
                 {
                     ParserTempID = TempID::None;
@@ -285,9 +354,10 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                     // Add it as a scope
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
-                    ScopeList.emplace_back(EdefNode.Body);
+                    ScopeList.emplace_back(&EdefNode.FunctionBody.ConnectedNodes);
                 }
 
+                /* ------------------------------ If Statements ----------------------------- */
                 else if (ParserTempID == TempID::IfElseScope)
                 {
                     ParserTempID = TempID::None;
@@ -295,7 +365,19 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 
                     // Add it as a scope
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    ScopeList.emplace_back(IfElseNode.Body);
+                    ScopeList.emplace_back(&IfElseNode.IfElseBody.ConnectedNodes);
+                }
+
+                /* ----------------------------- Else Statements ---------------------------- */
+                else if (ParserTempID == TempID::ElseDefinition)
+                {
+                    ParserTempID = TempID::None;
+                    ++ScopeLevel;
+
+                    // Add it as a scope
+                    auto& IfNode = dynamic_cast<IfElse&>(*Scope->back());
+                    auto& ElseNode = dynamic_cast<IfElse&>(*IfNode.ElseStatement);
+                    ScopeList.emplace_back(&ElseNode.IfElseBody.ConnectedNodes);
                 }
 
                 else {
@@ -321,23 +403,49 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    char Identifier = 'I';
-                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = value;
-                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
-                    AssignmentNode.VariableType = VariableTypes::Int;
+                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                    AssignVariableNode.Value = std::make_unique<Int>(value);
                 }
                 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.push_back(std::make_unique<Int>(value)); // Add argument to Node
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    IfElseNode.Conditions.emplace_back(value); // Add condition 
+                    
+                    /* ---------------------- If there's nothing in vector ---------------------- */
+                    if (IfElseNode.Conditions.size() == 0)
+                    {
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                    }
+                    else 
+                    {
+                        /* ------------- If previous condition node is already finished ------------- */
+                        if 
+                        ((IfElseNode.Conditions.back()->Condition1) &&
+                        (IfElseNode.Conditions.back()->Condition2)  &&
+                        (IfElseNode.Conditions.back()->Operator))
+                        {
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value); // Add it as first condition no questions asked
+                            break;
+                        }
+                    }
+
+                    /* ---------------------------- Adding Conditions --------------------------- */
+                    if (IfElseNode.Conditions.back()->Operator)
+                    {
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Int>(value);
+                    }
+                    else 
+                    {
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value);
+                    }
                 }
                 break;
             }
@@ -347,23 +455,49 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    char Identifier = 'D';
-                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = value;
-                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
-                    AssignmentNode.VariableType = VariableTypes::Float;
+                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                    AssignVariableNode.Value = std::make_unique<Double>(value);
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.push_back(std::make_unique<Double>(value)); // Add argument to Node
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    IfElseNode.Conditions.emplace_back(value); // Add condition 
+                    
+                    /* ---------------------- If there's nothing in vector ---------------------- */
+                    if (IfElseNode.Conditions.size() == 0)
+                    {
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                    }
+                    else 
+                    {
+                        /* ------------- If previous condition node is already finished ------------- */
+                        if 
+                        ((IfElseNode.Conditions.back()->Condition1) &&
+                        (IfElseNode.Conditions.back()->Condition2)  &&
+                        (IfElseNode.Conditions.back()->Operator))
+                        {
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value); // Add it as first condition no questions asked
+                            break;
+                        }
+                    }
+
+                    /* ---------------------------- Adding Conditions --------------------------- */
+                    if (IfElseNode.Conditions.back()->Operator)
+                    {
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Double>(value);
+                    }
+                    else 
+                    {
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value);
+                    }
                 }
                 break;
             }
@@ -373,23 +507,49 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    char Identifier = 'S';
-                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = "_S" + value;
-                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
-                    AssignmentNode.VariableType = VariableTypes::String;
+                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                    AssignVariableNode.Value = std::make_unique<String>(value);
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back("_S" + value); // Add argument to Node
+                    FunctionNode.Args.push_back(std::make_unique<String>(value)); // Add argument to Node
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    IfElseNode.Conditions.emplace_back("_S" + value); // Add condition 
+                    
+                    /* ---------------------- If there's nothing in vector ---------------------- */
+                    if (IfElseNode.Conditions.size() == 0)
+                    {
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                    }
+                    else 
+                    {
+                        /* ------------- If previous condition node is already finished ------------- */
+                        if 
+                        ((IfElseNode.Conditions.back()->Condition1) &&
+                        (IfElseNode.Conditions.back()->Condition2)  &&
+                        (IfElseNode.Conditions.back()->Operator))
+                        {
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value); // Add it as first condition no questions asked
+                            break;
+                        }
+                    }
+
+                    /* ---------------------------- Adding Conditions --------------------------- */
+                    if (IfElseNode.Conditions.back()->Operator)
+                    {
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<String>(value);
+                    }
+                    else 
+                    {
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value);
+                    }
                 }
                 break;
             }
@@ -399,23 +559,49 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             {
                 if (ParserTempID == TempID::VariableDefition) // variables
                 {
-                    char Identifier = 'B';
-                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = value;
-                    IdentifiersMap[AssignmentNode.VariableName] = Identifier;
-                    AssignmentNode.VariableType = VariableTypes::Bool;
+                    auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                    AssignVariableNode.Value = std::make_unique<Bool>(value);
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     auto& FunctionNode = dynamic_cast<FunctionCall&>(*Scope->back());
-                    FunctionNode.Args.emplace_back(value); // Add argument to Node
+                    FunctionNode.Args.push_back(std::make_unique<Bool>(value)); // Add argument to Node
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
-                    IfElseNode.Conditions.emplace_back(value); // Add condition 
+                    
+                    /* ---------------------- If there's nothing in vector ---------------------- */
+                    if (IfElseNode.Conditions.size() == 0)
+                    {
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                    }
+                    else 
+                    {
+                        /* ------------- If previous condition node is already finished ------------- */
+                        if 
+                        ((IfElseNode.Conditions.back()->Condition1) &&
+                        (IfElseNode.Conditions.back()->Condition2)  &&
+                        (IfElseNode.Conditions.back()->Operator))
+                        {
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value); // Add it as first condition no questions asked
+                            break;
+                        }
+                    }
+
+                    /* ---------------------------- Adding Conditions --------------------------- */
+                    if (IfElseNode.Conditions.back()->Operator)
+                    {
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Bool>(value);
+                    }
+                    else 
+                    {
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value);
+                    }
                 }
                 break;
             }
@@ -434,6 +620,18 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
                 ((value == "if") ||
                 (value == "else"))
                 {
+                    if (Scope->back()->Type == NodeType::IfElse)
+                    {
+                        if (value == "else")
+                        {
+                            auto& IfElseNode = static_cast<IfElse&>(*Scope->back());
+                            IfElseNode.ElseStatement = std::make_unique<IfElse>();
+                            ScopeList.emplace_back(&IfElseNode.ElseStatement->IfElseBody.ConnectedNodes);
+                            ParserTempID = TempID::ElseDefinition;
+                            break;
+                        }
+                    }
+                    
                     Scope->push_back(std::make_unique<IfElse>());
                     ParserTempID = TempID::IfStatementDefinition;
                 }
@@ -446,10 +644,30 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
             }
 
             /* -------------------------------------------------------------------------- */
+            /*                              Binary Operators                              */
+            /* -------------------------------------------------------------------------- */
+            case lt::BIOP:
+            {
+                // ! Fix this 
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+                // ! ^^^^^^^^
+            }
+
+            /* -------------------------------------------------------------------------- */
             /*                           Anything not supported                           */
             /* -------------------------------------------------------------------------- */
             default:
+            {
                 throw error::RendorException("Not supported yet");
+            }
         }
     }
     
@@ -469,12 +687,12 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
     /* ---------------- Generating the bytecode from the AST tree --------------- */
     for (const auto& Node : (*Script.GlobalBody))
     {
-        ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
+        ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
     }
     /* ------------------------- ending the global scope ------------------------ */
     ByteCode.emplace_back("END 0"); 
     /* ---------------------------- Optimize bytecode --------------------------- */
-    DeltaOptimizer(ByteCode);
+    RendorDeltaOptimizer::DeltaOptimizer(ByteCode);
     /* ----------------------------- return bytecode ---------------------------- */
     return ByteCode;
 }
@@ -484,7 +702,7 @@ std::vector<std::string> Parser (const std::vector<std::pair<Lex::Token, std::st
 /*                      Bytecode Generation loop function                     */
 /* -------------------------------------------------------------------------- */
 
-static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<Node>& NodeClass, std::vector<std::string>& ByteCode)
+static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass, std::vector<std::string>& ByteCode)
 {
 
     /* -------------------------------------------------------------------------- */
@@ -493,12 +711,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
     if (ClassType == NodeType::AssignVariable) 
     {
         auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass); 
-
-        /* ---------------------------- generate bytecode --------------------------- */
-        if (AssignmentNode.Value.size())
-        {
-            ByteCode.emplace_back((boost::format("CONST %s") % AssignmentNode.Value).str());
-        }
+        TypeConstants(AssignmentNode.Value, ByteCode);
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
@@ -516,9 +729,9 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
             ByteCode.emplace_back((boost::format("ARGUMENT %s") % *Arg).str());
         }
 
-        for (const auto& Node : (*EdefNode.Body)) // actual body 
+        for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
         {
-            ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
+            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
         }
 
         return "FUNCTION END";
@@ -526,17 +739,7 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
 
     else if (ClassType == NodeType::FunctionCall)
     {
-        auto& CallNode = static_cast<FunctionCall&>(*NodeClass); 
-
-        ByteCode.emplace_back((boost::format("CALL %s") % CallNode.Function).str());
-
-        for (const auto& arg : CallNode.Args) // Arguments 
-        {
-            ByteCode.emplace_back((boost::format("CALL_ARG %s") % arg).str());
-
-        }
-
-        return (boost::format("FINALIZE_CALL %s") % CallNode.Function).str();
+        TypeConstants(NodeClass, ByteCode);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -545,36 +748,31 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
     else if (ClassType == NodeType::IfElse)
     {
         auto& IfElseNode = static_cast<IfElse&>(*NodeClass); 
+        auto& ConditionNode = static_cast<Condition&>(*NodeClass); 
+        TypeConstants(ConditionNode.Condition1, ByteCode);
+        TypeConstants(ConditionNode.Condition2, ByteCode);
 
-        /* --------------------------- Generate Conditions -------------------------- */
-        std::string * Conditon1 = &IfElseNode.Conditions[0];
-        std::string * Conditon2 = &IfElseNode.Conditions[2];
-        std::string * Op        = &IfElseNode.Conditions[1];
-
-        ByteCode.emplace_back((boost::format("CONST %s") % (*Conditon1)).str());
-        ByteCode.emplace_back((boost::format("CONST %s") % (*Conditon2)).str());
-
-        if ((*Op) == "==")
+        if (ConditionNode.Operator->Operator == "==")
         {
             ByteCode.emplace_back("OPERATOR EQUAL");
         }
-        else if ((*Op) == "!=")
+        else if (ConditionNode.Operator->Operator == "!=")
         {
             ByteCode.emplace_back("OPERATOR NOT_EQUAL");
         }
-        else if ((*Op) == ">")
+        else if (ConditionNode.Operator->Operator == ">")
         {
             ByteCode.emplace_back("OPERATOR GREATER_THAN");
         }
-        else if ((*Op) == "<")
+        else if (ConditionNode.Operator->Operator == "<")
         {
             ByteCode.emplace_back("OPERATOR LESS_THAN");
         }
-        else if ((*Op) == ">=")
+        else if (ConditionNode.Operator->Operator == ">=")
         {
             ByteCode.emplace_back("OPERATOR GREATER_OR_EQUAL");
         }
-        else if ((*Op) == "<=")
+        else if (ConditionNode.Operator->Operator == "<=")
         {
             ByteCode.emplace_back("OPERATOR LESS_OR_EQUAL");
         }
@@ -583,9 +781,9 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
         /* -------------------- For the JMP_IF_FALSE instruction -------------------- */
         size_t IndexOfJMP = ByteCode.size() - 1;
         
-        for (const auto& Node : (*IfElseNode.Body)) // actual body 
+        for (const auto& Node : IfElseNode.IfElseBody.ConnectedNodes) // actual body 
         {
-            ByteCode.emplace_back(ByteCodeGen(Node->Type(), Node, ByteCode));
+            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node, ByteCode));
         }
 
         ByteCode[IndexOfJMP] += std::to_string(ByteCode.size() - 1);
@@ -595,38 +793,60 @@ static std::string ByteCodeGen(const NodeType& ClassType, const std::unique_ptr<
     return "ERROR";
 }
 
-static void DeltaOptimizer(std::vector<std::string>& ByteCode)
+static void TypeConstants(const NodeObject& Node, std::vector<std::string>& ByteCode)
 {
-    std::string SavedString = "";
-    for (auto ByteCodeOp = ByteCode.begin(); ByteCodeOp != ByteCode.end();)
+    switch (Node->Type)
     {
-        size_t ByteCodeSpaceIndex  = ByteCodeOp->find_first_of(" ");
-        std::string_view Command  (ByteCodeOp->begin(), ByteCodeOp->begin() + ByteCodeSpaceIndex);
-        std::string_view Args     (ByteCodeOp->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOp->end());
-
-        if (Command == "CONST")
+        case NodeType::Int:
         {
-            if 
-            ((Args[0] == '_') &&
-            (Args[1] == '$'))
-            {
-                SavedString = *(ByteCodeOp + 1);
-                
-                // Erase const instruction 
-                ByteCode.erase(ByteCodeOp);
+            auto& IntNode = static_cast<Int&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST %s") % IntNode.Value).str());
+            break;
+        }
 
-                // Erase assign instruction
-                ByteCode.erase(ByteCodeOp);
-            }
-        }
-        else if (Command == "FINALIZE_CALL")
+        case NodeType::Double:
         {
-            if (SavedString.size())
-            {
-                ByteCode.insert(ByteCodeOp + 1, SavedString);
-                SavedString = "";
-            }
+            auto& DoubleNode = static_cast<Double&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST %s") % DoubleNode.Value).str());
+            break;
         }
-        ++ByteCodeOp;
+
+        case NodeType::String:
+        {
+            auto& StringNode = static_cast<String&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST %s") % StringNode.Value).str());
+            break;
+        }
+
+        case NodeType::Bool:
+        {
+            auto& BoolNode = static_cast<Bool&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST %s") % BoolNode.Value).str());
+            break;
+        }
+
+        case NodeType::Arithmethic:
+        {
+            auto& ArithNode = static_cast<Arithmethic&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST %s") % OperationToPostfix(ArithNode.Value)).str());
+            break;
+        }
+
+        case NodeType::FunctionCall:
+        {
+            auto& FunctionCallNode = static_cast<FunctionCall&>(*Node); 
+
+            ByteCode.emplace_back((boost::format("CALL %s") % FunctionCallNode.Function).str());
+            for (const auto& arg : FunctionCallNode.Args) // Arguments 
+            {
+                ByteCode.emplace_back((boost::format("CALL_ARG %s") % arg).str());
+            }
+            ByteCode.emplace_back((boost::format("FINALIZE_CALL %s") % FunctionCallNode.Function).str());
+        }
+
+        default:
+        {
+            break;
+        }
     }
 }

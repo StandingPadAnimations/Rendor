@@ -1,7 +1,7 @@
 #include "RendorCompiler/Lexer.hpp"
 using namespace Lex;
 
-std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& Code, std::string_view ParentPath){
+std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Code){
     std::vector<std::pair<Token, std::string>> Tokens;
     BufferID LexerBufferID = BufferID::None;
     size_t StartIndex = 0;
@@ -9,30 +9,67 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
 
     for (size_t Char = 0; Char < Code.size(); ++Char)
     { 
-        // When we come across a space, symbol, or newline
+        /* -------------------------------------------------------------------------- */
+        /*                            During certain states                           */
+        /* -------------------------------------------------------------------------- */
         if 
+        (((LexerBufferID == BufferID::CharSingle) ||
+        (LexerBufferID   == BufferID::CharDouble) ||
+        (LexerBufferID   == BufferID::CharTilda)) &&
+        ((Code[Char]     != '\'')                 &&
+        (Code[Char]      != '"')                  &&
+        (Code[Char]      != '`')))
+        {
+            
+        }
+
+        else if 
         ((LexerBufferID == BufferID::Comment) &&
         (Code[Char] != ';'))
         {
-            continue;
+            
         }
-        
-        if  
-        (((Code[Char] == ' ') ||
-        (Code[Char] == ';')   ||
-        (Code[Char] == ',')   ||
-        (Code[Char] == '(')   ||
-        (Code[Char] == ')')   ||
-        (Code[Char] == '{')   ||
-        (Code[Char] == '}')   ||
-        (Code[Char] == '='))  &&
-        ((LexerBufferID == BufferID::None) ||
-        (LexerBufferID == BufferID::StringEnd) ||
-        LexerBufferID == BufferID::Comment))
-        {
-            std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
 
-            if (Buffer.find_first_not_of(" ;,(){}=") == std::string::npos)
+        /* -------------------------------------------------------------------------- */
+        /*               When we come across a space, symbol, or newline              */
+        /* -------------------------------------------------------------------------- */
+        else if  
+        (((Code[Char] == ' ')   ||
+        (Code[Char]   == ';')   ||
+        (Code[Char]   == ',')   ||
+        (Code[Char]   == '(')   ||
+        (Code[Char]   == ')')   ||
+        (Code[Char]   == '{')   ||
+        (Code[Char]   == '}')   ||
+        (Code[Char]   == '=')   ||
+        (Code[Char]   == '^')   ||
+        (Code[Char]   == '*')   ||
+        (Code[Char]   == '/')   ||
+        (Code[Char]   == '+')   ||
+        (Code[Char]   == '-'))  &&
+        ((LexerBufferID == BufferID::None)      ||
+        (LexerBufferID  == BufferID::StringEnd) ||
+        LexerBufferID   == BufferID::Comment))
+        {
+            /* ----------------------- Checking if it's a comment ----------------------- */
+            if
+            ((Code[Char] == '/') &&
+            (Code[Char + 1] == '/'))
+            {
+                LexerBufferID = BufferID::Comment;
+                ++EndIndex;
+                continue;
+            }
+            
+            /* ------------------------- Tokenization of buffer ------------------------- */
+            std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+            
+            if (Buffer.size() == 0)
+            {
+                // * Because this used to cause a bug with comments
+            }
+
+            else if (Buffer.find_first_not_of(" ;,(){}=^*/+-") == std::string::npos)
             {
                 // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
             }
@@ -103,55 +140,79 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
             switch (Code[Char])
             {
                 case ' ': 
+                {
                     break; // Point of lexer is to remove whitespace so parser has an easier time
+                }
 
                 case ';':
+                {    
                     Tokens.emplace_back(Token::NEWLINE, ";");
                     ++StartIndex;
                     break;
+                }
 
                 case ',':
+                {    
                     Tokens.emplace_back(Token::COMMA, ",");
                     ++StartIndex;
                     break;
+                }
 
                 case '(':
+                {    
                     Tokens.emplace_back(Token::LPAREN, "(");
                     ++StartIndex;
                     break;
+                }
 
                 case ')':
+                {
                     Tokens.emplace_back(Token::RPAREN, ")");
                     break;
+                }
 
                 case '{':
+                {
                     Tokens.emplace_back(Token::LBRACE, "{");
                     break;
+                }
 
                 case '}':
+                {
                     Tokens.emplace_back(Token::RBRACE, "}");
                     break;
+                }
 
                 case '=':
+                {
                     Tokens.emplace_back(Token::EQUAL, "=");
                     break;
-
+                }
+                
+                case '^':
+                    FALLTHROUGH;
+                case '*':
+                    FALLTHROUGH;
+                case '/':
+                    FALLTHROUGH;
+                case '+':
+                    FALLTHROUGH;
+                case '-':
+                {
+                    Tokens.emplace_back(Token::BIOP, std::string{Code[Char]});
+                    break;
+                }
             }
             
         }
 
-        else if
-        ((Code[Char] == '/') &&
-        (Code[Char + 1] == '/'))
-        {
-            LexerBufferID = BufferID::Comment;
-        }
-
-        // quotes 
+        /* -------------------------------------------------------------------------- */
+        /*                                   Strings                                  */
+        /* -------------------------------------------------------------------------- */
         else if 
         ((Code[Char] == '\'') ||
-        (Code[Char] == '"')  ||
-        (Code[Char] == '`'))
+        (Code[Char]  == '"')  ||
+        (Code[Char]  == '`'))
         {
             if (LexerBufferID == BufferID::None) // Start of a string 
             {
@@ -174,19 +235,25 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize (const std::string& C
 
             else 
             {
-                char CharToCheck; // For checking matching char for closing string
+                char CharToCheck = '\0'; // For checking matching char for closing string
                 switch (LexerBufferID){
                     case BufferID::CharSingle:
+                    {
                         CharToCheck = '\'';
                         break;
+                    }
                     
                     case BufferID::CharDouble:
+                    {
                         CharToCheck = '"';
                         break;
+                    }
 
                     case BufferID::CharTilda:
+                    {
                         CharToCheck = '`';
                         break;
+                    }
                     
                     default:
                         break;

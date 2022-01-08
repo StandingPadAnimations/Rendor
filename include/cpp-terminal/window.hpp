@@ -1,4 +1,5 @@
-#pragma once
+#ifndef WINDOW_HPP
+#define WINDOW_HPP
 
 #include <cpp-terminal/base.hpp>
 #include <vector>
@@ -167,3 +168,5 @@ class Window {
     std::string render(int, int, bool);
 };
 }  // namespace Term
+
+#endif // WINDOW_HPP

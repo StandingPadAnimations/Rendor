@@ -5,15 +5,16 @@
 #include <string_view>
 #include <list>
 #include <map>
-#include <memory>
 #include <cmath>
 
 #include "Exceptions.hpp"
-#include "RendorInterpreter/RendorTypes.hpp"
 
 #include <boost/tokenizer.hpp>
 #include <boost/format.hpp>
 
-std::string PostFixEval(std::string_view PostFixOperation, std::map<std::string, std::unique_ptr<Variable>> *Variables = NULL);
+/*
+This version of the header is specifically designed for the compiler
+*/
+std::string PostFixEval(std::string_view PostFixOperation);
 
 #endif // MATHEVAL

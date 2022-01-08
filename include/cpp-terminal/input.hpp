@@ -1,4 +1,5 @@
-#pragma once
+#ifndef INPUT_HPP
+#define INPUT_HPP
 
 namespace Term {
 enum Key {
@@ -48,3 +49,5 @@ int read_key();
 int read_key0();
 
 }  // namespace Term
+
+#endif // INPUT_HPP

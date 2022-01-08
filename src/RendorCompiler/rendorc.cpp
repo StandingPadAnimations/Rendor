@@ -37,22 +37,30 @@ While the extension isn't required, it does make the code more readable in my op
 
 #include <iostream>
 #include "RendorEngine.hpp"
+#include "cpp-terminal/base.hpp"
 
 int main (int argc, char *argv[])
 {
     try
     {
-        std::string File;
-        if (!argv[1])
-        {
-            File = "";
-        }
-        else 
-        {
-            File = argv[1];
+        std::string File = "._.";
+        std::string RendorExecutable = argv[0]; 
+        std::vector<std::string> Arguments;
+
+        if (argc > 1) {
+            Arguments.assign(argv + 1, argv + argc);
+            if (argc >= 2)
+            {
+                File = Arguments[0];
+            }
         }
 
-        RendorEngineCompiler::run(File, argv);
+        if (RendorExecutable != RENDOR_BINARY_NAME)
+        {
+            std::cout << Term::color(Term::fg::red) << "Dealing with renamed version of rendorc. Version is: " << RENDOR_VERSION << Term::color(Term::style::reset) << std::endl;
+        }
+
+        RendorEngineCompiler::run(File, Arguments);
         return EXIT_SUCCESS;
     }
     catch (const std::exception& exp)

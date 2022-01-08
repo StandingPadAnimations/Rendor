@@ -8,7 +8,7 @@ std::string OperationToPostfix (std::string_view Operation){
     bool LastTokenWasOperator = false;
 
     // Does the actual seperation 
-    boost::char_separator<char> Delimeters(" ", "");
+    boost::char_separator<char> Delimeters("", "^*/+-");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(Operation, Delimeters);
 
     for (auto const& PartOfOperation : SeparatedOperation){

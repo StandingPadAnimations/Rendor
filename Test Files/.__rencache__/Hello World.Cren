@@ -1,27 +1,6 @@
 LOAD 0
 DEFINE main
-CALL input
-CALL_ARG _SSay a number: 
-FINALIZE_CALL input
-ASSIGN num
 CALL echo
-CALL_ARG _&num
-FINALIZE_CALL echo
-CONST 1
-ASSIGN world
-CALL lol
-CALL_ARG _&world
-CALL_ARG _&num
-FINALIZE_CALL lol
-FUNCTION END
-DEFINE lol
-ARGUMENT bar
-ARGUMENT foo
-CALL echo
-CALL_ARG _&foo
-FINALIZE_CALL echo
-CALL echo
-CALL_ARG _&bar
+CALL_ARG _SHello World
 FINALIZE_CALL echo
 FUNCTION END
-END 0

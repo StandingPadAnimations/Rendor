@@ -1,15 +1,10 @@
-#ifndef RENDORENGINE
-#define RENDORENGINE
+#ifndef RENDOR_ENGINE_HPP
+#define RENDOR_ENGINE_HPP
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
-
-#include "RendorCompiler/Lexer.hpp"
-#include "RendorCompiler/Parser.hpp"
-#include "RendorInterpreter/Interpreter.hpp"
-#include "cpp-terminal/base.hpp"
 
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3
@@ -20,12 +15,15 @@
 
 namespace bfs = boost::filesystem;
 
+#define RENDOR_VERSION 0
+#define RENDOR_BINARY_NAME "rendorc.exe"
+
 struct RendorEngineInterpreter{
     static void run(const std::string);
 };
 
 struct RendorEngineCompiler{
-    static void run(const std::string, char *argv[]);
+    static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 
-#endif // RENDORENGINE
+#endif // RENDOR_ENGINE_HPP

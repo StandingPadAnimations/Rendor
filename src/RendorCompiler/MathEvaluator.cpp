@@ -1,4 +1,4 @@
-#include "RendorInterpreter/MathEvaluator.hpp"
+#include "RendorCompiler/MathEvaluator.hpp"
 
 static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
 {
@@ -33,7 +33,7 @@ static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
     return Answer;
 }
 
-std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string, std::unique_ptr<Variable>> *Variables)
+std::string PostFixEval (std::string_view PostFixOperation)
 {
     boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(PostFixOperation, Delimeters);
@@ -54,26 +54,7 @@ std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string
         } 
         else
         {
-            if ( // variables in math operations 
-            (PartOfOperation[0] == '_') &&
-            (PartOfOperation[1] == '&'))
-            {
-                const auto CopiedVariableName = PartOfOperation.substr(2, PartOfOperation.size()-2);
-                const auto& CopiedVariable = (*Variables)[CopiedVariableName];
-
-                if ( // confirm if variable can be operated on 
-                (CopiedVariable->m_ValueClass->TypeOfVariable() != VariableType::Int) &&
-                (CopiedVariable->m_ValueClass->TypeOfVariable() != VariableType::Float)
-                )
-                {
-                    throw error::RendorException((boost::format("%s is not an int or float!") % CopiedVariableName).str());
-                }
-                Stack.emplace_back(CopiedVariable->m_ValueClass->m_Value);
-            } 
-            else
-            {
-                Stack.emplace_back(PartOfOperation);
-            }
+            Stack.emplace_back(PartOfOperation);
         }
     }
     if (Stack.size() > 1)

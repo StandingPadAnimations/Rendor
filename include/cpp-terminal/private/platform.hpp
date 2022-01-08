@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PLATFORM_HPP
+#define PLATFORM_HPP
 
 #ifdef _WIN32
 #include <conio.h>
@@ -53,3 +54,5 @@ class BaseTerminal {
 };
 
 }  // namespace Term::Private
+
+#endif // PLATFORM_HPP

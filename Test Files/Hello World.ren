@@ -1,13 +1,8 @@
 edef main() 
 {
-    num = input("Say a number: ")
-    echo(num)
-    world = 1
-    lol(world, num)
+    // num = input("Say a number: ")
+    echo("Hello World")
+    // world = 1 + 2
+    // lol(world, num)
 }
 
-edef lol(foo, bar)
-{
-    echo(foo)
-    echo(bar)
-}

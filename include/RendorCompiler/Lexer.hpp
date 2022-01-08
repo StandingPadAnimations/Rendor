@@ -15,6 +15,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
+#define FALLTHROUGH [[fallthrough]]
+
 namespace Lex{
     // Enum for tokens 
     enum class Token{
@@ -32,19 +34,20 @@ namespace Lex{
         RBRACE            = 8,
         NEWLINE           = 9, 
         COMMA             = 10,
+        BIOP              = 11,
 
         // Variable Types
-        INT               = 11,
-        FLOAT             = 12,
-        STRING            = 13,
-        BOOL              = 14
+        INT               = 12,
+        FLOAT             = 13,
+        STRING            = 14,
+        BOOL              = 15
     };
 
     // Lexer Class 
     class Lexer{
         public:            
             // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&, std::string_view);
+            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&);
 
             // Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;

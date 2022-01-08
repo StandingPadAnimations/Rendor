@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONVERSION_HPP
+#define CONVERSION_HPP
 
 #include <cstdint>
 #include <stdexcept>
@@ -108,3 +109,5 @@ inline int convert_string_to_int(const char* string,
 }
 
 }  // namespace Term::Private
+
+#endif // CONVERSION_HPP

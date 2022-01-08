@@ -1,10 +1,14 @@
 #include "RendorEngine.hpp"
+#include "RendorCompiler/Lexer.hpp"
+#include "RendorCompiler/Parser.hpp"
+#include "cpp-terminal/base.hpp"
+
 using Term::color;
 using Term::fg;
 using Term::bg;
 using Term::style;
 
-void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
+void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::string>& Arguments)
 {
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
@@ -29,23 +33,20 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
     // * Variables for command line arguments
     bool DebugMode = false;
 
-    if (argv[2] != NULL) // * for all arguments other then the file 
+    if (Arguments.size() >= 2) // * for all arguments other then the file 
     { 
-        if(
-        (std::string(argv[2]) == "-debug") ||
-        (std::string(argv[2]) == "-d"))
+        if
+        ((std::find(Arguments.begin(), Arguments.end(), "-d") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-debug") != Arguments.end()))
         {
             DebugMode = true;
         }
 
-        else if (std::string(argv[2]) == "-cpp")
+        if
+        ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))
         {
-            if(
-            (std::string(argv[3]) == "-debug") ||
-            (std::string(argv[3]) == "-d"))
-            {
-                DebugMode = true;
-            }
+            std::cout << color(fg::red) << "C++ transpiling not supported in this version" << color(style::reset) << std::endl;
         }
     }
 
@@ -66,7 +67,7 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         std::cout << color(fg::green) << "Tokenizing..." << std::endl;
-        Tokens = RenLexer.Tokenize(AllCode, AbsPathParentDir); // Tokenizes code for parser 
+        Tokens = RenLexer.Tokenize(AllCode); // Tokenizes code for parser 
 
         // Parses
         std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
@@ -97,8 +98,6 @@ void RendorEngineCompiler::run (const std::string FileInput, char *argv[])
                 std::cout << color(fg::green) << command << std::endl;
             }
         }
-
         std::cout << color(fg::reset) << std::endl;
     }
-    File.close();
 }

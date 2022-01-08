@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PROMPT_HPP
+#define PROMPT_HPP
 
 #include <cpp-terminal/window.hpp>
 #include <functional>
@@ -30,3 +31,5 @@ std::string prompt(Terminal&,
                    std::vector<std::string>&,
                    std::function<bool(std::string)>&);
 }  // namespace Term
+
+#endif // PROMPT_HPP

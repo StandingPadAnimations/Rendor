@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BASE_HPP
+#define BASE_HPP
 
 #include <string>
 // TODO: remove include
@@ -119,3 +120,5 @@ class Terminal : public Private::BaseTerminal {
 };
 
 }  // namespace Term
+
+#endif // BASE_HPP

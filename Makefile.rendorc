@@ -1,16 +1,18 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wfatal-errors -Wimplicit-fallthrough -static -static-libgcc -static-libstdc++ 
 
 BIN         := bin
 OBJDIR      := bin/RendorCompiler/ObjectFiles
 SRC         := src/RendorCompiler
+SRCTERM     := src/cpp-terminal
 INCLUDE     := include
 LIBRARIES   := g++
 
 EXECUTABLE  := RendorCompiler/rendorc
 
-SOURCES     := $(wildcard $(SRC)/*.cpp)
-OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+SOURCES     := $(wildcard $(SRC)/*.cpp) 
+SOURCETERM  := $(wildcard $(SRCTERM)/*.cpp)
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) $(patsubst $(SRCTERM)/%.cpp,$(OBJDIR)/%.o,$(SOURCETERM))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt
@@ -22,11 +24,14 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
+	@echo 
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
-$(OBJECTS): $(OBJDIR)/%.o: $(SRC)/%.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
-	
+$(OBJDIR)/%.o: $(SRC)/%.cpp 
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
+
+$(OBJDIR)/%.o: $(SRCTERM)/%.cpp 
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
 
 clean:
 	-rm $(OBJDIR)/*.o
