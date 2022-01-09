@@ -898,6 +898,13 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
             break;
         }
 
+        case NodeType::Reference:
+        {
+            auto& ReferenceNode = static_cast<Reference&>(*Node); 
+            ByteCode.emplace_back((boost::format("CONST _&%s") % ReferenceNode.Value).str());
+            break;
+        }
+
         case NodeType::FunctionCall:
         {
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node); 
