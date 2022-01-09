@@ -159,19 +159,10 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
 
 void Interpreter::MarkConstantBlack(TypeObjectPtr& Const)
 {
-    auto FindIterator = std::find_if(
-        Objects.begin(), 
-        Objects.end(),
-        [&Const] (TypeObjectPtr& Ptr) 
-        {
-            return Ptr->m_ID == Const->m_ID;
-        }
-        );
-
     /* ---------------------- if object isn't marked black ---------------------- */
-    if ((*FindIterator)->ColorOfObj != GCColor::BLACK)
+    if (Const->ColorOfObj != GCColor::BLACK)
     {
-        switch ((*FindIterator)->ColorOfObj)
+        switch (Const->ColorOfObj)
         {
             case GCColor::WHITE:
             {
@@ -207,6 +198,15 @@ void Interpreter::MarkConstantBlack(TypeObjectPtr& Const)
                 throw error::RendorException("what the frick, how did this happen?");
             }
         }
-        (*FindIterator)->ColorOfObj = GCColor::BLACK;
+
+        /* --------------------------------- Mark it -------------------------------- */
+        if (Const.IsValid())
+        {
+            Const->ColorOfObj = GCColor::BLACK;
+        }
+        else 
+        {
+            throw error::RendorException("what the frick, how did this happen?");
+        }
     }
 }

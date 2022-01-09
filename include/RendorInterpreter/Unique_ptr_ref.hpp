@@ -27,7 +27,7 @@ namespace ren{
             }
         
         private:
-            T* m_RendorPtr;
+            T* m_RendorPtr = nullptr;
     };
 }
 
