@@ -1,8 +1,7 @@
 edef main() 
 {
+    echo("HELLO WORLD")
     num = input("Say a number: ")
-    echo("Hello World")
-    // world = 1 + 2
-    // lol(world, num)
+    echo(100)
 }
 

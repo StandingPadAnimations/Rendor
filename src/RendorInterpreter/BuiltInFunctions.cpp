@@ -28,6 +28,7 @@ std::optional<TypeObjectPtr> Interpreter::RENDOR_INPUT_FUNCTION(std::vector<Type
 
     std::cout << InputArgs[0]->m_Value;
     std::getline(std::cin, InputString);
+    std::cout.flush();
     return CreateConstant("_S" + InputString);
 }
 

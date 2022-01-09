@@ -49,7 +49,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         std::string_view Command  (ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
         std::string_view Args     (ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->end());
 
-
         /* -------------------------------------------------------------------------- */
         /*                            Execution begins here                           */
         /* -------------------------------------------------------------------------- */
@@ -136,8 +135,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
             else 
             {
-                (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
-                (*GlobalVariables)[Var]->m_ValueClass = Const;
+                (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
+                (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
                 DisposedVariables.emplace_back(Var);
             }
         }
