@@ -17,7 +17,7 @@
 #include "RendorInterpreter/MathEvaluator.hpp"
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/Unique_ptr_ref.hpp"
-#include "RendorInterpreter/CompareRendorIDs.hpp"
+#include "RendorInterpreter/VariableType.hpp"
 #include "Exceptions.hpp"
 
 #include <boost/format.hpp>
@@ -40,6 +40,7 @@ class Interpreter
 {
     public:
         static void ExecuteByteCode(std::ifstream& File);
+        static void MarkConstIDForDisposal(std::string_view RendorConstID);
 
     private:
         /* -------------------------------------------------------------------------- */
@@ -58,16 +59,13 @@ class Interpreter
         inline static size_t ConstantIndex = 0;
 
         /* ------------------ Shared for garbage collection reasons ----------------- */
-        inline static std::vector<std::string_view> DisposedVariables; // All variables that need to be destroyed are placed here
         inline static std::vector<VariableScopeMap> VariablesCallStack;
         inline static std::list<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
         
         /* ------------------ Rendor Memory(for tri-color marking) ------------------ */
-        inline static std::vector<TypeObject> WhiteObjects; // All objects that will get deleted
-        inline static std::vector<TypeObject> GreyObjects; // All objects that won't be deleted, but still need to be scanned
-        inline static std::vector<TypeObject> BlackObjects; // Al objects that have been fully scanned
-
-        inline static std::vector<TypeObjectPtr> Objects; // All objects 
+        inline static std::list<std::string_view> WhiteObjects; // Indexs of objects that need to be yeeted
+        inline static std::list<std::string_view> GreyObjects; // Indexs of objects that need to be scanned
+        inline static std::list<TypeObject> Objects; // All objects 
 
         inline static std::map<std::string_view, std::vector<std::string_view>> SharedVariables;
 
@@ -97,7 +95,6 @@ class Interpreter
         /* ---------------------------- Garbage Collector --------------------------- */
         static void GarbageCollector();
         static TypeObjectPtr CreateConstant(std::string_view Constant);
-        static void MarkConstantBlack(TypeObjectPtr& Const);
 
         enum class RendorState
         {

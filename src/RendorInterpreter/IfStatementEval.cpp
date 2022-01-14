@@ -205,7 +205,7 @@ bool Float::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Compar
 bool String::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator)
 {
     std::string Const2Converted; // String is only compatible with string
-    std::string ConvertedValue = ConvertedValue;
+    std::string ConvertedValue = m_Value;
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
     if (Const2->TypeOfVariable() == VariableType::String)

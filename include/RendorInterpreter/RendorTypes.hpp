@@ -37,7 +37,6 @@ enum class GCColor
     BLACK
 };
 
-
 struct Type 
 {
     virtual VariableType TypeOfVariable(){return VariableType::NullType;};
@@ -45,13 +44,10 @@ struct Type
 
     std::string m_Value;
     std::string m_ID;
+    std::vector<std::string_view> IncomingPointers;
     GCColor ColorOfObj = GCColor::WHITE;
 
-    explicit Type(const std::string& Value) : m_Value(Value)
-    {
-        m_ID = std::to_string(IntForID) + "_RENDOR_TYPE";
-        ++IntForID;
-    }
+    explicit Type(const std::string& Value);
     virtual ~Type(){};
 
     private:
@@ -74,10 +70,7 @@ struct NullType : Type
 struct Int : Type
 {
     int64_t ConvertedValue;
-    explicit Int(std::string Value) : Type(Value)
-    {
-        ConvertedValue = boost::lexical_cast<int64_t>(Value);
-    }
+    explicit Int(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Int;}
     bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator); 
 };
@@ -88,10 +81,7 @@ struct Int : Type
 struct Float : Type
 {
     double ConvertedValue;
-    explicit Float(std::string Value) : Type(Value)
-    {
-        ConvertedValue = std::stod(Value);
-    }
+    explicit Float(std::string Value);
 
     VariableType TypeOfVariable(){return VariableType::Float;}
     bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator);
@@ -108,26 +98,9 @@ struct String : Type
 struct Bool : Type
 {
     bool ConvertedValue;
-    explicit Bool(std::string Value) : Type(Value)
-    {
-        if (m_Value == "true")
-        {
-            ConvertedValue = true;
-        } else
-        {
-            ConvertedValue = false;
-        }
-    }
-
+    explicit Bool(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Bool;}
     bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator);
-};
-
-struct Variable
-{
-    std::string m_Name;
-    ren::unique_ptr_ref<Type> m_ValueClass;
-    explicit Variable(std::string Name) : m_Name(Name){}
 };
 
 #endif // RENDOR_TYPES_HPP

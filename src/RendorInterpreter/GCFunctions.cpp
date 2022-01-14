@@ -6,48 +6,17 @@
 /* ---------------------------- Garbage Collector --------------------------- */
 void Interpreter::GarbageCollector()
 {
-    // Deleting variables
-    for (auto const& Var : DisposedVariables)
+    for (auto Ptr = Objects.begin(); Ptr != Objects.end();)
     {
-        TypeObjectPtr VariableValuePtr((*CurrentScopeVariables)[std::string{Var}]->m_ValueClass);
-
-        if (SharedVariables.contains(VariableValuePtr->m_ID))
+        if (std::find(WhiteObjects.begin(), WhiteObjects.end(), (*Ptr)->m_ID) != WhiteObjects.end())
         {
-            SharedVariables[VariableValuePtr->m_ID].pop_back();
-
-            // If there's only one variable using that object
-            if (SharedVariables[VariableValuePtr->m_ID].size() == 1)
-            {
-                SharedVariables.erase(VariableValuePtr->m_ID);
-            }
-        } 
-        
+            Objects.erase(Ptr);
+        }
         else 
         {
-            auto FindIterator = std::find_if(
-                BlackObjects.begin(), 
-                BlackObjects.end(),
-                [&VariableValuePtr] (const TypeObject& Ptr) 
-                {
-                    return Ptr.get()->m_ID == VariableValuePtr->m_ID;
-                }
-                );
-
-            (*VariableValuePtr).ColorOfObj = GCColor::WHITE; // Set it as white
-            WhiteObjects.push_back(std::move(*FindIterator));
+            ++Ptr;
         }
     }
-
-    // Removing constants
-    WhiteObjects.clear();
-    Objects.erase(std::remove_if(Objects.begin(), Objects.end(), 
-        [](TypeObjectPtr Obj) 
-        { 
-            return Obj.IsValid() == false; 
-        }), 
-        Objects.end());
-
-    std::sort(BlackObjects.begin(), BlackObjects.end(), CompareRendorIDs);
 }
 
 /* ------------------------ Function to add constants ----------------------- */
@@ -73,8 +42,10 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
                 // Add new string to Objects
                 if (FindIterator == Objects.end())
                 {
-                    WhiteObjects.push_back(std::make_unique<String>(ActualConstant)); // All new objects are white by default
-                    return TypeObjectPtr(WhiteObjects.back());
+                    TypeObject Obj = std::make_unique<String>(std::string{ActualConstant});
+                    WhiteObjects.push_back(Obj->m_ID);
+                    Objects.push_back(std::move(Obj));
+                    return TypeObjectPtr(Objects.back());
                 } 
                 else 
                 {
@@ -113,7 +84,7 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
         auto FindIterator = std::find_if(
         Objects.begin(), 
         Objects.end(),
-        [&Constant] (TypeObjectPtr& Ptr) 
+        [&Constant] (TypeObject& Ptr) 
         {
             return Ptr->m_Value == Constant;
         }
@@ -128,13 +99,15 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
             {
                 if (Constant.find_first_of(".") != std::string::npos)
                 {
-                    WhiteObjects.push_back(std::make_unique<Float>(std::string{Constant}));
-                    Objects.push_back(TypeObjectPtr(WhiteObjects.back()));
+                    TypeObject Obj = std::make_unique<Float>(std::string{Constant});
+                    WhiteObjects.push_back(Obj->m_ID);
+                    Objects.push_back(std::move(Obj));
                 }
                 else 
                 {
-                    WhiteObjects.push_back(std::make_unique<Int>(std::string{Constant}));
-                    Objects.push_back(TypeObjectPtr(WhiteObjects.back()));
+                    TypeObject Obj = std::make_unique<Int>(std::string{Constant});
+                    WhiteObjects.push_back(Obj->m_ID);
+                    Objects.push_back(std::move(Obj));
                 }
             }
             
@@ -143,70 +116,19 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
             ((Constant == "true") ||
             (Constant == "false"))
             {
-                WhiteObjects.push_back(std::make_unique<Bool>(std::string{Constant}));
-                Objects.push_back(TypeObjectPtr(WhiteObjects.back()));
+                TypeObject Obj = std::make_unique<Bool>(std::string{Constant});
+                WhiteObjects.push_back(Obj->m_ID);
+                Objects.push_back(std::move(Obj));
             }
 
             /* ------------------------------ return result ----------------------------- */
-            return Objects.back();
+            return TypeObjectPtr(Objects.back());
         }
         else 
         {
             return TypeObjectPtr(*FindIterator);
         }
     }
-}
 
-void Interpreter::MarkConstantBlack(TypeObjectPtr& Const)
-{
-    /* ---------------------- if object isn't marked black ---------------------- */
-    if (Const->ColorOfObj != GCColor::BLACK)
-    {
-        switch (Const->ColorOfObj)
-        {
-            case GCColor::WHITE:
-            {
-                auto WhiteFindIterator = std::find_if(
-                    WhiteObjects.begin(), 
-                    WhiteObjects.end(),
-                    [&Const] (TypeObject& Ptr) 
-                    {
-                        return Ptr.get()->m_ID == Const->m_ID;
-                    }
-                    );
-                BlackObjects.push_back(std::move(*WhiteFindIterator));
-                break;
-            }
-
-            case GCColor::GREY:
-            {
-                auto GreyFindIterator = std::find_if(
-                    GreyObjects.begin(), 
-                    GreyObjects.end(),
-                    [&Const] (TypeObject& Ptr) 
-                    {
-                        return Ptr.get()->m_ID == Const->m_ID;
-                    }
-                    );
-                BlackObjects.push_back(std::move(*GreyFindIterator));
-                break;
-            }
-
-            case GCColor::BLACK:
-            {
-                // If this error pops, then the compiler has a bug
-                throw error::RendorException("what the frick, how did this happen?");
-            }
-        }
-
-        /* --------------------------------- Mark it -------------------------------- */
-        if (Const.IsValid())
-        {
-            Const->ColorOfObj = GCColor::BLACK;
-        }
-        else 
-        {
-            throw error::RendorException("what the frick, how did this happen?");
-        }
-    }
+    return TypeObjectPtr();
 }

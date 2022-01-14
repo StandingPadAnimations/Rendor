@@ -69,8 +69,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             if (Args == "END")
             {
-                VariablesCallStack.pop_back();
-                // ! Will break when returning values
                 GarbageCollector(); // Remove constants from memory 
                 return; 
             }
@@ -122,7 +120,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             std::string Var{Args};
             TypeObjectPtr Const = Constants[ConstantIndex];
-            MarkConstantBlack(Const);
+            Const->ColorOfObj = GCColor::BLACK;
 
             /* ------------------------ Check if variable exists ------------------------ */
             if (GlobalVariables->contains(Var))
@@ -137,7 +135,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             {
                 (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
                 (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
-                DisposedVariables.emplace_back(Var);
             }
         }
 
@@ -157,6 +154,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
 
         else if (Command == "FINALIZE_CALL")
         {
+            /* ----------------------- If it's a built in function ---------------------- */
             if (BuiltInFunctions.contains(std::string{Args}))
             {
                 std::optional<TypeObjectPtr> Result = BuiltInFunctions[std::string{Args}](FunctionArgsCallStack.back());
@@ -165,15 +163,21 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                     Constants.push_back(Result.value());
                 }
             }
+
+            /* -------------------------- user defined function ------------------------- */
             else if (UserDefinedFunctions.contains(std::string{Args}))
             {
                 ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
             }
+
+            /* -------------------------- non-existant function ------------------------- */
             else 
             {
                 throw error::RendorException("Function does not exist!");
             }
-            // Clean up when done 
+
+            /* ---------------------- clean up after function call ---------------------- */
+            VariablesCallStack.pop_back();
             FunctionArgsCallStack.pop_back(); // Remove arguments from memory 
             RendorStateID = RendorState::None;
         }
@@ -182,12 +186,11 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             std::string Var{Args};
             TypeObjectPtr Const = FunctionArgsCallStack.back().back();
-            MarkConstantBlack(Const);
+            Const->ColorOfObj = GCColor::BLACK;
 
             /* ----------------------------- Assign Variable ---------------------------- */
             (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
             (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
-            DisposedVariables.emplace_back(Var);
             FunctionArgsCallStack.back().pop_back();
         }
 
@@ -288,7 +291,7 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
             std::string Var{Args};
             TypeObjectPtr Const = Constants[ConstantIndex];
             
-            MarkConstantBlack(Const);
+            Const->ColorOfObj = GCColor::BLACK;
             /* ------------------------ Check if variable exists ------------------------ */
             if (GlobalVariables->contains(Var))
             {
@@ -298,7 +301,6 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
             {
                 (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
                 (*GlobalVariables)[Var]->m_ValueClass = Const;
-                DisposedVariables.emplace_back(Var);
             }
         }
     }
