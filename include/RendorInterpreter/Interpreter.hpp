@@ -57,13 +57,13 @@ class Interpreter
 
         /* ------------------ Shared for garbage collection reasons ----------------- */
         inline static std::vector<VariableScopeMap> VariablesCallStack;
-        inline static std::list<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
+        inline static std::vector<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
         
         /* ------------------ Rendor Memory(for tri-color marking) ------------------ */
-        inline static std::list<TypeObject> WhiteObjects; // objects that need to be yeeted
-        inline static std::list<TypeObject> GreyObjects;  // objects that need to be scanned
-        inline static std::list<TypeObject> BlackObjects; // objects that have been scanned
-        inline static std::list<TypeObjectPtr> Objects;   // All Objects 
+        inline static std::vector<TypeObject> WhiteObjects; // objects that need to be yeeted
+        inline static std::vector<TypeObject> GreyObjects;  // objects that need to be scanned
+        inline static std::vector<TypeObject> BlackObjects; // objects that have been scanned
+        inline static std::vector<TypeObjectPtr> Objects;   // All Objects 
 
         /* -------------- Pointers to certain parts of Rendor's memory -------------- */
         inline static VariableScopeMap *CurrentScopeVariables = NULL;

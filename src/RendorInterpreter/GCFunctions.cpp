@@ -12,6 +12,35 @@ void Interpreter::GarbageCollector()
         BlackObjects.push_back(std::move(Constant));
         break;
     }
+
+    /* ------------------------ Remove all empty pointers ----------------------- */
+    if (Objects.size())
+    {
+        Objects.erase(std::remove_if(Objects.begin(), Objects.end(), 
+        [](TypeObjectPtr Ptr)
+        {
+            return Ptr.expired() || Ptr.lock()->ColorOfObj == GCColor::WHITE;
+        }));
+    }
+    
+    if (GreyObjects.size())
+    {
+        GreyObjects.erase(std::remove_if(GreyObjects.begin(), GreyObjects.end(), 
+        [](TypeObject Ptr)
+        {
+            return !Ptr.use_count();
+        }));
+    }
+    
+    if (BlackObjects.size())
+    {
+        BlackObjects.erase(std::remove_if(BlackObjects.begin(), BlackObjects.end(), 
+        [](TypeObject Ptr)
+        {
+            return !Ptr.use_count();
+        }));
+    }
+    WhiteObjects.clear();
 }
 
 /* ------------------------ Function to add constants ----------------------- */
@@ -30,7 +59,14 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
                 Objects.end(),
                 [&ActualConstant] (TypeObjectPtr Ptr) 
                 {
-                    return Ptr.lock()->m_Value == ActualConstant;
+                    if (!Ptr.expired())
+                    {
+                        return Ptr.lock()->m_Value == ActualConstant;
+                    } 
+                    else 
+                    {
+                        return false;
+                    }
                 }
                 );
                 
@@ -81,7 +117,14 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
         Objects.end(),
         [&Constant] (TypeObjectPtr Ptr) 
         {
-            return Ptr.lock()->m_Value == Constant;
+            if (!Ptr.expired())
+            {
+                return Ptr.lock()->m_Value == Constant;
+            } 
+            else 
+            {
+                return false;
+            }
         }
         );
 

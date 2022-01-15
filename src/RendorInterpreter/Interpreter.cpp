@@ -69,6 +69,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             if (Args == "END")
             {
+                VariablesCallStack.pop_back();
                 GarbageCollector(); // Remove constants from memory 
                 return; 
             }
@@ -83,7 +84,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                 /* ----------------------------- Function Calls ----------------------------- */
                 case RendorState::FunctionCall:
                 {
-                    FunctionArgsCallStack.back().push_back(CreateConstant(Args));
+                    TypeObjectPtr Const = CreateConstant(Args);
+                    FunctionArgsCallStack.back().push_back(Const);
                     break;
                 }
 
@@ -168,7 +170,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             else if (UserDefinedFunctions.contains(std::string{Args}))
             {
                 ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
-                VariablesCallStack.pop_back();
             }
 
             /* -------------------------- non-existant function ------------------------- */

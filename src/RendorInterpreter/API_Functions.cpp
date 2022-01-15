@@ -8,6 +8,7 @@ void Interpreter::DisposeConst(TypeObject Const)
         {
             auto OriginalPtr = std::find(BlackObjects.begin(), BlackObjects.end(), Const);
             WhiteObjects.push_back(std::move(*OriginalPtr));
+            BlackObjects.erase(OriginalPtr);
             break;
         }
 
@@ -15,6 +16,7 @@ void Interpreter::DisposeConst(TypeObject Const)
         {
             auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
             WhiteObjects.push_back(std::move(*OriginalPtr));
+            GreyObjects.erase(OriginalPtr);
             break;
         }
 

@@ -2,6 +2,7 @@ edef main()
 {
     echo("HELLO WORLD")
     lol("Hello", 1)
+    lol("World", 2)
 }
 
 edef lol(str, num)
