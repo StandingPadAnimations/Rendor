@@ -62,7 +62,7 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
                 }
                 else 
                 {
-                    throw error::RendorException("Reference to undefined variable");
+                    throw error::RendorException("Reference to undefined variable: " + ActualConstant);
                 }
                 break;
             }

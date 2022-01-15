@@ -168,6 +168,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             else if (UserDefinedFunctions.contains(std::string{Args}))
             {
                 ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
+                VariablesCallStack.pop_back();
             }
 
             /* -------------------------- non-existant function ------------------------- */
@@ -177,10 +178,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
 
             /* ---------------------- clean up after function call ---------------------- */
-            if (VariablesCallStack.size())
-            {
-                VariablesCallStack.pop_back();
-            }
             FunctionArgsCallStack.pop_back(); // Remove arguments from memory 
             RendorStateID = RendorState::None;
         }

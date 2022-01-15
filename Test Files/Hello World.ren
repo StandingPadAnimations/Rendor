@@ -1,7 +1,12 @@
 edef main() 
 {
     echo("HELLO WORLD")
-    num = input("Say a number: ")
+    lol("Hello", 1)
+}
+
+edef lol(str, num)
+{
+    echo(str)
     echo(num)
 }
 
