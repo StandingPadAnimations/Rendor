@@ -1,13 +1,13 @@
 edef main() 
 {
-    echo("HELLO WORLD")
-    lol("Hello", 1)
-    lol("World", 2)
+    foo = "HELLO PEOPLE"
+    echo(foo)
+    lol("World")
+    echo(foo)
 }
 
-edef lol(str, num)
+edef lol(str)
 {
     echo(str)
-    echo(num)
 }
 

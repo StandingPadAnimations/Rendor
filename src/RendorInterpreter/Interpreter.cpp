@@ -71,6 +71,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             {
                 VariablesCallStack.pop_back();
                 GarbageCollector(); // Remove constants from memory 
+                CurrentScopeVariables = &VariablesCallStack.back();
                 return; 
             }
         }
@@ -179,7 +180,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
 
             /* ---------------------- clean up after function call ---------------------- */
-            FunctionArgsCallStack.pop_back(); // Remove arguments from memory 
             RendorStateID = RendorState::None;
         }
 

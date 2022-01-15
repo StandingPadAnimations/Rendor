@@ -22,24 +22,6 @@ void Interpreter::GarbageCollector()
             return Ptr.expired() || Ptr.lock()->ColorOfObj == GCColor::WHITE;
         }));
     }
-    
-    if (GreyObjects.size())
-    {
-        GreyObjects.erase(std::remove_if(GreyObjects.begin(), GreyObjects.end(), 
-        [](TypeObject Ptr)
-        {
-            return !Ptr.use_count();
-        }));
-    }
-    
-    if (BlackObjects.size())
-    {
-        BlackObjects.erase(std::remove_if(BlackObjects.begin(), BlackObjects.end(), 
-        [](TypeObject Ptr)
-        {
-            return !Ptr.use_count();
-        }));
-    }
     WhiteObjects.clear();
 }
 
