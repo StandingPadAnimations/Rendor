@@ -11,9 +11,10 @@ Variable::Variable(std::string Name) : m_Name(Name)
 
 Variable::~Variable()
 {
-    m_ValueClass->ColorOfObj = GCColor::WHITE;
-    m_ValueClass->IncomingPointers.erase(std::remove(m_ValueClass->IncomingPointers.begin(), m_ValueClass->IncomingPointers.end(), m_ID));
-    Interpreter::MarkConstIDForDisposal(m_ValueClass->m_ID);
+    if (m_ValueClass.use_count() == 2)
+    {
+        Interpreter::DisposeConst(m_ValueClass);
+    }
 }
 
 Type::Type(const std::string& Value) : m_Value(Value)

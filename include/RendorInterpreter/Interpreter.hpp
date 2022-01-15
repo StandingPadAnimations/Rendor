@@ -16,7 +16,6 @@
 // Other Parts of the Rendor Engine Interpreter 
 #include "RendorInterpreter/MathEvaluator.hpp"
 #include "RendorInterpreter/RendorTypes.hpp"
-#include "RendorInterpreter/Unique_ptr_ref.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "Exceptions.hpp"
 
@@ -26,35 +25,33 @@
 #include <boost/circular_buffer.hpp>
 
 
-/* ---------------------- Typedefs for Rendor Templates --------------------- */
-typedef ren::unique_ptr_ref<Type> TypeObjectPtr;
-
 /* ---------------------------- Typedefs for STL ---------------------------- */
-typedef std::unique_ptr<Type> TypeObject;
+typedef std::shared_ptr<Type> TypeObject;
+typedef std::weak_ptr<Type> TypeObjectPtr;
 typedef std::vector<TypeObjectPtr> TypePtrVector;
 typedef std::vector<std::string> StringVector;
-typedef std::map<std::string, std::unique_ptr<Variable>> VariableScopeMap;
-typedef std::function<std::optional<TypeObjectPtr>(std::vector<TypeObjectPtr>&)> RendorFunctionPtr;
+typedef std::unordered_map<std::string, std::unique_ptr<Variable>> VariableScopeMap;
+typedef std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)> RendorFunctionPtr;
 
 class Interpreter
 {
     public:
         static void ExecuteByteCode(std::ifstream& File);
-        static void MarkConstIDForDisposal(std::string_view RendorConstID);
+        static void DisposeConst(TypeObject RendorConstID);
 
     private:
         /* -------------------------------------------------------------------------- */
         /*                             Built in functions                             */
         /* -------------------------------------------------------------------------- */
-        static std::optional<TypeObjectPtr> RENDOR_ECHO_FUNCTION  (std::vector<TypeObjectPtr>& EchoArgs);
-        static std::optional<TypeObjectPtr> RENDOR_INPUT_FUNCTION (std::vector<TypeObjectPtr>& InputArgs);
-        static std::optional<TypeObjectPtr> RENDOR_SUM_FUNCTION   (std::vector<TypeObjectPtr>& SumArgs);
+        static std::optional<TypeObject> RENDOR_ECHO_FUNCTION  (std::vector<TypeObjectPtr>& EchoArgs);
+        static std::optional<TypeObject> RENDOR_INPUT_FUNCTION (std::vector<TypeObjectPtr>& InputArgs);
+        static std::optional<TypeObject> RENDOR_SUM_FUNCTION   (std::vector<TypeObjectPtr>& SumArgs);
 
         /* -------------------------------------------------------------------------- */
         /*                            Interpreter Internals                           */
         /* -------------------------------------------------------------------------- */
         /* ----------------------------- Rendor's Memory ---------------------------- */
-        inline static std::map<std::string, size_t> UserDefinedFunctions; // Stores index of user defined functions in the main file
+        inline static std::unordered_map<std::string, size_t> UserDefinedFunctions; // Stores index of user defined functions in the main file
         inline static boost::circular_buffer_space_optimized<TypeObjectPtr> Constants{2}; // for temp access to constants
         inline static size_t ConstantIndex = 0;
 
@@ -63,11 +60,10 @@ class Interpreter
         inline static std::list<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
         
         /* ------------------ Rendor Memory(for tri-color marking) ------------------ */
-        inline static std::list<std::string_view> WhiteObjects; // Indexs of objects that need to be yeeted
-        inline static std::list<std::string_view> GreyObjects; // Indexs of objects that need to be scanned
-        inline static std::list<TypeObject> Objects; // All objects 
-
-        inline static std::map<std::string_view, std::vector<std::string_view>> SharedVariables;
+        inline static std::list<TypeObject> WhiteObjects; // objects that need to be yeeted
+        inline static std::list<TypeObject> GreyObjects;  // objects that need to be scanned
+        inline static std::list<TypeObject> BlackObjects; // objects that have been scanned
+        inline static std::list<TypeObjectPtr> Objects;   // All Objects 
 
         /* -------------- Pointers to certain parts of Rendor's memory -------------- */
         inline static VariableScopeMap *CurrentScopeVariables = NULL;
@@ -94,7 +90,8 @@ class Interpreter
 
         /* ---------------------------- Garbage Collector --------------------------- */
         static void GarbageCollector();
-        static TypeObjectPtr CreateConstant(std::string_view Constant);
+        static void MarkConstantBlack(TypeObject Const);
+        static TypeObject CreateConstant(std::string_view Constant);
 
         enum class RendorState
         {

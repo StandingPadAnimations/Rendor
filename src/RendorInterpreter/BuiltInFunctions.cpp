@@ -4,38 +4,38 @@
 /*                             Built In Functions                             */
 /* -------------------------------------------------------------------------- */
 
-std::optional<TypeObjectPtr> Interpreter::RENDOR_ECHO_FUNCTION(std::vector<TypeObjectPtr>& EchoArgs)
+std::optional<TypeObject> Interpreter::RENDOR_ECHO_FUNCTION(std::vector<TypeObjectPtr>& EchoArgs)
 {
     // Newline
-    if (EchoArgs[0].IsValid()){}
+    if (!EchoArgs[0].expired()){}
     else
     {
         throw error::RendorException("Reference to null const");
     }
-    std::cout << EchoArgs[0]->m_Value << '\n';
+    std::cout << EchoArgs[0].lock()->m_Value << '\n';
     return {};
 }
 
-std::optional<TypeObjectPtr> Interpreter::RENDOR_INPUT_FUNCTION(std::vector<TypeObjectPtr>& InputArgs)
+std::optional<TypeObject> Interpreter::RENDOR_INPUT_FUNCTION(std::vector<TypeObjectPtr>& InputArgs)
 {
     std::string InputString;
     
-    if (InputArgs[0].IsValid()){}
+    if (!InputArgs[0].expired()){}
     else 
     {
         throw error::RendorException("Reference to null const");
     }
 
-    std::cout << InputArgs[0]->m_Value;
+    std::cout << InputArgs[0].lock()->m_Value;
     std::getline(std::cin, InputString);
     std::cout.flush();
     return CreateConstant("_S" + InputString);
 }
 
-std::optional<TypeObjectPtr> Interpreter::RENDOR_SUM_FUNCTION(std::vector<TypeObjectPtr>& SumArgs)
+std::optional<TypeObject> Interpreter::RENDOR_SUM_FUNCTION(std::vector<TypeObjectPtr>& SumArgs)
 {
-    if (SumArgs[0].IsValid()){
-        if (SumArgs[0]->TypeOfVariable() != VariableType::Int)
+    if (!SumArgs[0].expired()){
+        if (SumArgs[0].lock()->TypeOfVariable() != VariableType::Int)
         {
             throw error::RendorException("Sum Function error: Argument must be int");
         }
@@ -45,7 +45,7 @@ std::optional<TypeObjectPtr> Interpreter::RENDOR_SUM_FUNCTION(std::vector<TypeOb
         throw error::RendorException("Reference to null const");
     }
     
-    auto& NumberToSum = static_cast<Int&>(*SumArgs[0]);
+    auto& NumberToSum = static_cast<Int&>(*SumArgs[0].lock());
     int64_t SumNumber = NumberToSum.ConvertedValue;
 
     SumNumber = (SumNumber *  (SumNumber + 1)) / 2;

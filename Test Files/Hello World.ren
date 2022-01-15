@@ -2,6 +2,6 @@ edef main()
 {
     echo("HELLO WORLD")
     num = input("Say a number: ")
-    echo(100)
+    echo(num)
 }
 

@@ -119,8 +119,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         (Command == "ASSIGN")
         {
             std::string Var{Args};
-            TypeObjectPtr Const = Constants[ConstantIndex];
-            Const->ColorOfObj = GCColor::BLACK;
+            TypeObject Const = Constants[ConstantIndex].lock();
+            MarkConstantBlack(Const);
 
             /* ------------------------ Check if variable exists ------------------------ */
             if (GlobalVariables->contains(Var))
@@ -177,7 +177,10 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
 
             /* ---------------------- clean up after function call ---------------------- */
-            VariablesCallStack.pop_back();
+            if (VariablesCallStack.size())
+            {
+                VariablesCallStack.pop_back();
+            }
             FunctionArgsCallStack.pop_back(); // Remove arguments from memory 
             RendorStateID = RendorState::None;
         }
@@ -185,8 +188,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         else if (Command == "ARGUMENT")
         {
             std::string Var{Args};
-            TypeObjectPtr Const = FunctionArgsCallStack.back().back();
-            Const->ColorOfObj = GCColor::BLACK;
+            TypeObject Const = FunctionArgsCallStack.back().back().lock();
+            MarkConstantBlack(Const);
 
             /* ----------------------------- Assign Variable ---------------------------- */
             (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
@@ -289,9 +292,8 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
         {
             
             std::string Var{Args};
-            TypeObjectPtr Const = Constants[ConstantIndex];
-            
-            Const->ColorOfObj = GCColor::BLACK;
+            TypeObject Const = Constants[ConstantIndex].lock();
+            MarkConstantBlack(Const);
             /* ------------------------ Check if variable exists ------------------------ */
             if (GlobalVariables->contains(Var))
             {

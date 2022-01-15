@@ -6,21 +6,16 @@
 /* ---------------------------- Garbage Collector --------------------------- */
 void Interpreter::GarbageCollector()
 {
-    for (auto Ptr = Objects.begin(); Ptr != Objects.end();)
+    WhiteObjects.clear();
+    for (auto Constant : GreyObjects)
     {
-        if (std::find(WhiteObjects.begin(), WhiteObjects.end(), (*Ptr)->m_ID) != WhiteObjects.end())
-        {
-            Objects.erase(Ptr);
-        }
-        else 
-        {
-            ++Ptr;
-        }
+        BlackObjects.push_back(std::move(Constant));
+        break;
     }
 }
 
 /* ------------------------ Function to add constants ----------------------- */
-TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
+TypeObject Interpreter::CreateConstant(std::string_view Constant)
 {
     if (Constant[0] == '_')
     {
@@ -35,21 +30,21 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
                 Objects.end(),
                 [&ActualConstant] (TypeObjectPtr Ptr) 
                 {
-                    return Ptr->m_Value == ActualConstant;
+                    return Ptr.lock()->m_Value == ActualConstant;
                 }
                 );
                 
                 // Add new string to Objects
                 if (FindIterator == Objects.end())
                 {
-                    TypeObject Obj = std::make_unique<String>(std::string{ActualConstant});
-                    WhiteObjects.push_back(Obj->m_ID);
-                    Objects.push_back(std::move(Obj));
-                    return TypeObjectPtr(Objects.back());
+                    TypeObject Obj = std::make_shared<String>(std::string{ActualConstant});
+                    WhiteObjects.push_back(Obj);
+                    Objects.push_back(Obj);
+                    return WhiteObjects.back();
                 } 
                 else 
                 {
-                    return TypeObjectPtr(*FindIterator);
+                    return FindIterator->lock();
                 }
                 break;
             }
@@ -84,9 +79,9 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
         auto FindIterator = std::find_if(
         Objects.begin(), 
         Objects.end(),
-        [&Constant] (TypeObject& Ptr) 
+        [&Constant] (TypeObjectPtr Ptr) 
         {
-            return Ptr->m_Value == Constant;
+            return Ptr.lock()->m_Value == Constant;
         }
         );
 
@@ -99,15 +94,15 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
             {
                 if (Constant.find_first_of(".") != std::string::npos)
                 {
-                    TypeObject Obj = std::make_unique<Float>(std::string{Constant});
-                    WhiteObjects.push_back(Obj->m_ID);
-                    Objects.push_back(std::move(Obj));
+                    TypeObject Obj = std::make_shared<Float>(std::string{Constant});
+                    WhiteObjects.push_back(Obj);
+                    Objects.push_back(Obj);
                 }
                 else 
                 {
-                    TypeObject Obj = std::make_unique<Int>(std::string{Constant});
-                    WhiteObjects.push_back(Obj->m_ID);
-                    Objects.push_back(std::move(Obj));
+                    TypeObject Obj = std::make_shared<Int>(std::string{Constant});
+                    WhiteObjects.push_back(Obj);
+                    Objects.push_back(Obj);
                 }
             }
             
@@ -116,19 +111,46 @@ TypeObjectPtr Interpreter::CreateConstant(std::string_view Constant)
             ((Constant == "true") ||
             (Constant == "false"))
             {
-                TypeObject Obj = std::make_unique<Bool>(std::string{Constant});
-                WhiteObjects.push_back(Obj->m_ID);
-                Objects.push_back(std::move(Obj));
+                TypeObject Obj = std::make_shared<Bool>(std::string{Constant});
+                WhiteObjects.push_back(Obj);
+                Objects.push_back(Obj);
             }
 
             /* ------------------------------ return result ----------------------------- */
-            return TypeObjectPtr(Objects.back());
+            return WhiteObjects.back();
         }
         else 
         {
-            return TypeObjectPtr(*FindIterator);
+            return FindIterator->lock();
         }
     }
 
-    return TypeObjectPtr();
+    return TypeObject();
 }
+
+void Interpreter::MarkConstantBlack(TypeObject Const)
+{
+    switch (Const->ColorOfObj)
+    {
+        case GCColor::BLACK:
+        {
+            break;
+        }
+
+        case GCColor::GREY:
+        {
+            auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
+            BlackObjects.push_back(std::move(*OriginalPtr));
+            break;
+        }
+
+        default:
+        {
+            auto OriginalPtr = std::find(WhiteObjects.begin(), WhiteObjects.end(), Const);
+            BlackObjects.push_back(std::move(*OriginalPtr));
+            break;
+        }
+    }
+    Const->ColorOfObj = GCColor::BLACK;
+}
+

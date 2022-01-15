@@ -8,7 +8,7 @@ CONST _SSay a number:
 FINALIZE_CALL input
 ASSIGN num
 CALL echo
-CONST 100
+CONST _&num
 FINALIZE_CALL echo
 FUNCTION END
 END 0

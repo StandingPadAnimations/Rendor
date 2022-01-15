@@ -6,7 +6,6 @@
 #include <variant>
 #include <memory>
 
-#include "RendorInterpreter/Unique_ptr_ref.hpp"
 #include "Exceptions.hpp"
 
 #include <boost/lexical_cast.hpp>
@@ -40,7 +39,7 @@ enum class GCColor
 struct Type 
 {
     virtual VariableType TypeOfVariable(){return VariableType::NullType;};
-    virtual bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator) = 0;
+    virtual bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator) = 0;
 
     std::string m_Value;
     std::string m_ID;
@@ -72,7 +71,7 @@ struct Int : Type
     int64_t ConvertedValue;
     explicit Int(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Int;}
-    bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator); 
+    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator); 
 };
 
 /* -------------------------------------------------------------------------- */
@@ -84,7 +83,7 @@ struct Float : Type
     explicit Float(std::string Value);
 
     VariableType TypeOfVariable(){return VariableType::Float;}
-    bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 
 struct String : Type
@@ -92,7 +91,7 @@ struct String : Type
     explicit String(std::string Value) : Type(Value){}
 
     VariableType TypeOfVariable(){return VariableType::String;}
-    bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 
 struct Bool : Type
@@ -100,7 +99,7 @@ struct Bool : Type
     bool ConvertedValue;
     explicit Bool(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Bool;}
-    bool IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 
 #endif // RENDOR_TYPES_HPP

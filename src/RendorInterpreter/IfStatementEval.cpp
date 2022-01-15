@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- */
 /*                                     Int                                    */
 /* -------------------------------------------------------------------------- */
-bool Int::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator)
+bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Int
 
@@ -103,7 +103,7 @@ bool Int::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Comparis
 /*                                    Float                                   */
 /* -------------------------------------------------------------------------- */
 
-bool Float::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator)
+bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 
@@ -202,7 +202,7 @@ bool Float::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Compar
 /* -------------------------------------------------------------------------- */
 /*                                   String                                   */
 /* -------------------------------------------------------------------------- */
-bool String::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator)
+bool String::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
 {
     std::string Const2Converted; // String is only compatible with string
     std::string ConvertedValue = m_Value;
@@ -249,7 +249,7 @@ bool String::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator Compa
 /* -------------------------------------------------------------------------- */
 /*                                    Bool                                    */
 /* -------------------------------------------------------------------------- */
-bool Bool::IfStatementMethod(ren::unique_ptr_ref<Type>& Const2, Operator ComparisonOperator)
+bool Bool::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 

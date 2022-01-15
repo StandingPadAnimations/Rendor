@@ -1,6 +1,27 @@
 #include "RendorInterpreter/Interpreter.hpp"
 
-void Interpreter::MarkConstIDForDisposal(std::string_view RendorConstID)
+void Interpreter::DisposeConst(TypeObject Const)
 {
-    WhiteObjects.emplace_back(RendorConstID);
+    switch (Const->ColorOfObj)
+    {
+        case GCColor::BLACK:
+        {
+            auto OriginalPtr = std::find(BlackObjects.begin(), BlackObjects.end(), Const);
+            WhiteObjects.push_back(std::move(*OriginalPtr));
+            break;
+        }
+
+        case GCColor::GREY:
+        {
+            auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
+            WhiteObjects.push_back(std::move(*OriginalPtr));
+            break;
+        }
+
+        default:
+        {
+            break;
+        }
+    }
+    Const->ColorOfObj = GCColor::WHITE;
 }
