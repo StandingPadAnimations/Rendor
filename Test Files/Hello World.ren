@@ -1,10 +1,11 @@
 edef main() 
 {
-    lol(input("Enter Args: "))
+    xyz(input("Enter Args: "), input("Enter Args: "))
 }
 
-edef lol(str)
+edef xyz(foo, bar)
 {
-    echo(str)
+    echo(foo)
+    echo(bar)
 }
 

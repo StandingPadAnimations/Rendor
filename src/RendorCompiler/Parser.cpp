@@ -146,23 +146,14 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             /* -------------------------------------------------------------------------- */
             case lt::BUILT_IN_FUNCTION: 
             {
+                /* ------------------------- Functions to variables ------------------------- */
                 if(ParserTempID == TempID::VariableDefition)
                 {
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
                     AssignmentNode.Value = std::make_unique<FunctionCall>(value);
                 }
 
-                else if (ParserTempID == TempID::FunctionCall)
-                {
-                    if (Scope->back()->Type == NodeType::FunctionCall)
-                    {
-                        auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
-                        FunctionNode.Args.push_back(std::make_unique<FunctionCall>(value));
-                        auto& FunctionNode2 = static_cast<FunctionCall&>(*FunctionNode.Args.back());
-                        ScopeList.emplace_back(&FunctionNode2.Args);
-                    }
-                }
-
+                /* ---------------- Functions on their own or with functions ---------------- */
                 else
                 {
                     Scope->push_back(std::make_unique<FunctionCall>(value));
@@ -230,21 +221,28 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 {
                     if (Scope->size())
                     {
-                        if (Scope->back()->Type == NodeType::FunctionCall)
+                        switch (Scope->back()->Type)
                         {
-                            auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
-
-                            if (FunctionNode.Args.size())
+                            case NodeType::FunctionCall:
                             {
-                                if (FunctionNode.Args.back()->Type == NodeType::Reference)
+                                auto& FunctionCallNode = static_cast<FunctionCall&>(*Scope->back());
+                                if (*Scope != FunctionCallNode.Args)
                                 {
-                                    auto& ReferenceNode = static_cast<Reference&>(*FunctionNode.Args.back());
-                                    std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
-                                    FunctionNode.Args.back() = std::move(FunctionCallNode);
+                                    ScopeList.emplace_back(&FunctionCallNode.Args);
                                 }
+                                break;
                             }
-                            auto& FunctionNode2 = static_cast<FunctionCall&>(*FunctionNode.Args.back());
-                            ScopeList.emplace_back(&FunctionNode2.Args);
+
+                            case NodeType::AssignVariable:
+                            {
+                                // !!! Add Scope to ScopeList
+                                break;
+                            }
+
+                            default:
+                            {
+                                break;
+                            }
                         }
                     }
                 }
@@ -267,6 +265,10 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         
                         /* ------------------------------ Replace Node ------------------------------ */
                         Scope->back() = std::move(FunctionCallNode);
+
+                        /* ------------------------- Add arguments to scopes ------------------------ */
+                        auto& FunctionCallNode2 = static_cast<FunctionCall&>(*Scope->back());
+                        ScopeList.emplace_back(&FunctionCallNode2.Args);
                         ParserTempID = TempID::FunctionCall;
                     }
                 }
