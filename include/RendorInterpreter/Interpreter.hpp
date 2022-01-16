@@ -99,7 +99,7 @@ class Interpreter
             FunctionCall
         };
 
-        inline static RendorState RendorStateID = RendorState::None;
+        inline static std::vector<RendorState> RendorStateIDList {RendorState::None};
 };
 
 #endif // INTERPRETER

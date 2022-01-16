@@ -38,6 +38,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         /*                      Preparing bytecode for execution                      */
         /* -------------------------------------------------------------------------- */
         std::string *ByteCodeOperation = &ByteCode[Op]; 
+        RendorState RendorStateID = RendorStateIDList.back();
         int ByteCodeSize = ByteCodeOperation->size();
 
         if (ByteCodeSize == 0)
@@ -146,7 +147,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         {
             if ((BuiltInFunctions.contains(std::string{Args})) || (UserDefinedFunctions.contains(std::string{Args})))
             {
-                RendorStateID = RendorState::FunctionCall;
+                RendorStateIDList.emplace_back(RendorState::FunctionCall);
                 FunctionArgsCallStack.emplace_back(TypePtrVector());
             }
             else 
@@ -161,9 +162,25 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             if (BuiltInFunctions.contains(std::string{Args}))
             {
                 std::optional<TypeObjectPtr> Result = BuiltInFunctions[std::string{Args}](FunctionArgsCallStack.back());
+                RendorStateIDList.pop_back();
+
                 if (Result.has_value())
                 {
-                    Constants.push_back(Result.value());
+                    switch (RendorStateIDList.back())
+                    {
+                        case RendorState::FunctionCall:
+                        {
+                            FunctionArgsCallStack.pop_back();
+                            FunctionArgsCallStack.emplace_back(TypePtrVector());
+                            FunctionArgsCallStack.back().push_back(Result.value());
+                            break;
+                        }
+                        default:
+                        {
+                            Constants.push_back(Result.value());
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -171,6 +188,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             else if (UserDefinedFunctions.contains(std::string{Args}))
             {
                 ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
+                RendorStateIDList.pop_back();
+                FunctionArgsCallStack.pop_back();
             }
 
             /* -------------------------- non-existant function ------------------------- */
@@ -180,7 +199,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
 
             /* ---------------------- clean up after function call ---------------------- */
-            RendorStateID = RendorState::None;
         }
 
         else if (Command == "ARGUMENT")
