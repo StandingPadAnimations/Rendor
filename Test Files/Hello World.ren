@@ -1,9 +1,6 @@
 edef main() 
 {
-    foo = "HELLO PEOPLE"
-    echo(foo)
-    lol("World")
-    echo(foo)
+    lol(input("Enter Args: "))
 }
 
 edef lol(str)
