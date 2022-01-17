@@ -15,7 +15,6 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
     bfs::path AbsPath(FileInput);
     std::string AbsPathExt = AbsPath.extension().string();
     std::string AbsPathParentDir = AbsPath.parent_path().string();
-    std::string AbsPathRenCache = AbsPathParentDir + "/.__rencache__";
     std::ios_base::sync_with_stdio(false);
 
     // * Checks for seeing if the file is compatible with the interpreter
@@ -24,11 +23,6 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         std::string ErrorMessage = (boost::format("%s%sFatal Error; %sMissing Rendor File input") % color(fg::red) % color(style::bold) % color(fg::reset)).str();
         throw error::RendorException(ErrorMessage);
     } 
-
-    if (!bfs::is_directory(AbsPathRenCache)) // creates .__rencache__ folder if it doesn't exist
-    { 
-        bfs::create_directory(AbsPathRenCache);
-    }
 
     // * Variables for command line arguments
     bool DebugMode = false;
@@ -79,7 +73,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         {
             std::cout << color(fg::green) << "Outputing bytecode..." << std::endl;
             std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            std::ofstream CrenOutput(AbsPathRenCache + AbsPathCrenOutput);
+            std::ofstream CrenOutput(AbsPathParentDir + AbsPathCrenOutput);
             for (auto const& Op : ByteCode)
             {
                 CrenOutput << Op << std::endl;

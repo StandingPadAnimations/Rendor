@@ -15,8 +15,8 @@ edef main()
     bool = true // booleans 
 
     // Example function call
-    foo = input("Enter Args: ")
-    xyz(input("Enter Args: "), foo)
+    bar = input("Enter Args(bar): ")
+    xyz(input("Enter Args: "), bar)
 }
 
 // function xyz with arguments foo and bar

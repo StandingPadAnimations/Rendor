@@ -9,16 +9,15 @@ ASSIGN string
 CONST true
 ASSIGN bool
 CALL input
-CONST _SEnter Args: 
+CONST _SEnter Args(bar): 
 FINALIZE_CALL input
-ASSIGN foo
+ASSIGN bar
 CALL xyz
 CALL input
 CONST _SEnter Args: 
 FINALIZE_CALL input
-CONST _&foo
+CONST _&bar
 FINALIZE_CALL xyz
-
 FUNCTION END
 DEFINE xyz
 ARGUMENT bar
@@ -26,10 +25,10 @@ ARGUMENT foo
 CALL echo
 CONST _&foo
 FINALIZE_CALL echo
-
 CALL echo
 CONST _&bar
 FINALIZE_CALL echo
-
 FUNCTION END
 END 0
+
+

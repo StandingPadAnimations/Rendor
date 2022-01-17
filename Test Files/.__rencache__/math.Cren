@@ -1,7 +1,0 @@
-LOAD 0
-LOAD 1
-CONST 4 1 1 9 3.9 / * 1 - -
-ASSIGN num
-ECHO num
-END 1
-END 0

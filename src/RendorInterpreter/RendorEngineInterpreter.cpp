@@ -9,18 +9,7 @@ void RendorEngineInterpreter::run (const std::string FilePath)
     {
         if (AbsPathExt == ".ren") // if the file is a .ren file 
         {
-            std::string AbsPathToCren = (boost::format("%s/.__rencache__/%s") % AbsPath.parent_path().string() % AbsPath.filename().replace_extension(".Cren").string()).str();
-
-            if (!bfs::exists(AbsPathToCren)) // see if the compiled version exists 
-            {
-                throw error::RendorException((boost::format("There either is no .Cren file of %s; Compile your code first") % FilePath).str());
-            }
-
-            if (bfs::last_write_time(AbsPath) > bfs::last_write_time(AbsPathToCren)) // check if the compiled version is older then the original 
-            {
-                std::cout << (boost::format("%s was modified recently but has not yet been recompiled;\nWe all forget to recompile so don't slam your head\n") % AbsPath.filename().string()) << std::endl;
-            }
-            AbsPath = AbsPathToCren;
+            throw error::RendorException(".Cren files only!");
         } 
 
         else if (AbsPathExt == ".Cren") // if the file is a compiled .ren file 
@@ -33,7 +22,7 @@ void RendorEngineInterpreter::run (const std::string FilePath)
 
         else 
         {
-            throw error::RendorException("rendor only allows .ren files");
+            throw error::RendorException("rendor only allows .Cren files");
         } 
     }
 

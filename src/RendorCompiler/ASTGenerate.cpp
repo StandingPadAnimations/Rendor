@@ -744,7 +744,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     /* ------------------------- ending the global scope ------------------------ */
     ByteCode.emplace_back("END 0"); 
     /* ---------------------------- Optimize bytecode --------------------------- */
-    // RendorDeltaOptimizer::DeltaOptimizer(ByteCode);
+    RendorDeltaOptimizer::DeltaOptimizer(ByteCode);
     /* ----------------------------- return bytecode ---------------------------- */
     return ByteCode;
 }
