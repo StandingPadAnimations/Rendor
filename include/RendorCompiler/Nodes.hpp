@@ -124,7 +124,7 @@ struct Edef : Node
 {
     std::string Name;
     Body FunctionBody;
-    std::vector<NodeType> Args;
+    std::vector<std::pair<std::string, NodeType>> Args;
 
     explicit Edef(std::string Name, uint32_t LineNumber) : Node(LineNumber), Name(Name)
     {

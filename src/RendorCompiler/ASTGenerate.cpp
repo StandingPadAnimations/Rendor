@@ -102,7 +102,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Function arguments 
                 {
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
-                    EdefNode.Args.emplace_back(NodeType::Any); // Add argument to Node
+                    EdefNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node
                 }
 
                 /* ------------------------------ if statements ----------------------------- */
@@ -244,7 +244,12 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
 
                             case NodeType::AssignVariable:
                             {
-                                // !!! Add Scope to ScopeList
+                                auto& AssignmentNode = static_cast<AssignVariable&>(*Scope->back());
+                                auto& FunctionCallNode = static_cast<FunctionCall&>(*AssignmentNode.Value);
+                                if (*Scope != FunctionCallNode.Args)
+                                {
+                                    ScopeList.emplace_back(&FunctionCallNode.Args);
+                                }
                                 break;
                             }
 
@@ -714,10 +719,10 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     }
     
     std::cout << "Inspecting AST for errors" << std::endl;
-    for (const auto& Node : (*Script.GlobalBody))
-    {
-        DeltaInspectAST(Node);
-    }
+    // for (const auto& Node : (*Script.GlobalBody))
+    // {
+    //     DeltaInspectAST(Node);
+    // }
 
     /* -------------------------------------------------------------------------- */
     /*                             ByteCode generation                            */

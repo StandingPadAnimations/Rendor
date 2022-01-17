@@ -1,5 +1,7 @@
 #include "RendorCompiler/Parser.hpp"
 
+static bool InvalidIdentifier(char& CharactherToCheck);
+
 void Parser::DeltaInspectAST(const NodeObject& Node)
 {
     switch (Node->Type)

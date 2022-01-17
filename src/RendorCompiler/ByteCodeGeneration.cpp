@@ -26,9 +26,9 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
 
         ByteCode.emplace_back((boost::format("DEFINE %s") % EdefNode.Name).str());
 
-        for (std::vector<std::string>::reverse_iterator Arg = EdefNode.Args.rbegin(); Arg != EdefNode.Args.rend(); ++Arg) // Arguments 
+        for (std::vector<std::pair<std::string, NodeType>>::reverse_iterator Arg = EdefNode.Args.rbegin(); Arg != EdefNode.Args.rend(); ++Arg) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("ARGUMENT %s") % *Arg).str());
+            ByteCode.emplace_back((boost::format("ARGUMENT %s") % Arg->first).str());
         }
 
         for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
