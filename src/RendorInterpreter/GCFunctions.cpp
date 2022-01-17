@@ -155,27 +155,29 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
 
 void Interpreter::MarkConstantBlack(TypeObject Const)
 {
-    switch (Const->ColorOfObj)
-    {
-        case GCColor::BLACK:
+    if (Const.use_count()){
+        switch (Const->ColorOfObj)
         {
-            break;
-        }
+            case GCColor::BLACK:
+            {
+                break;
+            }
 
-        case GCColor::GREY:
-        {
-            auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
-            BlackObjects.push_back(std::move(*OriginalPtr));
-            break;
-        }
+            case GCColor::GREY:
+            {
+                auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
+                BlackObjects.push_back(std::move(*OriginalPtr));
+                break;
+            }
 
-        default:
-        {
-            auto OriginalPtr = std::find(WhiteObjects.begin(), WhiteObjects.end(), Const);
-            BlackObjects.push_back(std::move(*OriginalPtr));
-            break;
+            default:
+            {
+                auto OriginalPtr = std::find(WhiteObjects.begin(), WhiteObjects.end(), Const);
+                BlackObjects.push_back(std::move(*OriginalPtr));
+                break;
+            }
         }
+        Const->ColorOfObj = GCColor::BLACK;
     }
-    Const->ColorOfObj = GCColor::BLACK;
 }
 

@@ -171,7 +171,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                         case RendorState::FunctionCall:
                         {
                             FunctionArgsCallStack.pop_back();
-                            FunctionArgsCallStack.emplace_back(TypePtrVector());
                             FunctionArgsCallStack.back().push_back(Result.value());
                             break;
                         }

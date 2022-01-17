@@ -31,7 +31,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
 
     // Parser related stuff
-    TempID ParserTempID = TempID::None;
+    std::vector<TempID> ParserTempIDList {TempID::None};
+    TempID ParserTempID = ParserTempIDList.back();
     uint32_t LineNumber = 1;
     uint32_t ScopeLevel = 0;
 
@@ -40,6 +41,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     for (auto const& [token, value] : Tokens)
     {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
+        ParserTempID = ParserTempIDList.back();
         std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
 
         switch (token)
@@ -50,7 +52,14 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 ((ParserTempID != TempID::FunctionScope) &&
                 (ParserTempID != TempID::IfElseScope))
                 {
-                    ParserTempID = TempID::None;
+                    if (ParserTempIDList.size() == 2)
+                    {
+                        ParserTempIDList.pop_back();
+                    }
+                    else
+                    {
+                        ParserTempIDList.emplace_back(TempID::None);
+                    }
                 }
 
                 ++LineNumber;
@@ -136,7 +145,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 else 
                 {
                     Scope->push_back(std::make_unique<Reference>(value));
-                    ParserTempID = TempID::IdentifierDefinition;
+                    ParserTempIDList.emplace_back(TempID::IdentifierDefinition);
                 }
                 break;
             }
@@ -160,7 +169,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
                     ScopeList.emplace_back(&FunctionNode.Args);
                 }
-                ParserTempID = TempID::FunctionCall;
+                ParserTempIDList.emplace_back(TempID::FunctionCall);
                 break;
             }
 
@@ -175,7 +184,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 {
                     auto& ReferenceNode = static_cast<Reference&>(*Scope->back());
                     Scope->back() = std::make_unique<AssignVariable>(ReferenceNode.Value); 
-                    ParserTempID = TempID::VariableDefition;
+                    ParserTempIDList.emplace_back(TempID::VariableDefition); 
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -250,7 +259,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 /* --------------------------- Defining functions --------------------------- */
                 else if (ParserTempID == TempID::FunctionDefiniton) // Defining a funcion 
                 {
-                    ParserTempID = TempID::FunctionArgumentsDefinition;
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::FunctionArgumentsDefinition);
                 }
                 
                 /* -------------------- Function Calls in the main scope -------------------- */
@@ -269,14 +279,16 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         /* ------------------------- Add arguments to scopes ------------------------ */
                         auto& FunctionCallNode2 = static_cast<FunctionCall&>(*Scope->back());
                         ScopeList.emplace_back(&FunctionCallNode2.Args);
-                        ParserTempID = TempID::FunctionCall;
+                        ParserTempIDList.pop_back();
+                        ParserTempIDList.emplace_back(TempID::FunctionCall);
                     }
                 }
 
                 /* ------------------------- Defining if statements ------------------------- */
                 else if (ParserTempID == TempID::IfStatementDefinition)
                 {
-                    ParserTempID = TempID::ConditionDefinition;
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::ConditionDefinition);
                 }
 
                 /* ------------------------------- Arithmethic ------------------------------ */
@@ -339,19 +351,19 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             /* --------------------------------- R paren -------------------------------- */
             case lt::RPAREN: // * ) sign
             {
+                ParserTempIDList.pop_back();
                 if (ParserTempID == TempID::FunctionArgumentsDefinition)
                 {
-                    ParserTempID = TempID::FunctionScope;
+                    ParserTempIDList.emplace_back(TempID::FunctionScope);
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
-                    ParserTempID = TempID::IfElseScope;
+                    ParserTempIDList.emplace_back(TempID::IfElseScope);
                 }
 
                 else if (ParserTempID == TempID::FunctionCall)
                 {
-                    ParserTempID = TempID::None;
                     ScopeList.pop_back();
                 }
                 break;
@@ -363,7 +375,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 /* --------------------------- Defining functions --------------------------- */
                 if (ParserTempID == TempID::FunctionScope)
                 {
-                    ParserTempID = TempID::None;
+                    ParserTempIDList.pop_back();
                     ++ScopeLevel;
 
                     // Add it as a scope
@@ -374,7 +386,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 /* ------------------------------ If Statements ----------------------------- */
                 else if (ParserTempID == TempID::IfElseScope)
                 {
-                    ParserTempID = TempID::None;
+                    ParserTempIDList.pop_back();
                     ++ScopeLevel;
 
                     // Add it as a scope
@@ -385,7 +397,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 /* ----------------------------- Else Statements ---------------------------- */
                 else if (ParserTempID == TempID::ElseDefinition)
                 {
-                    ParserTempID = TempID::None;
+                    ParserTempIDList.pop_back();
                     ++ScopeLevel;
 
                     // Add it as a scope
@@ -394,7 +406,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     ScopeList.emplace_back(&ElseNode.IfElseBody.ConnectedNodes);
                 }
 
-                else {
+                else 
+                {
                     throw error::RendorException((boost::format("Syntax Error: { found outside of function/if/else scope; Line %s") % LineNumber).str());
                 }
                 break;
@@ -635,7 +648,12 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             {
                 if (value == "edef")
                 {
-                    ParserTempID = TempID::FunctionDefiniton;
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::FunctionDefiniton);
+                    if (*ScopeList.back() != Script.Global.ConnectedNodes)
+                    {
+                        throw error::RendorException("Compiler Error!");
+                    }
                 }
 
                 else if 
@@ -649,13 +667,15 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                             auto& IfElseNode = static_cast<IfElse&>(*Scope->back());
                             IfElseNode.ElseStatement = std::make_unique<IfElse>();
                             ScopeList.emplace_back(&IfElseNode.ElseStatement->IfElseBody.ConnectedNodes);
-                            ParserTempID = TempID::ElseDefinition;
+                            ParserTempIDList.pop_back();
+                            ParserTempIDList.emplace_back(TempID::ElseDefinition);
                             break;
                         }
                     }
                     
                     Scope->push_back(std::make_unique<IfElse>());
-                    ParserTempID = TempID::IfStatementDefinition;
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::IfStatementDefinition);
                 }
 
                 else 
