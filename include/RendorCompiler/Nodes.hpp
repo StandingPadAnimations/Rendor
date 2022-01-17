@@ -41,6 +41,7 @@ enum class NodeType{
     Condition,
     BiOp,
 
+    Any,
     Int, 
     Double,
     String,
@@ -51,6 +52,10 @@ enum class NodeType{
 
 struct Node{
     NodeType Type;
+    uint32_t LineNumber = 1;
+    
+    Node() = default;
+    Node(uint32_t LineNumber) : LineNumber(LineNumber){}
     virtual ~Node(){};
 };
 
@@ -69,7 +74,7 @@ struct Scope : Node
 {
     std::string ScopeName;
     Body ScopeBody;
-    Scope()
+    Scope(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Scope;
     }
@@ -81,7 +86,7 @@ struct AssignVariable : Node
     NodeObject Value;
 
     AssignVariable() = default;
-    explicit AssignVariable(std::string VariableNameInput) : VariableName(VariableNameInput)
+    explicit AssignVariable(std::string VariableNameInput, uint32_t LineNumber) : Node(LineNumber), VariableName(VariableNameInput)
     {
         Type = NodeType::AssignVariable;
     }
@@ -91,7 +96,7 @@ struct FunctionCall : Node
 {
     std::string Function;
     std::vector<NodeObject> Args;
-    explicit FunctionCall(std::string Function) : Function(Function)
+    explicit FunctionCall(std::string Function, uint32_t LineNumber) : Node(LineNumber), Function(Function)
     {
         Type = NodeType::FunctionCall;
     }
@@ -100,7 +105,7 @@ struct FunctionCall : Node
 struct Increment : Node
 {
     std::string Args;
-    explicit Increment(std::string Args) : Args(Args)
+    explicit Increment(std::string Args, uint32_t LineNumber) : Node(LineNumber), Args(Args)
     {
         Type = NodeType::Increment;
     }
@@ -109,7 +114,7 @@ struct Increment : Node
 struct Decrement : Node
 {
     std::string Args;
-    explicit Decrement(std::string Args) : Args(Args)
+    explicit Decrement(std::string Args, uint32_t LineNumber) : Node(LineNumber), Args(Args)
     {
         Type = NodeType::Decrement;
     }
@@ -119,9 +124,9 @@ struct Edef : Node
 {
     std::string Name;
     Body FunctionBody;
-    std::vector<std::string> Args;
+    std::vector<NodeType> Args;
 
-    explicit Edef(std::string Name) : Name(Name)
+    explicit Edef(std::string Name, uint32_t LineNumber) : Node(LineNumber), Name(Name)
     {
         Type = NodeType::Edef;
     }
@@ -131,7 +136,7 @@ struct BiOp : Node
 {
     std::string Operator;
 
-    BiOp()
+    BiOp(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::BiOp;
     }
@@ -143,7 +148,7 @@ struct Condition : Node
     std::unique_ptr<BiOp> Operator;
     NodeObject Condition2;
 
-    Condition()
+    Condition(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Condition;
     }
@@ -154,7 +159,7 @@ struct IfElse : Node
     std::vector<std::unique_ptr<Condition>> Conditions;
     Body IfElseBody;
     std::unique_ptr<IfElse> ElseStatement;
-    IfElse()
+    IfElse(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::IfElse;
     }
@@ -164,7 +169,7 @@ struct Int : Node
 {
     std::string Value;
     
-    Int(std::string ValueInput) : Value(ValueInput)
+    Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Int;
     }
@@ -174,7 +179,7 @@ struct Double : Node
 {
     std::string Value;
     
-    Double(std::string ValueInput) : Value(ValueInput)
+    Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Double;
     }
@@ -184,7 +189,7 @@ struct String : Node
 {
     std::string Value;
     
-    String(std::string ValueInput) : Value(ValueInput)
+    String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::String;
     }
@@ -194,7 +199,7 @@ struct Bool : Node
 {
     std::string Value;
     
-    Bool(std::string ValueInput) : Value(ValueInput)
+    Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Bool;
     }
@@ -204,7 +209,7 @@ struct Arithmethic : Node
 {
     std::string Value;
     
-    Arithmethic(std::string ValueInput) : Value(ValueInput)
+    Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Arithmethic;
     }
@@ -214,7 +219,7 @@ struct Reference : Node
 {
     std::string Value;
 
-    Reference(std::string ValueInput) : Value(ValueInput)
+    Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Reference;
     }

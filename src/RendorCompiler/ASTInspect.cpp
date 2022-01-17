@@ -19,17 +19,32 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 if (AssignmentNode.Value)
                 {
                     /* ----------------------- Inspect value for validity ----------------------- */
-                    DeltaInspectAST(AssignmentNode.Value);
+                    if (
+                    (AssignmentNode.Value->Type == NodeType::Int)    ||
+                    (AssignmentNode.Value->Type == NodeType::Double) ||
+                    (AssignmentNode.Value->Type == NodeType::String) ||
+                    (AssignmentNode.Value->Type == NodeType::Bool)   ||
+                    (AssignmentNode.Value->Type == NodeType::FunctionCall))
+                    {
+                        DeltaInspectAST(AssignmentNode.Value);
+                    }
+
+                    else 
+                    {
+                        throw error::RendorException((boost::format("Variable has a invalid value; Line %s") % Node->LineNumber).str());
+                    }
                 }
                 else 
                 {
-                    throw error::RendorException((boost::format("Variable has no value; Line %s")).str());
+                    throw error::RendorException((boost::format("Variable has no value; Line %s") % Node->LineNumber).str());
                 }
             }
             else 
             {
-                throw error::RendorException((boost::format("Invalid variable name; Line %s")).str());
+                throw error::RendorException((boost::format("Invalid variable name; Line %s") % Node->LineNumber).str());
             }
+
+            Variables[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
             break;
         }
 

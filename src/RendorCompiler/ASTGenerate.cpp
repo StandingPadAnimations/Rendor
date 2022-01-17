@@ -42,7 +42,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
         ParserTempID = ParserTempIDList.back();
-        std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+        // std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
 
         switch (token)
         {
@@ -89,20 +89,20 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     {
                         IsScript = true; // This is a script and not a library or module 
                     }
-                    Scope->push_back(std::make_unique<Edef>(value));
+                    Scope->push_back(std::make_unique<Edef>(value, LineNumber));
                 }
 
                 /* -------------------------- if it is an argument -------------------------- */
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    Scope->push_back(std::make_unique<Reference>(value)); // Add argument to Node
+                    Scope->push_back(std::make_unique<Reference>(value, LineNumber)); // Add argument to Node
                 }
 
                 /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
                 else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Function arguments 
                 {
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
-                    EdefNode.Args.emplace_back(value); // Add argument to Node
+                    EdefNode.Args.emplace_back(NodeType::Any); // Add argument to Node
                 }
 
                 /* ------------------------------ if statements ----------------------------- */
@@ -114,7 +114,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------- If there's nothing in vector ---------------------- */
                     if (IfElseNode.Conditions.size() == 0)
                     {
-                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
                     }
                     else 
                     {
@@ -124,8 +124,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         (IfElseNode.Conditions.back()->Condition2)  &&
                         (IfElseNode.Conditions.back()->Operator))
                         {
-                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
-                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value); // Add it as first condition no questions asked
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value, LineNumber); // Add it as first condition no questions asked
                             break;
                         }
                     }
@@ -133,18 +133,18 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------------- Adding Conditions --------------------------- */
                     if (IfElseNode.Conditions.back()->Operator)
                     {
-                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Reference>(value);
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Reference>(value, LineNumber);
                     }
                     else 
                     {
-                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value);
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Reference>(value, LineNumber);
                     }
                 }
                 
                 /* ----------------------------- Add as variable ---------------------------- */
                 else 
                 {
-                    Scope->push_back(std::make_unique<Reference>(value));
+                    Scope->push_back(std::make_unique<Reference>(value, LineNumber));
                     ParserTempIDList.emplace_back(TempID::IdentifierDefinition);
                 }
                 break;
@@ -159,13 +159,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 if(ParserTempID == TempID::VariableDefition)
                 {
                     auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = std::make_unique<FunctionCall>(value);
+                    AssignmentNode.Value = std::make_unique<FunctionCall>(value, LineNumber);
                 }
 
                 /* ---------------- Functions on their own or with functions ---------------- */
                 else
                 {
-                    Scope->push_back(std::make_unique<FunctionCall>(value));
+                    Scope->push_back(std::make_unique<FunctionCall>(value, LineNumber));
                     auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
                     ScopeList.emplace_back(&FunctionNode.Args);
                 }
@@ -183,7 +183,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 if (ParserTempID == TempID::IdentifierDefinition)
                 {
                     auto& ReferenceNode = static_cast<Reference&>(*Scope->back());
-                    Scope->back() = std::make_unique<AssignVariable>(ReferenceNode.Value); 
+                    Scope->back() = std::make_unique<AssignVariable>(ReferenceNode.Value, LineNumber); 
                     ParserTempIDList.emplace_back(TempID::VariableDefition); 
                 }
 
@@ -194,7 +194,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     
                     if(!ConditionNode.Operator)
                     {
-                        ConditionNode.Operator = std::make_unique<BiOp>();
+                        ConditionNode.Operator = std::make_unique<BiOp>(LineNumber);
                     }
                     
                     (*ConditionNode.Operator).Operator += value;
@@ -271,7 +271,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     {
                         /* ------------------------ Create FunctionCall Node ------------------------ */
                         auto& AssignVariableNode = static_cast<Reference&>(*Scope->back());
-                        std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(AssignVariableNode.Value);
+                        std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(AssignVariableNode.Value, LineNumber);
                         
                         /* ------------------------------ Replace Node ------------------------------ */
                         Scope->back() = std::move(FunctionCallNode);
@@ -310,7 +310,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                             case NodeType::Int:
                             {
                                 auto& IntNode = static_cast<Int&>(*AssignVariableNode.Value);
-                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(IntNode.Value);
+                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(IntNode.Value, LineNumber);
                                 ArithmethicNode->Value += value;
 
                                 AssignVariableNode.Value = std::move(ArithmethicNode);
@@ -320,7 +320,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                             case NodeType::Double:
                             {
                                 auto& DoubleNode = static_cast<Double&>(*AssignVariableNode.Value);
-                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(DoubleNode.Value);
+                                std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(DoubleNode.Value, LineNumber);
                                 ArithmethicNode->Value += value;
 
                                 AssignVariableNode.Value = std::move(ArithmethicNode);
@@ -331,7 +331,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                             {
                                 std::cout << "HELLO" << std::endl;
                                 auto& ReferenceNode = static_cast<Reference&>(*AssignVariableNode.Value);
-                                std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value);
+                                std::unique_ptr<FunctionCall> FunctionCallNode = std::make_unique<FunctionCall>(ReferenceNode.Value, LineNumber);
 
                                 AssignVariableNode.Value = std::move(FunctionCallNode);
                                 break;
@@ -433,13 +433,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     if (Scope->back()->Type == NodeType::AssignVariable)
                     {
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        AssignVariableNode.Value = std::make_unique<Int>(value);
+                        AssignVariableNode.Value = std::make_unique<Int>(value, LineNumber);
                     }
                 }
                 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    Scope->push_back(std::make_unique<Int>(value));
+                    Scope->push_back(std::make_unique<Int>(value, LineNumber));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -450,7 +450,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------- If there's nothing in vector ---------------------- */
                     if (IfElseNode.Conditions.size() == 0)
                     {
-                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
                     }
                     else 
                     {
@@ -460,8 +460,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         (IfElseNode.Conditions.back()->Condition2)  &&
                         (IfElseNode.Conditions.back()->Operator))
                         {
-                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
-                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value); // Add it as first condition no questions asked
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value, LineNumber); // Add it as first condition no questions asked
                             break;
                         }
                     }
@@ -469,11 +469,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------------- Adding Conditions --------------------------- */
                     if (IfElseNode.Conditions.back()->Operator)
                     {
-                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Int>(value);
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Int>(value, LineNumber);
                     }
                     else 
                     {
-                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value);
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Int>(value, LineNumber);
                     }
                 }
                 break;
@@ -487,13 +487,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     if (Scope->back()->Type == NodeType::AssignVariable)
                     {
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        AssignVariableNode.Value = std::make_unique<Double>(value);
+                        AssignVariableNode.Value = std::make_unique<Double>(value, LineNumber);
                     }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    Scope->push_back(std::make_unique<Double>(value));
+                    Scope->push_back(std::make_unique<Double>(value, LineNumber));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -504,7 +504,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------- If there's nothing in vector ---------------------- */
                     if (IfElseNode.Conditions.size() == 0)
                     {
-                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
                     }
                     else 
                     {
@@ -514,8 +514,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         (IfElseNode.Conditions.back()->Condition2)  &&
                         (IfElseNode.Conditions.back()->Operator))
                         {
-                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
-                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value); // Add it as first condition no questions asked
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value, LineNumber); // Add it as first condition no questions asked
                             break;
                         }
                     }
@@ -523,11 +523,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------------- Adding Conditions --------------------------- */
                     if (IfElseNode.Conditions.back()->Operator)
                     {
-                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Double>(value);
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Double>(value, LineNumber);
                     }
                     else 
                     {
-                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value);
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Double>(value, LineNumber);
                     }
                 }
                 break;
@@ -541,13 +541,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     if (Scope->back()->Type == NodeType::AssignVariable)
                     {
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        AssignVariableNode.Value = std::make_unique<String>(value);
+                        AssignVariableNode.Value = std::make_unique<String>(value, LineNumber);
                     }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    Scope->push_back(std::make_unique<String>(value));
+                    Scope->push_back(std::make_unique<String>(value, LineNumber));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -558,7 +558,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------- If there's nothing in vector ---------------------- */
                     if (IfElseNode.Conditions.size() == 0)
                     {
-                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
                     }
                     else 
                     {
@@ -568,8 +568,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         (IfElseNode.Conditions.back()->Condition2)  &&
                         (IfElseNode.Conditions.back()->Operator))
                         {
-                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
-                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value); // Add it as first condition no questions asked
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value, LineNumber); // Add it as first condition no questions asked
                             break;
                         }
                     }
@@ -577,11 +577,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------------- Adding Conditions --------------------------- */
                     if (IfElseNode.Conditions.back()->Operator)
                     {
-                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<String>(value);
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<String>(value, LineNumber);
                     }
                     else 
                     {
-                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value);
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<String>(value, LineNumber);
                     }
                 }
                 break;
@@ -595,13 +595,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     if (Scope->back()->Type == NodeType::AssignVariable)
                     {
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        AssignVariableNode.Value = std::make_unique<Bool>(value);
+                        AssignVariableNode.Value = std::make_unique<Bool>(value, LineNumber);
                     }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    Scope->push_back(std::make_unique<Bool>(value));
+                    Scope->push_back(std::make_unique<Bool>(value, LineNumber));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -612,7 +612,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------- If there's nothing in vector ---------------------- */
                     if (IfElseNode.Conditions.size() == 0)
                     {
-                        IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
+                        IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
                     }
                     else 
                     {
@@ -622,8 +622,8 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         (IfElseNode.Conditions.back()->Condition2)  &&
                         (IfElseNode.Conditions.back()->Operator))
                         {
-                            IfElseNode.Conditions.push_back(std::make_unique<Condition>()); // Add condition 
-                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value); // Add it as first condition no questions asked
+                            IfElseNode.Conditions.push_back(std::make_unique<Condition>(LineNumber)); // Add condition 
+                            IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value, LineNumber); // Add it as first condition no questions asked
                             break;
                         }
                     }
@@ -631,11 +631,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     /* ---------------------------- Adding Conditions --------------------------- */
                     if (IfElseNode.Conditions.back()->Operator)
                     {
-                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Bool>(value);
+                        IfElseNode.Conditions.back()->Condition2 = std::make_unique<Bool>(value, LineNumber);
                     }
                     else 
                     {
-                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value);
+                        IfElseNode.Conditions.back()->Condition1 = std::make_unique<Bool>(value, LineNumber);
                     }
                 }
                 break;
@@ -665,7 +665,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         if (value == "else")
                         {
                             auto& IfElseNode = static_cast<IfElse&>(*Scope->back());
-                            IfElseNode.ElseStatement = std::make_unique<IfElse>();
+                            IfElseNode.ElseStatement = std::make_unique<IfElse>(LineNumber);
                             ScopeList.emplace_back(&IfElseNode.ElseStatement->IfElseBody.ConnectedNodes);
                             ParserTempIDList.pop_back();
                             ParserTempIDList.emplace_back(TempID::ElseDefinition);
@@ -673,7 +673,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         }
                     }
                     
-                    Scope->push_back(std::make_unique<IfElse>());
+                    Scope->push_back(std::make_unique<IfElse>(LineNumber));
                     ParserTempIDList.pop_back();
                     ParserTempIDList.emplace_back(TempID::IfStatementDefinition);
                 }

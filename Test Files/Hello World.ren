@@ -1,6 +1,7 @@
 edef main() 
 {
-    xyz(input("Enter Args: "), input("Enter Args: "))
+    foo = input("Enter Args: ")
+    xyz(input("Enter Args: "), foo)
 }
 
 edef xyz(foo, bar)

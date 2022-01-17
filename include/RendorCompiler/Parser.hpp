@@ -2,6 +2,7 @@
 #define PARSER
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <memory>
 #include <map>
@@ -29,6 +30,9 @@ class Parser
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
         static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
         static void DeltaInspectAST(const NodeObject& Node);
+
+        inline static std::map<std::string_view, NodeType> Variables;
+        inline static std::map<std::string_view, std::vector<NodeType>> Functions;
 };
 
 
