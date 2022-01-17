@@ -1,13 +1,28 @@
+// Curent built in functions include:
+// echo(value) : prints to console
+// input(message) : takes in user input
+// sum(int) : calculates sum of all numbers up to input 
+
+
+
+// Main function where the program enters
 edef main() 
 {
-    echo("HELLO WORLD")
-    lol("Hello", 1)
-    lol("World", 2)
+    // Variables
+    int = 1 // ints
+    flo = 1.2 // floats
+    string = "Hello World" // strings
+    bool = true // booleans 
+
+    // Example function call
+    foo = input("Enter Args: ")
+    xyz(string, foo)
 }
 
-edef lol(str, num)
+// function xyz with arguments foo and bar
+edef xyz(foo, bar)
 {
-    echo(str)
-    echo(num)
+    echo(foo)
+    echo(bar)
 }
 
