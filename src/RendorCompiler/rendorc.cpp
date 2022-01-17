@@ -59,7 +59,7 @@ int main (int argc, char *argv[])
     }
     catch (const std::exception& exp)
     {             
-        std::cout << exp.what() << Term::color(Term::style::reset) << std::endl;   
+        std::cout << Term::color(Term::fg::bright_red) << exp.what() << Term::color(Term::style::reset) << std::endl;   
         return EXIT_FAILURE;
     }
     return 0;

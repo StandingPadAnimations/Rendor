@@ -713,6 +713,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
         }
     }
     
+    std::cout << "Inspecting AST for errors" << std::endl;
+    for (const auto& Node : (*Script.GlobalBody))
+    {
+        DeltaInspectAST(Node);
+    }
 
     /* -------------------------------------------------------------------------- */
     /*                             ByteCode generation                            */

@@ -16,6 +16,7 @@
 #include <boost/format.hpp>
 
 using lt = Lex::Token;
+#define FALLTHROUGH [[fallthrough]]
 
 class Parser
 {
@@ -27,8 +28,7 @@ class Parser
         inline static std::vector<std::string> ByteCode;
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
         static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
-        static void DeltaInspectAST(Main& AST);
-
+        static void DeltaInspectAST(const NodeObject& Node);
 };
 
 
