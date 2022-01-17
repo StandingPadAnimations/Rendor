@@ -52,7 +52,7 @@ enum class NodeType{
 
 struct Node{
     NodeType Type;
-    uint32_t LineNumber = 1;
+    uint32_t LineNumber;
     
     Node() = default;
     Node(uint32_t LineNumber) : LineNumber(LineNumber){}
@@ -169,7 +169,7 @@ struct Int : Node
 {
     std::string Value;
     
-    Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Int;
     }
@@ -179,7 +179,7 @@ struct Double : Node
 {
     std::string Value;
     
-    Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Double;
     }
@@ -189,7 +189,7 @@ struct String : Node
 {
     std::string Value;
     
-    String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::String;
     }
@@ -199,7 +199,7 @@ struct Bool : Node
 {
     std::string Value;
     
-    Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Bool;
     }
@@ -209,7 +209,7 @@ struct Arithmethic : Node
 {
     std::string Value;
     
-    Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Arithmethic;
     }
@@ -219,7 +219,7 @@ struct Reference : Node
 {
     std::string Value;
 
-    Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber)
+    Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Reference;
     }

@@ -1,26 +1,35 @@
 LOAD 0
 DEFINE main
+CONST 1
+ASSIGN int
+CONST 1.2
+ASSIGN flo
+CONST _SHello World
+ASSIGN string
+CONST true
+ASSIGN bool
 CALL input
-CONST _S
+CONST _SEnter Args: 
 FINALIZE_CALL input
-ASSIGN 
-CALL 
+ASSIGN foo
+CALL xyz
 CALL input
-CONST _S
+CONST _SEnter Args: 
 FINALIZE_CALL input
-CONST _&
-FINALIZE_CALL 
+CONST _&foo
+FINALIZE_CALL xyz
+
 FUNCTION END
 DEFINE xyz
 ARGUMENT bar
 ARGUMENT foo
 CALL echo
-CONST _&
+CONST _&foo
 FINALIZE_CALL echo
+
 CALL echo
-CONST _&
+CONST _&bar
 FINALIZE_CALL echo
+
 FUNCTION END
 END 0
-
-
