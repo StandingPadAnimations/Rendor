@@ -214,7 +214,91 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
 
         else if (Command == "OPERATOR")
         {
+            TypeObject Const1 = Constants[ConstantIndex].lock();
+            TypeObject Const2;
+            Operator CompOp = Operator::EQUAL;
+
+            /* ----------------------------- Second Constant ---------------------------- */
+            switch (ConstantIndex)
+            {
+                case 0:
+                {
+                    Const2 = Constants[1].lock();
+                    break;
+                }
+
+                case 1:
+                {
+                    Const2 = Constants[0].lock();
+                    break;
+                }
+
+                default:
+                {
+                    break;
+                }
+            }
             
+            /* -------------------------------- Operator -------------------------------- */
+            if (Args == "==")
+            {
+                CompOp = Operator::EQUAL;
+            }
+            else if (Args == "!=")
+            {
+                CompOp = Operator::NOT_EQUAL;
+            }
+            else if (Args == ">")
+            {
+                CompOp = Operator::GREATER_THAN;
+            }
+            else if (Args == "<")
+            {
+                CompOp = Operator::LESS_THAN;
+            }
+            else if (Args == ">=")
+            {
+                CompOp = Operator::GREATER_OR_EQUAL;
+            }
+            else if (Args == "<=")
+            {
+                CompOp = Operator::LESS_OR_EQUAL;
+            }
+
+            /* ------------------------------- Evaluation ------------------------------- */
+            IfStatementBoolResult.emplace_back(Const1->IfStatementMethod(Const2, CompOp));
+        }
+
+        else if (Command == "JMP_IF_FALSE")
+        {
+            switch (IfStatementBoolResult.back())
+            {
+                case true:
+                {
+                    break;
+                }
+                case false:
+                {
+                    Op = boost::lexical_cast<size_t>(Args);
+                    break;
+                }
+            }
+        }
+
+        else if ("ENDIF")
+        {
+            switch (IfStatementBoolResult.back())
+            {
+                case true:
+                {
+                    break;
+                }
+                case false:
+                {
+                    break;
+                }
+            }
+            IfStatementBoolResult.pop_back();
         }
 
         else 

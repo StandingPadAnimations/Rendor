@@ -88,9 +88,9 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
         {
             ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
         }
-
+        ByteCode.emplace_back("ENDIF STATE");
         ByteCode[IndexOfJMP] += std::to_string(ByteCode.size() - 1);
-        return "ENDIF STATE";
+        return "";
     }
 
     return "ERROR";

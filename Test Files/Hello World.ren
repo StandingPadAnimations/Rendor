@@ -18,9 +18,9 @@ edef main()
     bar = input("Enter Args(bar): ")
     xyz(input("Enter Args: "), bar)
 
-    if (flo > 1)
+    if (bar == "Hello World")
     {
-        echo(string)
+        echo("Hello World!!!!!!!")
     }
 }
 
