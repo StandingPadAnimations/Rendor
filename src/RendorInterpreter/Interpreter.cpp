@@ -212,6 +212,11 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             FunctionArgsCallStack.back().pop_back();
         }
 
+        else if (Command == "OPERATOR")
+        {
+            
+        }
+
         else 
         {
             throw error::RendorException("Unreconized bytecode operation error: " + *ByteCodeOperation);

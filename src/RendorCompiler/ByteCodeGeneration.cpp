@@ -51,31 +51,31 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
     else if (ClassType == NodeType::IfElse)
     {
         auto& IfElseNode = static_cast<IfElse&>(*NodeClass); 
-        auto& ConditionNode = static_cast<Condition&>(*NodeClass); 
-        TypeConstants(ConditionNode.Type, ConditionNode.Condition1);
-        TypeConstants(ConditionNode.Type, ConditionNode.Condition2);
+        auto& ConditionNode = IfElseNode.Conditions.back(); 
+        TypeConstants(ConditionNode->Condition1->Type, ConditionNode->Condition1);
+        TypeConstants(ConditionNode->Condition2->Type, ConditionNode->Condition2);
 
-        if (ConditionNode.Operator->Operator == "==")
+        if (ConditionNode->Operator->Operator == "==")
         {
             ByteCode.emplace_back("OPERATOR EQUAL");
         }
-        else if (ConditionNode.Operator->Operator == "!=")
+        else if (ConditionNode->Operator->Operator == "!=")
         {
             ByteCode.emplace_back("OPERATOR NOT_EQUAL");
         }
-        else if (ConditionNode.Operator->Operator == ">")
+        else if (ConditionNode->Operator->Operator == ">")
         {
             ByteCode.emplace_back("OPERATOR GREATER_THAN");
         }
-        else if (ConditionNode.Operator->Operator == "<")
+        else if (ConditionNode->Operator->Operator == "<")
         {
             ByteCode.emplace_back("OPERATOR LESS_THAN");
         }
-        else if (ConditionNode.Operator->Operator == ">=")
+        else if (ConditionNode->Operator->Operator == ">=")
         {
             ByteCode.emplace_back("OPERATOR GREATER_OR_EQUAL");
         }
-        else if (ConditionNode.Operator->Operator == "<=")
+        else if (ConditionNode->Operator->Operator == "<=")
         {
             ByteCode.emplace_back("OPERATOR LESS_OR_EQUAL");
         }
