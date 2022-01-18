@@ -17,6 +17,11 @@ edef main()
     // Example function call
     bar = input("Enter Args(bar): ")
     xyz(input("Enter Args: "), bar)
+
+    if (flo > 1)
+    {
+        echo(string)
+    }
 }
 
 // function xyz with arguments foo and bar

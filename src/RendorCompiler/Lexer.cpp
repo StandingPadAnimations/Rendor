@@ -46,7 +46,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
         (Code[Char]   == '*')   ||
         (Code[Char]   == '/')   ||
         (Code[Char]   == '+')   ||
-        (Code[Char]   == '-'))  &&
+        (Code[Char]   == '-')   ||
+        (Code[Char]   == '>')   ||
+        (Code[Char]   == '<'))  &&
         ((LexerBufferID == BufferID::None)      ||
         (LexerBufferID  == BufferID::StringEnd) ||
         LexerBufferID   == BufferID::Comment))
@@ -198,6 +200,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 case '+':
                     FALLTHROUGH;
                 case '-':
+                    FALLTHROUGH;
+                case '>':
+                    FALLTHROUGH;
+                case '<':
                 {
                     Tokens.emplace_back(Token::BIOP, std::string{Code[Char]});
                     break;

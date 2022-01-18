@@ -42,7 +42,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     {        
         std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
         ParserTempID = ParserTempIDList.back();
-        // std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+        std::cout << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
 
         switch (token)
         {
@@ -695,17 +695,17 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             /* -------------------------------------------------------------------------- */
             case lt::BIOP:
             {
-                // ! Fix this 
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
-                // ! ^^^^^^^^
+                if (ParserTempID == TempID::ConditionDefinition)
+                {
+                    /* -------------------------- Adding Condition Node ------------------------- */
+                    auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
+                    if (!IfElseNode.Conditions.back()->Operator) 
+                    {
+                        IfElseNode.Conditions.back()->Operator = std::make_unique<BiOp>(LineNumber);
+                    }
+                    IfElseNode.Conditions.back()->Operator->Operator += value;
+                }
+                break;
             }
 
             /* -------------------------------------------------------------------------- */
