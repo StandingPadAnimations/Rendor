@@ -71,7 +71,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 // * Because this used to cause a bug with comments
             }
 
-            else if (Buffer.find_first_not_of(" ;,(){}=^*/+-><") == std::string::npos)
+            else if 
+            ((Buffer.find_first_not_of(" ;,(){}=^*/+-><") == std::string::npos) &&
+            (LexerBufferID != BufferID::Comment))
             {
                 // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
             }

@@ -34,7 +34,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     std::vector<TempID> ParserTempIDList {TempID::None};
     TempID ParserTempID = ParserTempIDList.back();
     uint32_t LineNumber = 1;
-    uint32_t ScopeLevel = 0;
 
     bool IsScript = false;
     
@@ -381,7 +380,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 if (ParserTempID == TempID::FunctionScope)
                 {
                     ParserTempIDList.pop_back();
-                    ++ScopeLevel;
 
                     // Add it as a scope
                     auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
@@ -392,7 +390,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 else if (ParserTempID == TempID::IfElseScope)
                 {
                     ParserTempIDList.pop_back();
-                    ++ScopeLevel;
 
                     // Add it as a scope
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
@@ -403,7 +400,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 else if (ParserTempID == TempID::ElseDefinition)
                 {
                     ParserTempIDList.pop_back();
-                    ++ScopeLevel;
 
                     // Add it as a scope
                     auto& IfNode = dynamic_cast<IfElse&>(*Scope->back());
@@ -421,7 +417,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             /* --------------------------------- R brace -------------------------------- */
             case lt::RBRACE: // * } sign
             {
-                --ScopeLevel;
                 ScopeList.pop_back();
                 break;
             }
