@@ -16,11 +16,16 @@ edef main()
 
     // Example function call
     bar = input("Enter Args(bar): ")
-    xyz(input("Enter Args: "), bar)
+    xyz(bool, bar)
 
-    if (bar == "Hello World")
+    if (bar == string)
     {
         echo("Hello World!!!!!!!")
+    }
+
+    if (flo == 1.0)
+    {
+        echo("flo is 1.0")
     }
 }
 

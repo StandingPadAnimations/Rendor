@@ -30,9 +30,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::EQUAL:
         {
             if 
-            (((ConvertedValue == std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<bool>(Const2Converted))    && (std::get<bool>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue == v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -42,9 +44,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::NOT_EQUAL:
         {
             if 
-            (((ConvertedValue != std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  != std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))) ||
-            ((ConvertedValue  != std::holds_alternative<bool>(Const2Converted))    && (std::get<bool>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue != v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -54,8 +58,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::GREATER_THAN:
         {
             if 
-            (((ConvertedValue > std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  > std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue > v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -65,8 +72,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::LESS_THAN:
         {
             if 
-            (((ConvertedValue < std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  < std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue < v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -76,8 +86,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::GREATER_OR_EQUAL:
         {
             if 
-            (((ConvertedValue >= std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  >= std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue >= v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -87,8 +100,11 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
         case Operator::LESS_OR_EQUAL:
         {
             if 
-            (((ConvertedValue <= std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  <= std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue <= v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -130,9 +146,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::EQUAL:
         {
             if 
-            (((ConvertedValue == std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<bool>(Const2Converted))    && (std::get<bool>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue == v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -142,8 +160,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::NOT_EQUAL:
         {
             if 
-            (((ConvertedValue != std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  != std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue != v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -153,8 +174,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::GREATER_THAN:
         {
             if 
-            (((ConvertedValue > std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  > std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue > v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -164,8 +188,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::LESS_THAN:
         {
             if 
-            (((ConvertedValue < std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  < std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue < v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -175,8 +202,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::GREATER_OR_EQUAL:
         {
             if 
-            (((ConvertedValue >= std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  >= std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue >= v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -186,8 +216,11 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
         case Operator::LESS_OR_EQUAL:
         {
             if 
-            (((ConvertedValue <= std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  <= std::holds_alternative<double>(Const2Converted))  && (std::get<double>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue <= v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -276,9 +309,11 @@ bool Bool::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonO
         case Operator::EQUAL:
         {
             if 
-            (((ConvertedValue == std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<double>(Const2Converted)) && (std::get<double>(Const2Converted))) ||
-            ((ConvertedValue  == std::holds_alternative<bool>(Const2Converted))   && (std::get<bool>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue == v; 
+            }, Const2Converted))
             {
                 return true;
             }
@@ -288,9 +323,11 @@ bool Bool::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonO
         case Operator::NOT_EQUAL:
         {
             if 
-            (((ConvertedValue != std::holds_alternative<int64_t>(Const2Converted)) && (std::get<int64_t>(Const2Converted))) ||
-            ((ConvertedValue  != std::holds_alternative<double>(Const2Converted)) && (std::get<double>(Const2Converted))) ||
-            ((ConvertedValue  != std::holds_alternative<bool>(Const2Converted))   && (std::get<bool>(Const2Converted))))
+            (std::visit(
+            [&](auto v) 
+            { 
+                return ConvertedValue != v; 
+            }, Const2Converted))
             {
                 return true;
             }

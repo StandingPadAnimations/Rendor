@@ -25,6 +25,7 @@
 #include <boost/circular_buffer.hpp>
 
 
+
 /* ---------------------------- Typedefs for STL ---------------------------- */
 typedef std::shared_ptr<Type> TypeObject;
 typedef std::weak_ptr<Type> TypeObjectPtr;
@@ -52,7 +53,7 @@ class Interpreter
         /* -------------------------------------------------------------------------- */
         /* ----------------------------- Rendor's Memory ---------------------------- */
         inline static std::unordered_map<std::string, size_t> UserDefinedFunctions; // Stores index of user defined functions in the main file
-        inline static boost::circular_buffer_space_optimized<TypeObjectPtr> Constants{2}; // for temp access to constants
+        inline static std::vector<TypeObjectPtr> Constants; // for temp access to constants
         inline static size_t ConstantIndex = 0;
 
         /* ------------------ Shared for garbage collection reasons ----------------- */
@@ -92,6 +93,7 @@ class Interpreter
         static void GarbageCollector();
         static void MarkConstantBlack(TypeObject Const);
         static TypeObject CreateConstant(std::string_view Constant);
+        static void AddToConstantsVector(TypeObjectPtr ConstantToBePlaced);
 
         enum class RendorState
         {

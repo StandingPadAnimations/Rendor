@@ -7,9 +7,8 @@
 void Interpreter::ExecuteByteCode(std::ifstream& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
-
+    Constants.reserve(2);
     std::vector<std::string> ByteCode;
-
     {
         std::string ByteCodeOperation;
         while (std::getline(File, ByteCodeOperation))
@@ -94,25 +93,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                 /* ------------------------------ Default stuff ----------------------------- */
                 default:
                 {
-                    Constants.push_back(CreateConstant(Args));
-                    /* -------------------------- Change ConstantIndex -------------------------- */
-                    if (Constants.size() == 2)
-                    {
-                        switch (ConstantIndex)
-                        {
-                            case 0:
-                            {
-                                ++ConstantIndex;
-                                break;
-                            }
-                            
-                            case 1:
-                            {
-                                --ConstantIndex;
-                                break;
-                            }
-                        }
-                    }
+                    AddToConstantsVector(CreateConstant(Args));
                     break;
                 }
             }
@@ -176,7 +157,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                         }
                         default:
                         {
-                            Constants.push_back(Result.value());
+                            AddToConstantsVector(Result.value());
                             break;
                         }
                     }
@@ -240,27 +221,27 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
             
             /* -------------------------------- Operator -------------------------------- */
-            if (Args == "==")
+            if (Args == "EQUAL")
             {
                 CompOp = Operator::EQUAL;
             }
-            else if (Args == "!=")
+            else if (Args == "NOT_EQUAL")
             {
                 CompOp = Operator::NOT_EQUAL;
             }
-            else if (Args == ">")
+            else if (Args == "GREATER_THAN")
             {
                 CompOp = Operator::GREATER_THAN;
             }
-            else if (Args == "<")
+            else if (Args == "LESS_THAN")
             {
                 CompOp = Operator::LESS_THAN;
             }
-            else if (Args == ">=")
+            else if (Args == "GREATER_OR_EQUAL")
             {
                 CompOp = Operator::GREATER_OR_EQUAL;
             }
-            else if (Args == "<=")
+            else if (Args == "LESS_OR_EQUAL")
             {
                 CompOp = Operator::LESS_OR_EQUAL;
             }
@@ -279,7 +260,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                 }
                 case false:
                 {
-                    Op = boost::lexical_cast<size_t>(Args);
+                    Op = boost::lexical_cast<size_t>(Args) - 2;
                     break;
                 }
             }
@@ -368,25 +349,7 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
         ((Command == "CONST") &&
         (Scope == 0))
         {
-            Constants.push_back(CreateConstant(Args));
-            /* -------------------------- Change ConstantIndex -------------------------- */
-            if (Constants.size() == 2)
-            {
-                switch (ConstantIndex)
-                {
-                    case 0:
-                    {
-                        ++ConstantIndex;
-                        break;
-                    }
-                    
-                    case 1:
-                    {
-                        --ConstantIndex;
-                        break;
-                    }
-                }
-            }
+            AddToConstantsVector(CreateConstant(Args));
         }
 
         /* ------------------ Making variables in the global scope ------------------ */

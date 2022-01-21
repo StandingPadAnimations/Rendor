@@ -76,7 +76,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
             std::ofstream CrenOutput(AbsPathParentDir + AbsPathCrenOutput);
             for (auto const& Op : ByteCode)
             {
-                CrenOutput << Op << std::endl;
+                CrenOutput << Op << "\n";
             }
         }
     

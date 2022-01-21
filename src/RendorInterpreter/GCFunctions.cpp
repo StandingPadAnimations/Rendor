@@ -115,7 +115,7 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
         {
             /* ----------------------------- Ints and floats ---------------------------- */
             if 
-            (Constant.find_first_not_of("1234567890") == std::string::npos) 
+            (Constant.find_first_not_of("1234567890.") == std::string::npos) 
             {
                 if (Constant.find_first_of(".") != std::string::npos)
                 {
@@ -181,3 +181,33 @@ void Interpreter::MarkConstantBlack(TypeObject Const)
     }
 }
 
+void Interpreter::AddToConstantsVector(TypeObjectPtr ConstantToBePlaced)
+{
+    if (Constants.size() == 2)
+    {
+        switch (ConstantIndex)
+        {
+            case 0:
+            {
+                ++ConstantIndex;
+                break;
+            }
+            
+            case 1:
+            {
+                --ConstantIndex;
+                break;
+            }
+        }
+        Constants[ConstantIndex] = ConstantToBePlaced;
+    }
+    else if (Constants.size() == 1)
+    {
+        Constants.push_back(ConstantToBePlaced);
+        ++ConstantIndex;
+    }
+    else 
+    {
+        Constants.push_back(ConstantToBePlaced);
+    }
+}
