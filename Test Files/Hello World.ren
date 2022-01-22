@@ -10,9 +10,10 @@ edef main()
 {
     // Variables
     int = 1 // ints
-    flo = 1.2 // floats
+    flo = 1.0 // floats
     string = "Hello World" // strings
     bool = true // booleans 
+    // arithmethic = 1+2
 
     // Example function call
     bar = input("Enter Args(bar): ")
@@ -23,7 +24,7 @@ edef main()
         echo("Hello World!!!!!!!")
     }
 
-    if (flo == 1.0)
+    if (flo > 1)
     {
         echo("flo is 1.0")
     }

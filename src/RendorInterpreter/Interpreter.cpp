@@ -7,7 +7,6 @@
 void Interpreter::ExecuteByteCode(std::ifstream& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
-    Constants.reserve(2);
     std::vector<std::string> ByteCode;
     {
         std::string ByteCodeOperation;
@@ -93,7 +92,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                 /* ------------------------------ Default stuff ----------------------------- */
                 default:
                 {
-                    AddToConstantsVector(CreateConstant(Args));
+                    AddToConstantsArray(CreateConstant(Args));
                     break;
                 }
             }
@@ -157,7 +156,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                         }
                         default:
                         {
-                            AddToConstantsVector(Result.value());
+                            AddToConstantsArray(Result.value());
                             break;
                         }
                     }
@@ -195,8 +194,8 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
 
         else if (Command == "OPERATOR")
         {
-            TypeObject Const1 = Constants[ConstantIndex].lock();
-            TypeObject Const2;
+            TypeObject Const1;
+            TypeObject Const2 = Constants[ConstantIndex].lock();
             Operator CompOp = Operator::EQUAL;
 
             /* ----------------------------- Second Constant ---------------------------- */
@@ -204,13 +203,13 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             {
                 case 0:
                 {
-                    Const2 = Constants[1].lock();
+                    Const1 = Constants[1].lock();
                     break;
                 }
 
                 case 1:
                 {
-                    Const2 = Constants[0].lock();
+                    Const1 = Constants[0].lock();
                     break;
                 }
 
@@ -349,7 +348,7 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
         ((Command == "CONST") &&
         (Scope == 0))
         {
-            AddToConstantsVector(CreateConstant(Args));
+            AddToConstantsArray(CreateConstant(Args));
         }
 
         /* ------------------ Making variables in the global scope ------------------ */

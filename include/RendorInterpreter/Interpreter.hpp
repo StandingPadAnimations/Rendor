@@ -6,6 +6,7 @@
 #include <string_view>
 #include <list>
 #include <vector>
+#include <array>
 #include <map>
 #include <fstream>
 #include <algorithm>
@@ -53,7 +54,7 @@ class Interpreter
         /* -------------------------------------------------------------------------- */
         /* ----------------------------- Rendor's Memory ---------------------------- */
         inline static std::unordered_map<std::string, size_t> UserDefinedFunctions; // Stores index of user defined functions in the main file
-        inline static std::vector<TypeObjectPtr> Constants; // for temp access to constants
+        inline static std::array<TypeObjectPtr, 2> Constants; // for temp access to constants
         inline static size_t ConstantIndex = 0;
 
         /* ------------------ Shared for garbage collection reasons ----------------- */
@@ -93,7 +94,7 @@ class Interpreter
         static void GarbageCollector();
         static void MarkConstantBlack(TypeObject Const);
         static TypeObject CreateConstant(std::string_view Constant);
-        static void AddToConstantsVector(TypeObjectPtr ConstantToBePlaced);
+        static void AddToConstantsArray(TypeObjectPtr ConstantToBePlaced);
 
         enum class RendorState
         {

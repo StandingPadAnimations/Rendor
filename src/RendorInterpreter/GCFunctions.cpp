@@ -181,7 +181,7 @@ void Interpreter::MarkConstantBlack(TypeObject Const)
     }
 }
 
-void Interpreter::AddToConstantsVector(TypeObjectPtr ConstantToBePlaced)
+void Interpreter::AddToConstantsArray(TypeObjectPtr ConstantToBePlaced)
 {
     if (Constants.size() == 2)
     {
@@ -203,11 +203,11 @@ void Interpreter::AddToConstantsVector(TypeObjectPtr ConstantToBePlaced)
     }
     else if (Constants.size() == 1)
     {
-        Constants.push_back(ConstantToBePlaced);
+        Constants[1] = (ConstantToBePlaced);
         ++ConstantIndex;
     }
     else 
     {
-        Constants.push_back(ConstantToBePlaced);
+        Constants[0] = (ConstantToBePlaced);
     }
 }
