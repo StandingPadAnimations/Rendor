@@ -11,6 +11,7 @@
 #include "RendorCompiler/Mathparsing.hpp"
 #include "RendorCompiler/MathEvaluator.hpp"
 #include "RendorCompiler/RendorDeltaOptimizer.hpp"
+#include "RendorCompiler/ASTGenerationFunctions.hpp"
 #include "RendorCompiler/Nodes.hpp"
 #include "Exceptions.hpp"
 

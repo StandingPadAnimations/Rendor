@@ -9,6 +9,7 @@
 #include <sstream>
 #include <functional>
 #include <string_view>
+#include <map>
 
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
@@ -21,26 +22,27 @@ namespace Lex{
     // Enum for tokens 
     enum class Token{
         // Identifiers, keywords, and functions
-        IDENTIFIER        = 0, 
-        BUILT_IN_FUNCTION = 1,
-        KEYWORD           = 2,
-        OPERATOR          = 3,
+        IDENTIFIER, 
+        BUILT_IN_FUNCTION,
+        KEYWORD,
+        OPERATOR,
 
         // Symbols
-        EQUAL             = 4,
-        LPAREN            = 5,
-        RPAREN            = 6,
-        LBRACE            = 7,
-        RBRACE            = 8,
-        NEWLINE           = 9, 
-        COMMA             = 10,
-        BIOP              = 11,
+        EQUAL,
+        LPAREN,
+        RPAREN,
+        LBRACE,
+        RBRACE,
+        NEWLINE, 
+        COMMA,
+        BIOP,
+        UnOp,
 
         // Variable Types
-        INT               = 12,
-        FLOAT             = 13,
-        STRING            = 14,
-        BOOL              = 15
+        INT,
+        FLOAT,
+        STRING,
+        BOOL
     };
 
     // Lexer Class 
@@ -62,6 +64,14 @@ namespace Lex{
             // Operators to check for 
             std::array<std::string, 4> Operators {"and", "or", "not", "is"};
 
+            std::map<std::string, char> BiOpTokens {{{"="}, '='},
+                                                    {{">"}, '='},
+                                                    {{"<"}, '='},
+                                                    {{"!"}, '='}};
+
+            std::map<std::string, char> UnOpTokens {{{"+"}, '+'},
+                                                    {{"-"}, '-'}};
+
             enum class BufferID 
             {
                 None,
@@ -71,6 +81,8 @@ namespace Lex{
                 CharTilda,
                 Comment
             };
+
+            bool LexerCharCheck(char Char);
     };
 }
 #endif // * LEXER

@@ -79,9 +79,9 @@ class Interpreter
                                                                         {"input",  {"InputArgs"}}, 
                                                                         {"sum",    {"SumArgs"}}};
                                                                     
-        inline static std::map<std::string, RendorFunctionPtr> BuiltInFunctions{{"echo",  RENDOR_ECHO_FUNCTION}, 
-                                                                                {"input", RENDOR_INPUT_FUNCTION}, 
-                                                                                {"sum",   RENDOR_SUM_FUNCTION}};
+        inline static std::unordered_map<std::string, RendorFunctionPtr> BuiltInFunctions  {{"echo",  RENDOR_ECHO_FUNCTION}, 
+                                                                                            {"input", RENDOR_INPUT_FUNCTION}, 
+                                                                                            {"sum",   RENDOR_SUM_FUNCTION}};
                                                                 
 
         /* ------------------------------ Bytecode Loop ----------------------------- */

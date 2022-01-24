@@ -51,7 +51,7 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
     else if (ClassType == NodeType::IfElse)
     {
         auto& IfElseNode = static_cast<IfElse&>(*NodeClass); 
-        auto& ConditionNode = IfElseNode.Conditions.back(); 
+        auto& ConditionNode = IfElseNode.Conditions; 
         TypeConstants(ConditionNode->Condition1->Type, ConditionNode->Condition1);
         TypeConstants(ConditionNode->Condition2->Type, ConditionNode->Condition2);
 
@@ -131,7 +131,7 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         case NodeType::Arithmethic:
         {
             auto& ArithNode = static_cast<Arithmethic&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST %s") % OperationToPostfix(ArithNode.Value)).str());
+            ByteCode.emplace_back((boost::format("CONST &_A%s") % OperationToPostfix(ArithNode.Value)).str());
             break;
         }
 

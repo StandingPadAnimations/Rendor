@@ -13,7 +13,9 @@ edef main()
     flo = 1.0 // floats
     string = "Hello World" // strings
     bool = true // booleans 
-    // arithmethic = 1+2
+    arithmethic = 1+2
+
+    // ++int
 
     // Example function call
     bar = input("Enter Args(bar): ")
@@ -24,7 +26,7 @@ edef main()
         echo("Hello World!!!!!!!")
     }
 
-    if (flo > 1)
+    if (flo >= 1)
     {
         echo("flo is 1.0")
     }

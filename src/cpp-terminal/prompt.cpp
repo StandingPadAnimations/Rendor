@@ -72,7 +72,7 @@ void Term::render(Term::Window& scr, const Model& m, size_t cols) {
     scr.set_cursor_pos(m.prompt_string.size() + m.cursor_col, m.cursor_row);
 }
 
-std::string Term::prompt(Terminal& term,
+std::string Term::prompt([[maybe_unused]] Terminal& term,
                          const std::string& prompt_string,
                          std::vector<std::string>& history,
                          std::function<bool(std::string)>& iscomplete) {

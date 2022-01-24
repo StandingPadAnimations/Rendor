@@ -34,21 +34,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
         /*               When we come across a space, symbol, or newline              */
         /* -------------------------------------------------------------------------- */
         else if  
-        (((Code[Char] == ' ')   ||
-        (Code[Char]   == ';')   ||
-        (Code[Char]   == ',')   ||
-        (Code[Char]   == '(')   ||
-        (Code[Char]   == ')')   ||
-        (Code[Char]   == '{')   ||
-        (Code[Char]   == '}')   ||
-        (Code[Char]   == '=')   ||
-        (Code[Char]   == '^')   ||
-        (Code[Char]   == '*')   ||
-        (Code[Char]   == '/')   ||
-        (Code[Char]   == '+')   ||
-        (Code[Char]   == '-')   ||
-        (Code[Char]   == '>')   ||
-        (Code[Char]   == '<'))  &&
+        ((LexerCharCheck(Code[Char]))  &&
         ((LexerBufferID == BufferID::None)      ||
         (LexerBufferID  == BufferID::StringEnd) ||
         LexerBufferID   == BufferID::Comment))
@@ -63,19 +49,66 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 continue;
             }
             
-            /* ------------------------- Tokenization of buffer ------------------------- */
             std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+
+            if (Buffer.size() > 1)
+            {
+                while(LexerCharCheck(Buffer[0]))
+                {
+                    ++StartIndex;
+                    Buffer = std::string_view(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+                }
+            }
             
-            if (Buffer.size() == 0)
+            else if (Buffer.size() == 0)
             {
                 // * Because this used to cause a bug with comments
             }
 
-            else if 
+            /* ------------------------- Tokenization of buffer ------------------------- */
+            if 
             ((Buffer.find_first_not_of(" ;,(){}=^*/+-><") == std::string::npos) &&
             (LexerBufferID != BufferID::Comment))
             {
-                // Does nothing except invalidate the else if and else statements so the compiler goes to the switch statement
+                std::string BufferAsString{Buffer};
+                
+                // Check if the buffer contains a token that can be part of a larger token
+                if (BiOpTokens.contains(BufferAsString))
+                {
+                    // Check if it's compatible with the current characther 
+                    if (BiOpTokens[BufferAsString] == Code[Char])
+                    {
+                        auto& [Token, value] = Tokens.back();
+                        Token = Lex::Token::BIOP;
+                        value += Code[Char];
+                    }
+                    else 
+                    {
+                        // Ignore as we don't care 
+                    }
+
+                    // ? Not sure if this is a good use of goto
+                    goto StartIndex;
+                }
+
+                // Check if the buffer contains a token that can be part of a larger token
+                else if (UnOpTokens.contains(BufferAsString))
+                {
+                    // Check if it's compatible with the current characther 
+                    if (UnOpTokens[BufferAsString] == Code[Char])
+                    {
+                        auto& [Token, value] = Tokens.back();
+                        Token = Lex::Token::UnOp;
+                        value += Code[Char];
+                    }
+                    else 
+                    {
+                        // Ignore as we don't care 
+                    }
+                    
+                    // ? Not sure if this is a good use of goto
+                    goto StartIndex;
+                }
             }
 
             else if (LexerBufferID == BufferID::StringEnd)
@@ -137,8 +170,6 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                     Tokens.emplace_back(Token::IDENTIFIER, std::string{Buffer});
                 }
             }
-
-            StartIndex = Code.find_first_not_of(' ', EndIndex);
 
             // Tokenizing the characthers we stop on 
             switch (Code[Char])
@@ -211,7 +242,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                     break;
                 }
             }
-            
+
+            StartIndex: 
+                StartIndex = Code.find_first_not_of(' ', EndIndex);
         }
 
         /* -------------------------------------------------------------------------- */
@@ -284,4 +317,28 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
         ++EndIndex;
     }
     return Tokens; 
+}
+
+bool Lexer::LexerCharCheck(char Char)
+{
+    if (
+    (Char   == ' ')   ||
+    (Char   == ';')   ||
+    (Char   == ',')   ||
+    (Char   == '(')   ||
+    (Char   == ')')   ||
+    (Char   == '{')   ||
+    (Char   == '}')   ||
+    (Char   == '=')   ||
+    (Char   == '^')   ||
+    (Char   == '*')   ||
+    (Char   == '/')   ||
+    (Char   == '+')   ||
+    (Char   == '-')   ||
+    (Char   == '>')   ||
+    (Char   == '<'))
+    {
+        return true;
+    }
+    return false;
 }

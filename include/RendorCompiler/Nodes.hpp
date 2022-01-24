@@ -156,7 +156,7 @@ struct Condition : Node
 
 struct IfElse : Node
 {
-    std::vector<std::unique_ptr<Condition>> Conditions;
+    std::unique_ptr<Condition> Conditions;
     Body IfElseBody;
     std::unique_ptr<IfElse> ElseStatement;
     IfElse(uint32_t LineNumber) : Node(LineNumber)
