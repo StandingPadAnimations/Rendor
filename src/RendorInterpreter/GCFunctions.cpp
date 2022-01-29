@@ -92,6 +92,15 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
         }
     }
 
+    else if (Constant[0] == '&')
+    {
+        std::string ActualConstant{Constant.begin() + 3, Constant.end()};
+        if (Constant[2] == 'A')
+        {
+            return CreateConstant(PostFixEval(ActualConstant));
+        }
+    }
+
     else 
     {
         auto FindIterator = std::find_if(

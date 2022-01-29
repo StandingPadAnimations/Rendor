@@ -52,7 +52,7 @@ enum class NodeType{
 
 struct Node{
     NodeType Type;
-    uint32_t LineNumber;
+    uint32_t LineNumber = 0;
     
     Node() = default;
     Node(uint32_t LineNumber) : LineNumber(LineNumber){}
@@ -72,7 +72,7 @@ struct Body : Node
 
 struct Scope : Node
 {
-    std::string ScopeName;
+    std::string ScopeName = "";
     Body ScopeBody;
     Scope(uint32_t LineNumber) : Node(LineNumber)
     {
@@ -82,7 +82,7 @@ struct Scope : Node
 
 struct AssignVariable : Node
 {
-    std::string VariableName;
+    std::string VariableName = "";
     NodeObject Value;
 
     AssignVariable() = default;
@@ -94,7 +94,7 @@ struct AssignVariable : Node
 
 struct FunctionCall : Node
 {
-    std::string Function;
+    std::string Function = "";
     std::vector<NodeObject> Args;
     explicit FunctionCall(std::string Function, uint32_t LineNumber) : Node(LineNumber), Function(Function)
     {
@@ -104,7 +104,7 @@ struct FunctionCall : Node
 
 struct Increment : Node
 {
-    std::string Args;
+    std::string Args = "";
     explicit Increment(std::string Args, uint32_t LineNumber) : Node(LineNumber), Args(Args)
     {
         Type = NodeType::Increment;
@@ -113,7 +113,7 @@ struct Increment : Node
 
 struct Decrement : Node
 {
-    std::string Args;
+    std::string Args = "";
     explicit Decrement(std::string Args, uint32_t LineNumber) : Node(LineNumber), Args(Args)
     {
         Type = NodeType::Decrement;
@@ -122,7 +122,7 @@ struct Decrement : Node
 
 struct Edef : Node
 {
-    std::string Name;
+    std::string Name = "";
     Body FunctionBody;
     std::vector<std::pair<std::string, NodeType>> Args;
 
@@ -134,9 +134,8 @@ struct Edef : Node
 
 struct BiOp : Node
 {
-    std::string Operator;
-
-    BiOp(uint32_t LineNumber) : Node(LineNumber)
+    std::string Operator = "";
+    BiOp(std::string OperatorInput, uint32_t LineNumber) : Node(LineNumber), Operator(OperatorInput)
     {
         Type = NodeType::BiOp;
     }
@@ -167,7 +166,7 @@ struct IfElse : Node
 
 struct Int : Node
 {
-    std::string Value;
+    std::string Value = "";
     
     Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
@@ -177,7 +176,7 @@ struct Int : Node
 
 struct Double : Node
 {
-    std::string Value;
+    std::string Value = "";
     
     Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
@@ -187,7 +186,7 @@ struct Double : Node
 
 struct String : Node
 {
-    std::string Value;
+    std::string Value = "";
     
     String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
@@ -197,7 +196,7 @@ struct String : Node
 
 struct Bool : Node
 {
-    std::string Value;
+    std::string Value = "";
     
     Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
@@ -207,7 +206,7 @@ struct Bool : Node
 
 struct Arithmethic : Node
 {
-    std::string Value;
+    std::string Value = "";
     
     Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
@@ -217,7 +216,7 @@ struct Arithmethic : Node
 
 struct Reference : Node
 {
-    std::string Value;
+    std::string Value = "";
 
     Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {

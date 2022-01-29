@@ -55,7 +55,6 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         /* -------------------------------------------------------------------------- */
         case NodeType::FunctionCall:
         {
-            auto& FunctionCallNode = static_cast<FunctionCall&>(*Node);
             break;
         }
 

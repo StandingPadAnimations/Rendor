@@ -27,3 +27,22 @@ void Interpreter::DisposeConst(TypeObject Const)
     }
     Const->ColorOfObj = GCColor::WHITE;
 }
+
+TypeObjectPtr Interpreter::GetConstFromVariable(const std::string& Variable)
+{
+    /* ------------------------ Check if variable exists ------------------------ */
+    if (GlobalVariables->contains(Variable))
+    {
+        return (*GlobalVariables)[Variable]->m_ValueClass;
+    }
+    else if (CurrentScopeVariables->contains(Variable))
+    {
+        return (*CurrentScopeVariables)[Variable]->m_ValueClass;
+    }
+    else 
+    {
+        throw error::RendorException("Variable " + Variable + " doesn't exist!");
+    }
+
+    return TypeObjectPtr();
+}

@@ -8,8 +8,11 @@ CONST _SHello World
 ASSIGN string
 CONST true
 ASSIGN bool
-CONST &_A1 2 +
+CONST &_A 1 2 5 + *
 ASSIGN arithmethic
+CALL echo
+CONST _&arithmethic
+FINALIZE_CALL echo
 CALL input
 CONST _SEnter Args(bar): 
 FINALIZE_CALL input
@@ -20,14 +23,16 @@ CONST _&bar
 FINALIZE_CALL xyz
 CONST _&bar
 CONST _&string
-JMP_IF_FALSE 27
+OPERATOR EQUAL
+JMP_IF_FALSE 32
 CALL echo
 CONST _SHello World!!!!!!!
 FINALIZE_CALL echo
 ENDIF STATE
 CONST _&flo
 CONST 1
-JMP_IF_FALSE 35
+OPERATOR GREATER_OR_EQUAL
+JMP_IF_FALSE 41
 CALL echo
 CONST _Sflo is 1.0
 FINALIZE_CALL echo
@@ -44,6 +49,7 @@ CONST _&bar
 FINALIZE_CALL echo
 FUNCTION END
 END 0
+
 
 
 

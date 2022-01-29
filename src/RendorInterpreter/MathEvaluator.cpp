@@ -1,6 +1,20 @@
-#include "RendorInterpreter/MathEvaluator.hpp"
+#include "RendorInterpreter/Interpreter.hpp"
 
-static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
+
+// Code from Rythm#6156 with slight changes 
+static int64_t Rythm_RendorPow(int64_t x, int64_t y){
+    int64_t ret = 1;
+    for(; y; y >>= 1){
+        if(y & 1)
+        {
+            ret *= x;
+        } 
+        x *= x;
+    }
+    return ret;
+}
+
+static std::string EvalNums(std::string Num1, std::string Num2, std::string Op)
 {
     std::string Answer;
     long double N1 = std::stold(Num1);
@@ -8,7 +22,16 @@ static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
     
     if (Op == "^")
     {
-        Answer = std::to_string(pow(N1, N2));
+        if (
+        (Num1.find_first_of('.') == std::string::npos) &&
+        (Num2.find_first_of('.') == std::string::npos))
+        {
+            Answer = std::to_string(Rythm_RendorPow(N1, N2));
+        }
+        else 
+        {
+            Answer = std::to_string(pow(N1, N2));
+        }
     }
 
     else if (Op == "+")
@@ -33,7 +56,7 @@ static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
     return Answer;
 }
 
-std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string, std::unique_ptr<Variable>> *Variables)
+std::string Interpreter::PostFixEval(std::string_view PostFixOperation)
 {
     boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(PostFixOperation, Delimeters);
@@ -59,16 +82,16 @@ std::string PostFixEval (std::string_view PostFixOperation, std::map<std::string
             (PartOfOperation[1] == '&'))
             {
                 const auto CopiedVariableName = PartOfOperation.substr(2, PartOfOperation.size()-2);
-                const auto& CopiedVariable = (*Variables)[CopiedVariableName];
+                const auto& CopiedVariable = Interpreter::GetConstFromVariable(CopiedVariableName);
 
                 if ( // confirm if variable can be operated on 
-                (CopiedVariable->m_ValueClass->TypeOfVariable() != VariableType::Int) &&
-                (CopiedVariable->m_ValueClass->TypeOfVariable() != VariableType::Float)
+                (CopiedVariable.lock()->TypeOfVariable() != VariableType::Int) &&
+                (CopiedVariable.lock()->TypeOfVariable() != VariableType::Float)
                 )
                 {
                     throw error::RendorException((boost::format("%s is not an int or float!") % CopiedVariableName).str());
                 }
-                Stack.emplace_back(CopiedVariable->m_ValueClass->m_Value);
+                Stack.emplace_back(CopiedVariable.lock()->m_Value);
             } 
             else
             {

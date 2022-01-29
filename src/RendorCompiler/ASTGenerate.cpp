@@ -261,7 +261,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
                         AddToArithmethicNode(AssignVariableNode, value, LineNumber);
                     }
-                    break;
                 }
                 break;
             }
@@ -269,20 +268,32 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             /* --------------------------------- R paren -------------------------------- */
             case lt::RPAREN: // * ) sign
             {
-                ParserTempIDList.pop_back();
                 if (ParserTempID == TempID::FunctionArgumentsDefinition)
                 {
+                    ParserTempIDList.pop_back();
                     ParserTempIDList.emplace_back(TempID::FunctionScope);
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
                 {
+                    ParserTempIDList.pop_back();
                     ParserTempIDList.emplace_back(TempID::IfElseScope);
                 }
 
                 else if (ParserTempID == TempID::FunctionCall)
                 {
+                    ParserTempIDList.pop_back();
                     ScopeList.pop_back();
+                }
+
+                /* ------------------------------- Arithmethic ------------------------------ */
+                else if (ParserTempID == TempID::VariableDefition)
+                {
+                    if (Scope->back()->Type == NodeType::AssignVariable)
+                    {
+                        auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
+                        AddToArithmethicNode(AssignVariableNode, value, LineNumber);
+                    }
                 }
                 break;
             }
@@ -525,7 +536,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                         // ! Temporary, not permanent
                         throw error::RendorException((boost::format("Syntax Error: extra Binary Operator found in if statement; Line %s") % LineNumber).str());
                     }
-                    IfElseNode.Conditions->Operator = std::make_unique<BiOp>(LineNumber);
+                    IfElseNode.Conditions->Operator = std::make_unique<BiOp>(value, LineNumber);
                 }
                 
                 else if (ParserTempID == TempID::VariableDefition)

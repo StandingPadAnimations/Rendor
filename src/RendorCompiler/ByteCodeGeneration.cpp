@@ -6,7 +6,7 @@
 
 std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass)
 {
-
+    std::cout << "Node: " << static_cast<std::underlying_type<NodeType>::type>(ClassType) << std::endl;
     /* -------------------------------------------------------------------------- */
     /*                             assigning variables                            */
     /* -------------------------------------------------------------------------- */
@@ -131,7 +131,8 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         case NodeType::Arithmethic:
         {
             auto& ArithNode = static_cast<Arithmethic&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST &_A%s") % OperationToPostfix(ArithNode.Value)).str());
+            std::string Operation = OperationToPostfix(ArithNode.Value);
+            ByteCode.emplace_back((boost::format("CONST &_A%s") % Operation).str());
             break;
         }
 
