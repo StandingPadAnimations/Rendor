@@ -18,6 +18,7 @@
 // Other Parts of the Rendor Engine Interpreter 
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
+#include "RendorInterpreter/RendorDefinitions.hpp"
 #include "Exceptions.hpp"
 
 #include <boost/format.hpp>
@@ -27,22 +28,11 @@
 #include <boost/tokenizer.hpp>
 
 
-
-/* ---------------------------- Typedefs for STL ---------------------------- */
-typedef std::shared_ptr<Type> TypeObject;
-typedef std::weak_ptr<Type> TypeObjectPtr;
-typedef std::vector<TypeObjectPtr> TypePtrVector;
-typedef std::vector<std::string> StringVector;
-typedef std::unordered_map<std::string, std::unique_ptr<Variable>> VariableScopeMap;
-typedef std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)> RendorFunctionPtr;
-typedef std::variant<int64_t, double> MathVariant;
-
 class Interpreter
 {
     public:
         static void ExecuteByteCode(std::ifstream& File);
         static void DisposeConst(TypeObject RendorConstID);
-        static TypeObjectPtr GetConstFromVariable(const std::string& Variable);
 
     private:
         /* -------------------------------------------------------------------------- */
@@ -98,6 +88,9 @@ class Interpreter
         static void MarkConstantBlack(TypeObject Const);
         static TypeObject CreateConstant(std::string_view Constant);
         static void AddToConstantsArray(TypeObjectPtr ConstantToBePlaced);
+        static TypeObjectPtr GetConstFromVariable(const std::string& Variable);
+
+        /* -------------------------------- Math Eval ------------------------------- */
         static std::string PostFixEval(std::string_view PostFixOperation);
 
         enum class RendorState
