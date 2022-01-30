@@ -6,7 +6,6 @@
 
 std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass)
 {
-    std::cout << "Node: " << static_cast<std::underlying_type<NodeType>::type>(ClassType) << std::endl;
     /* -------------------------------------------------------------------------- */
     /*                             assigning variables                            */
     /* -------------------------------------------------------------------------- */

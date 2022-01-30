@@ -6,7 +6,7 @@ CONST 1
 ASSIGN flo
 CONST _SHello World
 ASSIGN string
-CONST true
+CONST false
 ASSIGN bool
 CONST &_A 1 2 5 + *
 ASSIGN arithmethic
@@ -21,8 +21,8 @@ CALL xyz
 CONST _&bool
 CONST _&bar
 FINALIZE_CALL xyz
-CONST _&bar
-CONST _&string
+CONST _&bool
+CONST true
 OPERATOR EQUAL
 JMP_IF_FALSE 32
 CALL echo

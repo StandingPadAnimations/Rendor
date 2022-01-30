@@ -23,7 +23,7 @@ edef main()
     bar = input("Enter Args(bar): ")
     xyz(bool, bar)
 
-    if (bar == string)
+    if (bool)
     {
         echo("Hello World!!!!!!!")
     }

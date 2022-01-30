@@ -22,10 +22,11 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 {
                     /* ----------------------- Inspect value for validity ----------------------- */
                     if (
-                    (AssignmentNode.Value->Type == NodeType::Int)    ||
-                    (AssignmentNode.Value->Type == NodeType::Double) ||
-                    (AssignmentNode.Value->Type == NodeType::String) ||
-                    (AssignmentNode.Value->Type == NodeType::Bool)   ||
+                    (AssignmentNode.Value->Type == NodeType::Int)           ||
+                    (AssignmentNode.Value->Type == NodeType::Double)        ||
+                    (AssignmentNode.Value->Type == NodeType::String)        ||
+                    (AssignmentNode.Value->Type == NodeType::Bool)          ||
+                    (AssignmentNode.Value->Type == NodeType::Arithmethic)   ||
                     (AssignmentNode.Value->Type == NodeType::FunctionCall))
                     {
                         DeltaInspectAST(AssignmentNode.Value);
@@ -55,6 +56,52 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         /* -------------------------------------------------------------------------- */
         case NodeType::FunctionCall:
         {
+            auto& FunctionCallNode = static_cast<FunctionCall&>(*Node);
+            if (FunctionCallNode.Function.empty())
+            {
+                throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
+            }
+            break;
+        }
+
+        case NodeType::Edef:
+        {
+            auto& EdefNode = static_cast<Edef&>(*Node);
+            if (EdefNode.Name.empty())
+            {
+                throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
+            }
+
+            for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
+            {
+                DeltaInspectAST(Node);
+            }
+            break;
+        }
+
+        case NodeType::IfElse:
+        {
+            auto& IfNode = static_cast<IfElse&>(*Node);
+            if (IfNode.Conditions->Condition1)
+            {
+                if (IfNode.Conditions->Operator)
+                {
+                    if (IfNode.Conditions->Condition2)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        throw error::RendorException((boost::format("Lack of second condition in if statement; Line %s") % Node->LineNumber).str());
+                    }
+                }
+                else 
+                {
+                    // Make it check if true
+                    IfNode.Conditions->Operator = std::make_unique<BiOp>("==", IfNode.LineNumber);
+                    IfNode.Conditions->Condition2 = std::make_unique<Bool>("true", IfNode.LineNumber);
+                }
+            }
             break;
         }
 
