@@ -304,7 +304,16 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 {
                     StartIndex = Code.find_first_not_of(CharToCheck, StartIndex); // To avoid tokenizing the ", ', or ` that starts a string
                     std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
-                    Tokens.emplace_back(Token::STRING, Buffer);
+                    
+                    if (StartIndex >= EndIndex) // The only way this can happen is when a "" occurs
+                    {
+                        Tokens.emplace_back(Token::STRING, "");
+                        StartIndex = EndIndex;
+                    }
+                    else
+                    {
+                        Tokens.emplace_back(Token::STRING, Buffer);
+                    }
                     LexerBufferID = BufferID::StringEnd;
                 }
                 

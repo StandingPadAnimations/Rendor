@@ -17,11 +17,13 @@ namespace bfs = boost::filesystem;
 
 #define RENDOR_VERSION 0
 
-struct RendorEngineInterpreter{
+struct RendorEngineInterpreter
+{
     static void run(const std::string);
 };
 
-struct RendorEngineCompiler{
+struct RendorEngineCompiler
+{
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 

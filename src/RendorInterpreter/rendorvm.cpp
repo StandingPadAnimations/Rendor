@@ -42,10 +42,15 @@ int main (int argc, char *argv[])
 {
     try 
     {
+        #if DEBUGMODE
+        std::cin.get();
+        #endif
         std::vector<std::string> Arguments;
-        if (argc > 1) {
+        if (argc > 1) 
+        {
             Arguments.assign(argv, argv + argc);
-        } else
+        } 
+        else
         {
             throw error::RendorException("Need a file input");
         }

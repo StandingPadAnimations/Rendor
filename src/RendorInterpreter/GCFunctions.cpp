@@ -31,6 +31,12 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
     if (Constant[0] == '_')
     {
         std::string ActualConstant{Constant.begin() + 2, Constant.end()};
+
+        if (Constant.size() <= 2)
+        {
+            ActualConstant = "";
+        }
+
         switch (Constant[1])
         {
             /* --------------------------------- Strings -------------------------------- */
