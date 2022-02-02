@@ -60,6 +60,15 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
             }
+
+            if (Functions.contains(FunctionCallNode.Function))
+            {
+                if (Functions[FunctionCallNode.Function].size() != FunctionCallNode.Args.size())
+                {
+                    throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % FunctionCallNode.Function % Node->LineNumber).str());
+                }
+            }
+
             for (auto const& Arg : FunctionCallNode.Args)
             {
                 InspectTypesReferences(Arg->Type, Arg);
@@ -75,17 +84,25 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
             }
 
+            // Add new variable scope
             AddVariableScope();
+            // Add variables
             for (const auto& [Var, Type] : EdefNode.Args)
             {
                 (*CurrentVariables)[Var] = Type;
             }
+            // Inspect the body
             for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
             {
                 DeltaInspectAST(Node);
             }
+            // Destroy variable scope
             DestroyVariableScope();
 
+            // Add function
+            Functions[EdefNode.Name] = FunctionArgsVector();
+            Functions[EdefNode.Name].reserve(EdefNode.Args.size());
+            std::fill(Functions[EdefNode.Name].begin(), Functions[EdefNode.Name].end(), NodeType::Any);
             break;
         }
 

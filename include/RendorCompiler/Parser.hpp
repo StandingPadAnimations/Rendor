@@ -21,6 +21,7 @@ using lt = Lex::Token;
 #define FALLTHROUGH [[fallthrough]]
 
 typedef std::map<std::string_view, NodeType> VariableMap;
+typedef std::vector<NodeType> FunctionArgsVector;
 class Parser
 {
     public:
@@ -37,13 +38,17 @@ class Parser
         /* ----------------------------- AST inspection ----------------------------- */
         static void DeltaInspectAST(const NodeObject& Node);
         static bool InvalidIdentifier(char& CharactherToCheck);
+
+        /* ---------------------------- Repeated actions ---------------------------- */
         static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);
         static void AddVariableScope();
         static void DestroyVariableScope();
 
         inline static std::vector<VariableMap> Variables;
         inline static VariableMap* CurrentVariables;
-        inline static std::map<std::string_view, std::vector<NodeType>> Functions;
+        inline static std::map<std::string_view, FunctionArgsVector> Functions {{"echo",  {NodeType::String}},
+                                                                                {"input", {NodeType::String}},
+                                                                                {"sum",   {NodeType::Int}}};
 };
 
 

@@ -15,7 +15,7 @@ edef main()
 
     // ++int
 
-    echo(arithmethic)
+    echo()
 
     // Example function call
     bar = input("Enter Args(bar): ")
