@@ -28,9 +28,15 @@ class Parser
     private:
         inline static Main Script;
         inline static std::vector<std::string> ByteCode;
+
+        /* --------------------------- Bytecode generation -------------------------- */
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
         static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
+
+        /* ----------------------------- AST inspection ----------------------------- */
         static void DeltaInspectAST(const NodeObject& Node);
+        static bool InvalidIdentifier(char& CharactherToCheck);
+        static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);
 
         inline static std::map<std::string_view, NodeType> Variables;
         inline static std::map<std::string_view, std::vector<NodeType>> Functions;

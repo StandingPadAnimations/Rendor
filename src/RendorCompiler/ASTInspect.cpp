@@ -1,7 +1,5 @@
 #include "RendorCompiler/Parser.hpp"
 
-static bool InvalidIdentifier(char& CharactherToCheck);
-
 void Parser::DeltaInspectAST(const NodeObject& Node)
 {
     switch (Node->Type)
@@ -61,6 +59,10 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
             }
+            for (auto const& Arg : FunctionCallNode.Args)
+            {
+                InspectTypesReferences(Arg->Type, Arg);
+            }
             break;
         }
 
@@ -86,13 +88,16 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 if (IfNode.Conditions->Operator)
                 {
+                    // If there is an operator, then there has to be an if statement
                     if (IfNode.Conditions->Condition2)
                     {
+                        // Check if condition 2 is valid if provided by the user
+                        InspectTypesReferences(IfNode.Conditions->Condition2->Type, IfNode.Conditions->Condition2);
                         break;
                     }
                     else
                     {
-                        throw error::RendorException((boost::format("Lack of second condition in if statement; Line %s") % Node->LineNumber).str());
+                        throw error::RendorException((boost::format("If statement contains operator, expected an expression; Line %s") % Node->LineNumber).str());
                     }
                 }
                 else 
@@ -101,53 +106,17 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                     IfNode.Conditions->Operator = std::make_unique<BiOp>("==", IfNode.LineNumber);
                     IfNode.Conditions->Condition2 = std::make_unique<Bool>("true", IfNode.LineNumber);
                 }
+                
+                // Check the validity of condition 1 as that is always provided by the user
+                InspectTypesReferences(IfNode.Conditions->Condition1->Type, IfNode.Conditions->Condition1);
             }
             break;
         }
 
-        /* -------------------------------------------------------------------------- */
-        /*                              Unsupported Nodes                             */
-        /* -------------------------------------------------------------------------- */
+        // Nodes that aren't checked will break here to prevent issues
         default:
         {
             break;
-        }
-    }
-}
-
-
-static bool InvalidIdentifier(char& CharactherToCheck)
-{
-    switch (CharactherToCheck)
-    {  
-        case '0':
-        FALLTHROUGH;
-        case '1':
-        FALLTHROUGH;
-        case '2':
-        FALLTHROUGH;
-        case '3':
-        FALLTHROUGH;
-        case '4':
-        FALLTHROUGH;
-        case '5':
-        FALLTHROUGH;
-        case '6':
-        FALLTHROUGH;
-        case '7':
-        FALLTHROUGH;
-        case '8':
-        FALLTHROUGH;
-        case '9':
-        FALLTHROUGH;
-        case '&':
-        {
-            return true;
-        }
-
-        default:
-        {
-            return false;
         }
     }
 }

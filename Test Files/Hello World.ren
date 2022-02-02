@@ -21,12 +21,12 @@ edef main()
 
     // Example function call
     bar = input("Enter Args(bar): ")
-    xyz(flo, bar)
+    xyz(lol, bar)
 
-    bool = ""
+    bool = "hi"
     if (bool)
     {
-        echo("Hello World!!!!!!!")
+        echo(bool)
     }
 
     if (flo >= 1)
