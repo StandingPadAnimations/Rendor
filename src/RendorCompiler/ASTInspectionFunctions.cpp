@@ -7,7 +7,7 @@ void Parser::InspectTypesReferences(const NodeType& Type, const NodeObject& Node
         case NodeType::Reference:
         {
             auto& ReferenceNode = static_cast<Reference&>(*Node);
-            if (!Variables.contains(ReferenceNode.Value))
+            if (!CurrentVariables->contains(ReferenceNode.Value))
             {
                 throw error::RendorException((boost::format("Undefined variable %s; Line %s") % ReferenceNode.Value % Node->LineNumber).str());
             }
@@ -54,4 +54,16 @@ bool Parser::InvalidIdentifier(char& CharactherToCheck)
             return false;
         }
     }
+}
+
+void Parser::AddVariableScope()
+{
+    Variables.emplace_back(VariableMap());
+    CurrentVariables = &Variables.back();
+}
+
+void Parser::DestroyVariableScope()
+{
+    Variables.pop_back();
+    CurrentVariables = &Variables.back();
 }

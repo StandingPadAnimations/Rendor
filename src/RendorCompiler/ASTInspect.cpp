@@ -2,6 +2,10 @@
 
 void Parser::DeltaInspectAST(const NodeObject& Node)
 {
+    if (Variables.empty())
+    {
+        Variables.emplace_back(VariableMap());
+    }
     switch (Node->Type)
     {
         /* -------------------------------------------------------------------------- */
@@ -27,7 +31,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                     (AssignmentNode.Value->Type == NodeType::FunctionCall))
                     {
                         DeltaInspectAST(AssignmentNode.Value);
-                        Variables[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
+                        (*CurrentVariables)[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
                     }
                     else 
                     {
@@ -71,10 +75,17 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
             }
 
+            AddVariableScope();
+            for (const auto& [Var, Type] : EdefNode.Args)
+            {
+                (*CurrentVariables)[Var] = Type;
+            }
             for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
             {
                 DeltaInspectAST(Node);
             }
+            DestroyVariableScope();
+
             break;
         }
 

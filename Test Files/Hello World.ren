@@ -3,8 +3,6 @@
 // input(message) : takes in user input
 // sum(int) : calculates sum of all numbers up to input 
 
-
-
 // Main function where the program enters
 edef main() 
 {
@@ -21,10 +19,10 @@ edef main()
 
     // Example function call
     bar = input("Enter Args(bar): ")
-    xyz(lol, bar)
+    xyz(flo, bar)
 
     bool = "hi"
-    if (lol)
+    if (flo)
     {
         echo(bool)
     }
