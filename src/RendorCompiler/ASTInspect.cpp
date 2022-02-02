@@ -10,7 +10,6 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         case NodeType::AssignVariable:
         {
             auto& AssignmentNode = static_cast<AssignVariable&>(*Node);
-
             /* ------------------------------- Valid name ------------------------------- */
             if 
             ((AssignmentNode.VariableName.size()) &&
@@ -28,8 +27,8 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                     (AssignmentNode.Value->Type == NodeType::FunctionCall))
                     {
                         DeltaInspectAST(AssignmentNode.Value);
+                        Variables[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
                     }
-
                     else 
                     {
                         throw error::RendorException((boost::format("Variable has a invalid value; Line %s") % Node->LineNumber).str());
@@ -44,8 +43,6 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 throw error::RendorException((boost::format("Invalid variable name; Line %s") % Node->LineNumber).str());
             }
-
-            Variables[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
             break;
         }
 

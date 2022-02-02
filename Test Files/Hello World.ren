@@ -24,7 +24,7 @@ edef main()
     xyz(lol, bar)
 
     bool = "hi"
-    if (bool)
+    if (lol)
     {
         echo(bool)
     }

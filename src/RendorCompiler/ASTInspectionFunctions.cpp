@@ -7,7 +7,7 @@ void Parser::InspectTypesReferences(const NodeType& Type, const NodeObject& Node
         case NodeType::Reference:
         {
             auto& ReferenceNode = static_cast<Reference&>(*Node);
-            if (Variables.contains(ReferenceNode.Value))
+            if (!Variables.contains(ReferenceNode.Value))
             {
                 throw error::RendorException((boost::format("Undefined variable %s; Line %s") % ReferenceNode.Value % Node->LineNumber).str());
             }
