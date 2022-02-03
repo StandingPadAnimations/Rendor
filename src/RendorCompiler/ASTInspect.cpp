@@ -80,6 +80,8 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 // To visit later
                 FunctionCalls.emplace_back(&FunctionCallNode);
+                error::LogWarning((boost::format("Detected call to %s before declaration; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
+                
             }
 
             for (auto const& Arg : FunctionCallNode.Args)
@@ -118,11 +120,14 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             {
                 if (Function->Function == EdefNode.Name)
                 {
-                    if (Functions[Function->Function].size() < EdefNode.Args.size())
+                    size_t FunctionCallSize = Function->Args.size();
+                    size_t FunctionArgsSize = Functions[Function->Function].size();
+
+                    if (FunctionCallSize < FunctionArgsSize)
                     {
                         throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
                     }
-                    else if (Functions[Function->Function].size() > EdefNode.Args.size())
+                    else if (FunctionCallSize > FunctionArgsSize)
                     {
                         throw error::RendorException((boost::format("Too many arguments in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
                     }
