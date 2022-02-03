@@ -56,6 +56,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         case NodeType::FunctionCall:
         {
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node);
+
             if (FunctionCallNode.Function.empty())
             {
                 throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
@@ -63,10 +64,22 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
 
             if (Functions.contains(FunctionCallNode.Function))
             {
-                if (Functions[FunctionCallNode.Function].size() != FunctionCallNode.Args.size())
+                size_t FunctionCallSize = FunctionCallNode.Args.size();
+                size_t FunctionArgsSize = Functions[FunctionCallNode.Function].size();
+
+                if (FunctionCallSize < FunctionArgsSize)
                 {
-                    throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % FunctionCallNode.Function % Node->LineNumber).str());
+                    throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
                 }
+                else if (FunctionCallSize > FunctionArgsSize)
+                {
+                    throw error::RendorException((boost::format("Too many arguments in function call for %s; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
+                }
+            }
+            else 
+            {
+                // To visit later
+                FunctionCalls.emplace_back(&FunctionCallNode);
             }
 
             for (auto const& Arg : FunctionCallNode.Args)
@@ -100,9 +113,21 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             DestroyVariableScope();
 
             // Add function
-            Functions[EdefNode.Name] = FunctionArgsVector();
-            Functions[EdefNode.Name].reserve(EdefNode.Args.size());
-            std::fill(Functions[EdefNode.Name].begin(), Functions[EdefNode.Name].end(), NodeType::Any);
+            Functions[EdefNode.Name] = FunctionArgsVector(EdefNode.Args.size(), NodeType::Any);
+            for (auto const& Function : FunctionCalls)
+            {
+                if (Function->Function == EdefNode.Name)
+                {
+                    if (Functions[Function->Function].size() < EdefNode.Args.size())
+                    {
+                        throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
+                    }
+                    else if (Functions[Function->Function].size() > EdefNode.Args.size())
+                    {
+                        throw error::RendorException((boost::format("Too many arguments in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
+                    }
+                }
+            }
             break;
         }
 

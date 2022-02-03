@@ -19,7 +19,9 @@
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "RendorInterpreter/RendorDefinitions.hpp"
+
 #include "Exceptions.hpp"
+#include "UnorderedMapLookUp.hpp"
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
@@ -46,7 +48,7 @@ class Interpreter
         /*                            Interpreter Internals                           */
         /* -------------------------------------------------------------------------- */
         /* ----------------------------- Rendor's Memory ---------------------------- */
-        inline static std::unordered_map<std::string, size_t> UserDefinedFunctions; // Stores index of user defined functions in the main file
+        inline static std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> UserDefinedFunctions; // Stores index of user defined functions in the main file
         inline static std::array<TypeObjectPtr, 2> Constants; // for temp access to constants
         inline static size_t ConstantIndex = 0;
 
@@ -68,13 +70,13 @@ class Interpreter
         inline static std::vector<bool> IfStatementBoolResult; 
 
         // Functions
-        inline static std::map<std::string, StringVector> FunctionArgs {{"echo",  {"EchoArgs"}}, 
-                                                                        {"input",  {"InputArgs"}}, 
-                                                                        {"sum",    {"SumArgs"}}};
+        inline static std::unordered_map<std::string, StringVector, string_hash, std::equal_to<>> FunctionArgs  {{"echo",  {"EchoArgs"}}, 
+                                                                                                {"input",  {"InputArgs"}}, 
+                                                                                                {"sum",    {"SumArgs"}}};
                                                                     
-        inline static std::unordered_map<std::string, RendorFunctionPtr> BuiltInFunctions  {{"echo",  RENDOR_ECHO_FUNCTION}, 
-                                                                                            {"input", RENDOR_INPUT_FUNCTION}, 
-                                                                                            {"sum",   RENDOR_SUM_FUNCTION}};
+        inline static std::unordered_map<std::string, RendorFunctionPtr, string_hash, std::equal_to<>> BuiltInFunctions {{"echo",  RENDOR_ECHO_FUNCTION}, 
+                                                                                                        {"input", RENDOR_INPUT_FUNCTION}, 
+                                                                                                        {"sum",   RENDOR_SUM_FUNCTION}};
                                                                 
 
         /* ------------------------------ Bytecode Loop ----------------------------- */

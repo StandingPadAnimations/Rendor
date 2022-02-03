@@ -11,7 +11,7 @@ ASSIGN bool
 CONST &_A 1 1 2 5 + * +
 ASSIGN arithmethic
 CALL echo
-CONST _&arithmethic
+CONST _Shi
 FINALIZE_CALL echo
 CALL input
 CONST _SEnter Args(bar): 
@@ -19,13 +19,14 @@ FINALIZE_CALL input
 ASSIGN bar
 CALL xyz
 CONST _&flo
+CONST _&bar
 FINALIZE_CALL xyz
 CONST _Shi
 ASSIGN bool
 CONST _&flo
 CONST true
 OPERATOR EQUAL
-JMP_IF_FALSE 33
+JMP_IF_FALSE 34
 CALL echo
 CONST _&bool
 FINALIZE_CALL echo
@@ -33,7 +34,7 @@ ENDIF STATE
 CONST _&flo
 CONST 1
 OPERATOR GREATER_OR_EQUAL
-JMP_IF_FALSE 42
+JMP_IF_FALSE 43
 CALL echo
 CONST _Sflo is 1.0
 FINALIZE_CALL echo

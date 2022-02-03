@@ -64,13 +64,13 @@ namespace Lex{
             // Operators to check for 
             std::array<std::string, 4> Operators {"and", "or", "not", "is"};
 
-            std::map<std::string, char> BiOpTokens {{{"="}, '='},
-                                                    {{">"}, '='},
-                                                    {{"<"}, '='},
-                                                    {{"!"}, '='}};
+            std::map<std::string, char, std::less<>> BiOpTokens{{{"="}, '='},
+                                                                {{">"}, '='},
+                                                                {{"<"}, '='},
+                                                                {{"!"}, '='}};
 
-            std::map<std::string, char> UnOpTokens {{{"+"}, '+'},
-                                                    {{"-"}, '-'}};
+            std::map<std::string, char, std::less<>> UnOpTokens{{{"+"}, '+'},
+                                                                {{"-"}, '-'}};
 
             enum class BufferID 
             {

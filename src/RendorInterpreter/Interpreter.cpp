@@ -107,11 +107,11 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             MarkConstantBlack(Const);
 
             /* ------------------------ Check if variable exists ------------------------ */
-            if (GlobalVariables->contains(Var))
+            if (GlobalVariables->contains(Args))
             {
                 (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
             }
-            else if (CurrentScopeVariables->contains(Var))
+            else if (CurrentScopeVariables->contains(Args))
             {
                 (*CurrentScopeVariables)[Var]->m_ValueClass = Const; // Just change value 
             }
@@ -125,7 +125,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         /* ---------------------------- calling functions --------------------------- */
         else if (Command == "CALL")
         {
-            if ((BuiltInFunctions.contains(std::string{Args})) || (UserDefinedFunctions.contains(std::string{Args})))
+            if ((BuiltInFunctions.contains(Args)) || (UserDefinedFunctions.contains(Args)))
             {
                 RendorStateIDList.emplace_back(RendorState::FunctionCall);
                 FunctionArgsCallStack.emplace_back(TypePtrVector());
@@ -139,7 +139,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
         else if (Command == "FINALIZE_CALL")
         {
             /* ----------------------- If it's a built in function ---------------------- */
-            if (BuiltInFunctions.contains(std::string{Args}))
+            if (BuiltInFunctions.contains(Args))
             {
                 std::optional<TypeObjectPtr> Result = BuiltInFunctions[std::string{Args}](FunctionArgsCallStack.back());
                 RendorStateIDList.pop_back();
@@ -164,7 +164,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             }
 
             /* -------------------------- user defined function ------------------------- */
-            else if (UserDefinedFunctions.contains(std::string{Args}))
+            else if (UserDefinedFunctions.contains(Args))
             {
                 ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
                 RendorStateIDList.pop_back();
@@ -361,7 +361,7 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
             TypeObject Const = Constants[ConstantIndex].lock();
             MarkConstantBlack(Const);
             /* ------------------------ Check if variable exists ------------------------ */
-            if (GlobalVariables->contains(Var))
+            if (GlobalVariables->contains(Args))
             {
                 (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
             }

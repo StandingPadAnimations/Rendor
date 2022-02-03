@@ -70,12 +70,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
             ((Buffer.find_first_not_of(" ;,(){}=^*/+-><") == std::string::npos) &&
             (LexerBufferID != BufferID::Comment))
             {
-                std::string BufferAsString{Buffer};
                 
                 // Check if the buffer contains a token that can be part of a larger token
-                if (BiOpTokens.contains(BufferAsString))
+                if (BiOpTokens.contains(Buffer))
                 {
                     // Check if it's compatible with the current characther 
+                    std::string BufferAsString{Buffer};
                     if (BiOpTokens[BufferAsString] == Code[Char])
                     {
                         auto& [Token, value] = Tokens.back();
@@ -92,9 +92,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const std::string& Co
                 }
 
                 // Check if the buffer contains a token that can be part of a larger token
-                else if (UnOpTokens.contains(BufferAsString))
+                else if (UnOpTokens.contains(Buffer))
                 {
                     // Check if it's compatible with the current characther 
+                    std::string BufferAsString{Buffer};
                     if (UnOpTokens[BufferAsString] == Code[Char])
                     {
                         auto& [Token, value] = Tokens.back();

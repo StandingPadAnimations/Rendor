@@ -13,7 +13,9 @@
 #include "RendorCompiler/RendorDeltaOptimizer.hpp"
 #include "RendorCompiler/ASTGenerationFunctions.hpp"
 #include "RendorCompiler/Nodes.hpp"
+
 #include "Exceptions.hpp"
+#include "UnorderedMapLookUp.hpp"
 
 #include <boost/format.hpp>
 
@@ -46,9 +48,10 @@ class Parser
 
         inline static std::vector<VariableMap> Variables;
         inline static VariableMap* CurrentVariables;
-        inline static std::map<std::string_view, FunctionArgsVector> Functions {{"echo",  {NodeType::String}},
-                                                                                {"input", {NodeType::String}},
-                                                                                {"sum",   {NodeType::Int}}};
+        inline static std::vector<FunctionCall*> FunctionCalls;
+        inline static std::unordered_map<std::string_view, FunctionArgsVector, string_hash, std::equal_to<>> Functions {{"echo",  {NodeType::String}},
+                                                                                                                        {"input", {NodeType::String}},
+                                                                                                                        {"sum",   {NodeType::Int}}};
 };
 
 
