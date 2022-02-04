@@ -5,6 +5,7 @@
 #include <functional>
 #include <cstdint>
 
+// Code is from here: https://www.cppstories.com/2021/heterogeneous-access-cpp20/
 struct string_hash {
     using is_transparent = void;
     [[nodiscard]] size_t operator()(const char *txt) const {

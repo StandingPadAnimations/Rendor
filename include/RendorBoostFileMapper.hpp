@@ -7,6 +7,7 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/range/iterator_range_core.hpp>
 
+// Code is from answer to this question: https://stackoverflow.com/questions/52699244/c-fast-way-to-load-large-txt-file-in-vectorstring
 class LineIterator
     : public boost::iterator_facade<
             LineIterator,
