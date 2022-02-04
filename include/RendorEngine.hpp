@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "RendorBoostFileMapper.hpp"
+
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 

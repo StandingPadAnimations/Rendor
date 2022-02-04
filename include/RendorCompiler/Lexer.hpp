@@ -11,6 +11,9 @@
 #include <string_view>
 #include <map>
 
+#include "RendorBoostFileMapper.hpp"
+#include "Exceptions.hpp"
+
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
@@ -49,7 +52,7 @@ namespace Lex{
     class Lexer{
         public:            
             // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&);
+            std::vector<std::pair<Token, std::string>> Tokenize(const boost::interprocess::mapped_region&);
 
             // Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;

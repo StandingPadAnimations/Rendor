@@ -36,6 +36,7 @@ While the extension isn't required, it does make the code more readable in my op
 // Includes files needed for the main file
 
 #include <iostream>
+
 #include "RendorEngine.hpp"
 #include "cpp-terminal/base.hpp"
 

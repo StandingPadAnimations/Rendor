@@ -44,17 +44,10 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         }
     }
 
-    std::ifstream File(FileInput);
     std::vector<std::string> ByteCode;
-    std::string AllCode;
-    
     {
-        for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
-        {
-            boost::algorithm::trim(PreProcessLine);
-            AllCode += PreProcessLine + ";";
-        }
-
+        boost::interprocess::file_mapping File(FileInput.c_str(), boost::interprocess::read_only);
+        boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
@@ -62,7 +55,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         std::cout << color(fg::green) << "Tokenizing..." << std::endl;
-        Tokens = RenLexer.Tokenize(AllCode); // Tokenizes code for parser 
+        Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
 
         // Parses
         std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
