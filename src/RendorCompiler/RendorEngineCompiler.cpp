@@ -41,6 +41,19 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
             WarningsToErrors = true;
         }
 
+        if(std::find(Arguments.begin(), Arguments.end(), "-O0") != Arguments.end())
+        {
+            OptimizeByteCode = false;
+        }
+
+        if(std::find(Arguments.begin(), Arguments.end(), "-O1") != Arguments.end())
+        {
+            if (!OptimizeByteCode)
+            {
+                throw error::RendorException("Can not enable and disable optimization at the same time!");
+            }
+        }
+
         if
         ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
         (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))

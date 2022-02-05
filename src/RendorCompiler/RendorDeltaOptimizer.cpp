@@ -10,10 +10,14 @@ void RendorDeltaOptimizer::DeltaOptimizer(std::vector<std::string>& ByteCode)
 
         if (Command == "CONST")
         {
-            if (Args.find_first_not_of("1234567890.()^*/+- "))
+            if 
+            ((Args[0] == '&') &&
+            (Args[1]  == '_') &&
+            (Args[2]  == 'A'))
             {
                 // Solve operation
-                std::string EvaluatedConstInstruction = PostFixEval(Args);
+                std::string ActualConstant{Args.begin() + 3, Args.end()};
+                std::string EvaluatedConstInstruction = PostFixEval(ActualConstant);
                 ByteCode[Op] = "CONST " + EvaluatedConstInstruction; // Replace const instruction
             }
 

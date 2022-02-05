@@ -28,6 +28,7 @@ struct RendorEngineCompiler
 {
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
+    inline static bool OptimizeByteCode = true;
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 

@@ -8,7 +8,7 @@ CONST _SHello World
 ASSIGN string
 CONST true
 ASSIGN bool
-CONST &_A 1 1 2 5 + * +
+CONST 8
 ASSIGN arithmethic
 CALL echo
 CONST _Shi
