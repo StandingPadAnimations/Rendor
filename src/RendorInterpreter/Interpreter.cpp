@@ -4,49 +4,39 @@
 /*                          Execute ByteCode Function                         */
 /* -------------------------------------------------------------------------- */
 
-void Interpreter::ExecuteByteCode(std::ifstream& File)
+void Interpreter::ExecuteByteCode(const boost::interprocess::mapped_region& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
-    std::vector<std::string> ByteCode;
-    {
-        std::string ByteCodeOperation;
-        while (std::getline(File, ByteCodeOperation))
-        {
-            ByteCode.emplace_back(ByteCodeOperation);
-        }
-    }
 
     /* ------------------------- Define stuff like main ------------------------- */
-    ByteCodeLoopDefinition(ByteCode, 0);
+    ByteCodeLoopDefinition(File);
 
     /* ------------------------------ Execute code ------------------------------ */
-    ByteCodeLoop(ByteCode, UserDefinedFunctions["main"]);
-
-    File.close();
+    ByteCodeLoop(UserDefinedFunctions["main"]->ByteCode);
 }
 
 
 /* ------------------------------ ByteCode Loop ----------------------------- */
 
-void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartIndex)
+void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
 {
-    for (size_t Op = StartIndex; Op < ByteCode.size(); ++Op)
+    for (size_t Op = 0; Op < ByteCode.size(); ++Op)
     {
         /* -------------------------------------------------------------------------- */
         /*                      Preparing bytecode for execution                      */
         /* -------------------------------------------------------------------------- */
-        std::string *ByteCodeOperation = &ByteCode[Op]; 
+        std::string_view ByteCodeOperation = ByteCode[Op];
         RendorState RendorStateID = RendorStateIDList.back();
-        int ByteCodeSize = ByteCodeOperation->size();
+        int ByteCodeSize = ByteCodeOperation.size();
 
         if (ByteCodeSize == 0)
         {
             continue;
         }
 
-        size_t ByteCodeSpaceIndex  = ByteCodeOperation->find_first_of(" ");
-        std::string_view Command  (ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
-        std::string_view Args     (ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->end());
+        size_t ByteCodeSpaceIndex  = ByteCodeOperation.find_first_of(" ");
+        std::string_view Command  (ByteCodeOperation.begin(), ByteCodeOperation.begin() + ByteCodeSpaceIndex);
+        std::string_view Args     (ByteCodeOperation.begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation.end());
 
         /* -------------------------------------------------------------------------- */
         /*                            Execution begins here                           */
@@ -166,7 +156,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
             /* -------------------------- user defined function ------------------------- */
             else if (UserDefinedFunctions.contains(Args))
             {
-                ByteCodeLoop(ByteCode, UserDefinedFunctions[std::string{Args}]);
+                ByteCodeLoop(UserDefinedFunctions[std::string{Args}]->ByteCode);
                 RendorStateIDList.pop_back();
                 FunctionArgsCallStack.pop_back();
             }
@@ -259,7 +249,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
                 }
                 case false:
                 {
-                    Op = boost::lexical_cast<size_t>(Args) - 2;
+                    Op += boost::lexical_cast<size_t>(Args);
                     break;
                 }
             }
@@ -283,31 +273,46 @@ void Interpreter::ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartI
 
         else 
         {
-            throw error::RendorException("Unreconized bytecode operation error: " + *ByteCodeOperation);
+            throw error::RendorException("Unreconized bytecode operation error: " + std::string{ByteCodeOperation});
         }
     }
 }
 
 
 /* ----------------------------- Definition Loop ---------------------------- */
-void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, size_t StartIndex)
+void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_region& Code)
 {
-    size_t Scope = 0; // Current scope 
-    for (size_t Op = StartIndex; Op < ByteCode.size(); ++Op)
+    std::vector<std::string_view>* Scope = nullptr; // Current scope 
+    for (auto const ByteCode : RendorMapping::crange(Code))
     {
         /* -------------------------------------------------------------------------- */
         /*                           Prepare for definition                           */
         /* -------------------------------------------------------------------------- */
-        std::string *ByteCodeOperation = &ByteCode[Op]; 
-        int ByteCodeSize = ByteCodeOperation->size();
-        if (ByteCodeSize == 0)
+        std::string_view ByteCodeOperation{ByteCode.begin(), ByteCode.end()}; 
+        int ByteCodeSize = ByteCodeOperation.size();
+        if (!ByteCodeSize)
         {
             continue;
         }
-
-        size_t ByteCodeSpaceIndex  = ByteCodeOperation->find_first_of(" ");
-        std::string_view Command  (ByteCodeOperation->begin(), ByteCodeOperation->begin() + ByteCodeSpaceIndex);
-        std::string_view Args     (ByteCodeOperation->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation->end());
+        if 
+        ((ByteCodeOperation.find_first_not_of(" \r\n") != std::string_view::npos) ||
+        (ByteCodeOperation.find_last_not_of(" \r\n") != std::string_view::npos))
+        {
+            size_t Pos1 = ByteCodeOperation.find_first_not_of(" \r\n");
+            size_t Pos2 = ByteCodeOperation.find_last_not_of(" \r\n") + (ByteCodeOperation.size() - ByteCodeOperation.find_last_of("\r"));
+            ByteCodeOperation = ByteCodeOperation.substr(Pos1, Pos2);
+            while 
+            ((ByteCodeOperation.back() == '\r') || 
+            (ByteCodeOperation.back() == ' '))
+            {
+                --Pos2;
+                ByteCodeOperation = std::string_view{ByteCode.begin(), ByteCode.end()};
+                ByteCodeOperation = ByteCodeOperation.substr(Pos1, Pos2);
+            }
+        }
+        size_t ByteCodeSpaceIndex  = ByteCodeOperation.find_first_of(" ");
+        std::string_view Command  (ByteCodeOperation.begin(), ByteCodeOperation.begin() + ByteCodeSpaceIndex);
+        std::string_view Args     (ByteCodeOperation.begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation.end());
 
         /* -------------------------------------------------------------------------- */
         /*                           Definition begins here                           */
@@ -331,15 +336,16 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
         /* --------------------------- Defining functions --------------------------- */
         else if (Command == "DEFINE")
         {
-            ++Scope;
-            UserDefinedFunctions[std::string{Args}] = Op;
+            UserDefinedFunctions[std::string{Args}] = std::make_unique<Function>();
+            Scope = &UserDefinedFunctions[std::string{Args}]->ByteCode;
         }
 
         else if (Command == "FUNCTION")
         {
+            Scope->emplace_back(ByteCodeOperation);
             if (Args == "END")
             {
-                --Scope;
+                Scope = nullptr;
             }
         }
 
@@ -370,6 +376,11 @@ void Interpreter::ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, siz
                 (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
                 (*GlobalVariables)[Var]->m_ValueClass = Const;
             }
+        }
+
+        if (Scope != nullptr)
+        {
+            Scope->emplace_back(ByteCodeOperation);
         }
     }
 }

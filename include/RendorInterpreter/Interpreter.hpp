@@ -19,6 +19,7 @@
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "RendorInterpreter/RendorDefinitions.hpp"
+#include "RendorInterpreter/CodeObjects.hpp"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
@@ -33,7 +34,7 @@
 class Interpreter
 {
     public:
-        static void ExecuteByteCode(std::ifstream& File);
+        static void ExecuteByteCode(const boost::interprocess::mapped_region& File);
         static void DisposeConst(TypeObject RendorConstID);
 
     private:
@@ -48,7 +49,7 @@ class Interpreter
         /*                            Interpreter Internals                           */
         /* -------------------------------------------------------------------------- */
         /* ----------------------------- Rendor's Memory ---------------------------- */
-        inline static std::unordered_map<std::string, size_t, string_hash, std::equal_to<>> UserDefinedFunctions; // Stores index of user defined functions in the main file
+        inline static std::unordered_map<std::string, std::unique_ptr<Function>, string_hash, std::equal_to<>> UserDefinedFunctions; // Stores index of user defined functions in the main file
         inline static std::array<TypeObjectPtr, 2> Constants; // for temp access to constants
         inline static size_t ConstantIndex = 0;
 
@@ -80,10 +81,10 @@ class Interpreter
                                                                 
 
         /* ------------------------------ Bytecode Loop ----------------------------- */
-        static void ByteCodeLoop(std::vector<std::string>& ByteCode, size_t StartIndex);
+        static void ByteCodeLoop(std::vector<std::string_view>& ByteCode);
 
         /* ----------------------------- Definition Loop ---------------------------- */
-        static void ByteCodeLoopDefinition(std::vector<std::string>& ByteCode, size_t StartIndex);
+        static void ByteCodeLoopDefinition(const boost::interprocess::mapped_region& Code);
 
         /* ---------------------------- Garbage Collector --------------------------- */
         static void GarbageCollector();

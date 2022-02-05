@@ -26,7 +26,7 @@ edef main()
     bool = "hi"
     if (int)
     {
-        echo(int)
+        echo("int")
     }
 
     if (flo >= 1)

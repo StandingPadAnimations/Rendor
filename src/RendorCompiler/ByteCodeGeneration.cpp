@@ -87,13 +87,17 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
         
         /* -------------------- For the JMP_IF_FALSE instruction -------------------- */
         size_t IndexOfJMP = ByteCode.size() - 1;
+        size_t JumpAmount = 0;
         
         for (const auto& Node : IfElseNode.IfElseBody.ConnectedNodes) // actual body 
         {
+            size_t BeforeSize = ByteCode.size();
             ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
+            size_t AfterSize = ByteCode.size();
+            JumpAmount += (AfterSize - BeforeSize);
         }
     
-        ByteCode[IndexOfJMP] += std::to_string(ByteCode.size() - 1);
+        ByteCode[IndexOfJMP] += std::to_string(JumpAmount);
         return "ENDIF STATE";
     }
 
