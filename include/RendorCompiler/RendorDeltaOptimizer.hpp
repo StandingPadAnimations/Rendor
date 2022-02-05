@@ -8,6 +8,7 @@
 
 #include "RendorCompiler/MathEvaluator.hpp"
 #include "RendorCompiler/Nodes.hpp"
+#include "RendorEngine.hpp"
 #include "ByteCodeSpliting.hpp"
 
 #include <boost/format.hpp>
