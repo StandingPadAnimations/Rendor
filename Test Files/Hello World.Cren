@@ -18,21 +18,18 @@ CONST _SEnter Args(bar):
 FINALIZE_CALL input
 ASSIGN bar
 CALL xyz
-CONST _&flo
-CONST _&bar
+CONST (_&flo,_&bar)
 FINALIZE_CALL xyz
 CONST _Shi
 ASSIGN bool
-CONST _&int
-CONST true
+CONST (_&int,true)
 OPERATOR EQUAL
 JMP_IF_FALSE 4
 CALL echo
 CONST _Sint
 FINALIZE_CALL echo
 ENDIF STATE
-CONST _&flo
-CONST 1
+CONST (_&flo,1)
 OPERATOR GREATER_OR_EQUAL
 JMP_IF_FALSE 4
 CALL echo
@@ -51,6 +48,9 @@ CONST _&bar
 FINALIZE_CALL echo
 FUNCTION END
 END 0
+
+
+
 
 
 
