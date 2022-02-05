@@ -7,18 +7,48 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
     
     for (auto Line : RendorMapping::crange(MappedCode))
     {
+        /* -------------------------- Current Line of code -------------------------- */
         std::string_view Code{Line.begin(), Line.end()};
         size_t StartIndex = 0;
         size_t EndIndex = 0;
+        
+        /* --------------------------- Add new line token --------------------------- */
         if 
+        ((Code.find_first_not_of(" \r\n") == std::string_view::npos) ||
+        (Code.empty()))
+        {
+            Tokens.emplace_back(Token::NEWLINE, "\r");
+            continue;
+        }
+
+        else if 
         ((Code.find_first_not_of(" \r\n") != std::string_view::npos) ||
         (Code.find_last_not_of(" \r\n") != std::string_view::npos))
         {
             size_t Pos1 = Code.find_first_not_of(" \r\n");
             size_t Pos2 = Code.find_last_not_of(" \r\n") + (Code.size() - Code.find_last_of("\r"));
             Code = Code.substr(Pos1, Pos2);
+            while (Code.back() != '\r')
+            {
+                switch (Code.back())
+                {
+                    case '\n':
+                    {
+                        --Pos2;
+                        break;
+                    }
+                    default:
+                    {
+                        ++Pos2;
+                        break;
+                    }
+                }
+                Code = std::string_view{Line.begin(), Line.end()};
+                Code = Code.substr(Pos1, Pos2);
+            }
         }
 
+        /* --------------------- Iterating over each characther --------------------- */
         for (size_t Char = 0; Char < Code.size(); ++Char)
         { 
             /* -------------------------------------------------------------------------- */
@@ -194,15 +224,15 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     }
                     
                     case '\r':
-                    FALLTHROUGH;
+                    {
+                        Tokens.emplace_back(Token::NEWLINE, "\r");
+                        ++StartIndex;
+                        break;
+                    }
+
                     case ';':
                     {
-                        if 
-                        ((Tokens.empty()) ||
-                        (Tokens.back().first != Token::NEWLINE))
-                        {
-                            Tokens.emplace_back(Token::NEWLINE, std::string{Code[Char]});
-                        }
+                        Tokens.emplace_back(Token::SEMICOLON, ";");
                         ++StartIndex;
                         break;
                     }

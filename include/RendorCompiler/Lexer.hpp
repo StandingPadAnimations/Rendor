@@ -38,6 +38,7 @@ namespace Lex{
         RBRACE,
         NEWLINE, 
         COMMA,
+        SEMICOLON,
         BIOP,
         UnOp,
 
@@ -59,21 +60,21 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "else"};
+            std::array<std::string_view, 6> Keywords {"while", "if", "return", "edef", "else", "~forward"};
 
             // Functions
-            std::array<std::string, 3> Functions {"echo", "input", "sum"};
+            std::array<std::string_view, 3> Functions {"echo", "input", "sum"};
 
             // Operators to check for 
-            std::array<std::string, 4> Operators {"and", "or", "not", "is"};
+            std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
 
-            std::map<std::string, char, std::less<>> BiOpTokens{{{"="}, '='},
-                                                                {{">"}, '='},
-                                                                {{"<"}, '='},
-                                                                {{"!"}, '='}};
+            std::map<std::string_view, char, std::less<>> BiOpTokens   {{{"="}, '='},
+                                                                        {{">"}, '='},
+                                                                        {{"<"}, '='},
+                                                                        {{"!"}, '='}};
 
-            std::map<std::string, char, std::less<>> UnOpTokens{{{"+"}, '+'},
-                                                                {{"-"}, '-'}};
+            std::map<std::string_view, char, std::less<>> UnOpTokens   {{{"+"}, '+'},
+                                                                        {{"-"}, '-'}};
 
             enum class BufferID 
             {

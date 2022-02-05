@@ -4,6 +4,8 @@
 // sum(int) : calculates sum of all numbers up to input 
 
 // Main function where the program enters
+
+~forward xyz(foo, bar)
 edef main() 
 {
     // Variables
@@ -22,9 +24,9 @@ edef main()
     xyz(flo, bar)
 
     bool = "hi"
-    if (flo)
+    if (int)
     {
-        echo(bool)
+        echo(int)
     }
 
     if (flo >= 1)
@@ -36,7 +38,7 @@ edef main()
 // function xyz with arguments foo and bar
 edef xyz(foo, bar)
 {
-    echo(foo)
+    echo(bar)
     echo(bar)
 }
 

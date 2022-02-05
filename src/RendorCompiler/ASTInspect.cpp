@@ -81,7 +81,6 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 // To visit later
                 FunctionCalls.emplace_back(&FunctionCallNode);
                 error::LogWarning((boost::format("Detected call to %s before declaration; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
-                
             }
 
             for (auto const& Arg : FunctionCallNode.Args)
@@ -136,6 +135,13 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             break;
         }
 
+        case NodeType::FowardEdef:
+        {
+            auto& FowardNode = static_cast<FowardEdef&>(*Node);
+            Functions[FowardNode.Name] = FunctionArgsVector(FowardNode.Args.size(), NodeType::Any);
+            break;
+        }
+
         case NodeType::IfElse:
         {
             auto& IfNode = static_cast<IfElse&>(*Node);
@@ -164,6 +170,10 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 
                 // Check the validity of condition 1 as that is always provided by the user
                 InspectTypesReferences(IfNode.Conditions->Condition1->Type, IfNode.Conditions->Condition1);
+            }
+            for (const auto& Node : IfNode.IfElseBody.ConnectedNodes) // actual body 
+            {
+                DeltaInspectAST(Node);
             }
             break;
         }

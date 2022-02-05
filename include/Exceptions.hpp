@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "cpp-terminal/base.hpp"
+#include "RendorEngine.hpp"
 
 namespace error{
     // Exception for Rendor in general
@@ -24,7 +25,18 @@ namespace error{
 
     inline void LogWarning(std::string_view Warning)
     {
-        std::cout << Term::color(Term::fg::bright_magenta) << Warning << std::endl;
+        switch (RendorEngineCompiler::WarningsToErrors)
+        {
+            case true:
+            {
+                throw error::RendorException(std::string{Warning});
+            }
+            default:
+            {
+                std::cout << Term::color(Term::fg::bright_magenta) << Warning << std::endl;
+                break;
+            }
+        }
     }
 }
 

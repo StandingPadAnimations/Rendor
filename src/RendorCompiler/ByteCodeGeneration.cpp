@@ -16,6 +16,11 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
         return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
     }
 
+    else if (ClassType == NodeType::FowardEdef)
+    {
+        return "";
+    }
+
     /* -------------------------------------------------------------------------- */
     /*                             defining functions                             */
     /* -------------------------------------------------------------------------- */

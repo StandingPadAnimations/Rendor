@@ -24,8 +24,6 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         throw error::RendorException(ErrorMessage);
     } 
 
-    // * Variables for command line arguments
-    bool DebugMode = false;
 
     if (Arguments.size() >= 2) // * for all arguments other then the file 
     { 
@@ -34,6 +32,13 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         (std::find(Arguments.begin(), Arguments.end(), "-debug") != Arguments.end()))
         {
             DebugMode = true;
+        }
+
+        if
+        ((std::find(Arguments.begin(), Arguments.end(), "-we") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-warn-errors") != Arguments.end()))
+        {
+            WarningsToErrors = true;
         }
 
         if
