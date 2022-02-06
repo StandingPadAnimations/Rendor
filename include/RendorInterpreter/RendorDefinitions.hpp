@@ -6,6 +6,8 @@
 #include <variant>
 #include <optional>
 #include <cstdint>
+#include <tuple>
+
 
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
@@ -18,5 +20,6 @@ typedef std::vector<std::string> StringVector;
 typedef std::unordered_map<std::string, std::unique_ptr<Variable>, string_hash, std::equal_to<>> VariableScopeMap;
 typedef std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)> RendorFunctionPtr;
 typedef std::variant<int64_t, double> MathVariant;
+typedef std::tuple<TypeObjectPtr, TypeObjectPtr> TypeTuple;
 
 #endif // RENDOR_DEF_HPP

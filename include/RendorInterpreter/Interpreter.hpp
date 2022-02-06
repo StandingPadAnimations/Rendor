@@ -14,6 +14,8 @@
 #include <optional>
 #include <memory>
 #include <variant>
+#include <tuple>
+
 
 // Other Parts of the Rendor Engine Interpreter 
 #include "RendorInterpreter/RendorTypes.hpp"
@@ -89,8 +91,10 @@ class Interpreter
         /* ---------------------------- Garbage Collector --------------------------- */
         static void GarbageCollector();
         static void MarkConstantBlack(TypeObject Const);
+        static TypeTuple ParseConstant(std::string_view Constant);
         static TypeObject CreateConstant(std::string_view Constant);
         static void AddToConstantsArray(TypeObjectPtr ConstantToBePlaced);
+        static void AddToConstantsArray(TypeTuple ConstantToBePlaced);
         static TypeObjectPtr GetConstFromVariable(const std::string& Variable);
 
         /* -------------------------------- Math Eval ------------------------------- */

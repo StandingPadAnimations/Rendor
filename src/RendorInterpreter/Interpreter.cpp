@@ -74,15 +74,20 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
                 /* ----------------------------- Function Calls ----------------------------- */
                 case RendorState::FunctionCall:
                 {
-                    TypeObjectPtr Const = CreateConstant(Args);
-                    FunctionArgsCallStack.back().push_back(Const);
+                    auto [Const1, Const2] = ParseConstant(Args);
+                    FunctionArgsCallStack.back().push_back(Const1);
+
+                    if (!Const2.expired())
+                    {
+                        FunctionArgsCallStack.back().push_back(Const2);
+                    }
                     break;
                 }
 
                 /* ------------------------------ Default stuff ----------------------------- */
                 default:
                 {
-                    AddToConstantsArray(CreateConstant(Args));
+                    AddToConstantsArray(ParseConstant(Args));
                     break;
                 }
             }
@@ -146,10 +151,15 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
                         }
                         default:
                         {
+                            FunctionArgsCallStack.pop_back();
                             AddToConstantsArray(Result.value());
                             break;
                         }
                     }
+                }
+                else 
+                {
+                    FunctionArgsCallStack.pop_back();
                 }
             }
 
@@ -354,7 +364,7 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
         ((Command == "CONST") &&
         (Scope == 0))
         {
-            AddToConstantsArray(CreateConstant(Args));
+            AddToConstantsArray(ParseConstant(Args));
         }
 
         /* ------------------ Making variables in the global scope ------------------ */
