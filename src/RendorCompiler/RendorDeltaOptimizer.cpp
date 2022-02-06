@@ -30,9 +30,14 @@ void RendorDeltaOptimizer::DeltaOptimizer(std::vector<std::string>& ByteCode)
                 ByteCodeArray NextByteCodeOp = SplitByteCode(ByteCode[Op+1]);
                 if (NextByteCodeOp[0] == "CONST")
                 {
-                    std::string NewConst = (boost::format("CONST (%s) (%s)") % std::string{Args} % std::string{NextByteCodeOp[1]}).str();
-                    ByteCode[Op] = NewConst;
-                    ByteCode[Op+1] = "";
+                    if 
+                    ((Args.find_first_of(",") == std::string_view::npos) &&
+                    (NextByteCodeOp[1].find_first_of(",") == std::string_view::npos))
+                    {
+                        std::string NewConst = (boost::format("CONST (%s,%s)") % std::string{Args} % std::string{NextByteCodeOp[1]}).str();
+                        ByteCode[Op] = NewConst;
+                        ByteCode[Op+1] = "";
+                    }
                 }
             }
         }
