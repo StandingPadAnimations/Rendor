@@ -608,6 +608,7 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
         ByteCode.emplace_back("NOT_SCRIPT TRUE");
     }
     /* -------------------------- Loading global scope -------------------------- */
+    ByteCode.emplace_back("BYTECODE_STANDARD 2");
     ByteCode.emplace_back("LOAD 0");
 
     /* ---------------- Generating the bytecode from the AST tree --------------- */

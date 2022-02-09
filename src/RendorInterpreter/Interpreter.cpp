@@ -41,6 +41,13 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
         /* -------------------------------------------------------------------------- */
         /*                            Execution begins here                           */
         /* -------------------------------------------------------------------------- */
+        if (Command == "BYTECODE_STANDARD")
+        {
+            if (Args != "2")
+            {
+                throw error::RendorException("Unsupported Bytecode standard!");
+            }
+        }
         if (Command == "DEFINE")
         {
             VariablesCallStack.emplace_back(VariableScopeMap()); // add Variable map for current scope
