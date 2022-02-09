@@ -2,28 +2,49 @@
 
 void RendorDeltaOptimizer::DeltaOptimizer(std::vector<std::string>& ByteCode)
 {
-    std::string SavedString = "";
-    for (auto ByteCodeOp = ByteCode.begin(); ByteCodeOp != ByteCode.end();)
+    if (RendorEngineCompiler::OptimizeByteCode)
     {
-        size_t ByteCodeSpaceIndex  = ByteCodeOp->find_first_of(" ");
-        std::string_view Command  (ByteCodeOp->begin(), ByteCodeOp->begin() + ByteCodeSpaceIndex);
-        std::string_view Args     (ByteCodeOp->begin() + (ByteCodeSpaceIndex + 1), ByteCodeOp->end());
-
-        if (Command == "CONST")
+        for (size_t Op = 0; Op < ByteCode.size(); ++Op)
         {
-            if (Args.find_first_not_of("1234567890.()^*/+- "))
+            ByteCodeArray SplitedByteCodeOp = SplitByteCode(ByteCode[Op]);
+            std::string_view Command = SplitedByteCodeOp[0];
+            std::string_view Args = SplitedByteCodeOp[1];
+
+            if (Command == "CONST")
             {
-                // Solve operation
-                std::string EvaluatedConstInstruction = PostFixEval(Args);
-                *ByteCodeOp = "CONST " + EvaluatedConstInstruction; // Replace const instruction
+                if 
+                ((Args[0] == '&') &&
+                (Args[1]  == '_') &&
+                (Args[2]  == 'A'))
+                {
+                    // Solve operation
+                    std::string ActualConstant{Args.begin() + 3, Args.end()};
+                    std::string EvaluatedConstInstruction = PostFixEval(ActualConstant);
+                    ByteCode[Op] = "CONST " + EvaluatedConstInstruction; // Replace const instruction
+                }
+
+                SplitedByteCodeOp = SplitByteCode(ByteCode[Op]);
+                Command = SplitedByteCodeOp[0];
+                Args = SplitedByteCodeOp[1];
+
+                ByteCodeArray NextByteCodeOp = SplitByteCode(ByteCode[Op+1]);
+                if (NextByteCodeOp[0] == "CONST")
+                {
+                    if 
+                    ((Args.find_first_of(",") == std::string_view::npos) &&
+                    (NextByteCodeOp[1].find_first_of(",") == std::string_view::npos))
+                    {
+                        std::string NewConst = (boost::format("CONST (%s,%s)") % std::string{Args} % std::string{NextByteCodeOp[1]}).str();
+                        ByteCode[Op] = NewConst;
+                        ByteCode[Op+1] = "";
+                    }
+                }
             }
         }
-        ++ByteCodeOp;
     }
-
     ByteCode.erase(std::remove(
-        ByteCode.begin(), 
-        ByteCode.end(), 
-        std::string("")
+    ByteCode.begin(), 
+    ByteCode.end(), 
+    std::string("")
     ));
 }

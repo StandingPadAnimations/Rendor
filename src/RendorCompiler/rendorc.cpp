@@ -36,6 +36,7 @@ While the extension isn't required, it does make the code more readable in my op
 // Includes files needed for the main file
 
 #include <iostream>
+
 #include "RendorEngine.hpp"
 #include "cpp-terminal/base.hpp"
 
@@ -43,6 +44,10 @@ int main (int argc, char *argv[])
 {
     try
     {
+        #if DEBUGMODE
+        std::cin.get();
+        #endif
+        
         std::string File = "._.";
         std::vector<std::string> Arguments;
 
@@ -58,7 +63,10 @@ int main (int argc, char *argv[])
         return EXIT_SUCCESS;
     }
     catch (const std::exception& exp)
-    {             
+    {        
+        #if DEBUGMODE
+        std::cin.get();
+        #endif     
         std::cout << Term::color(Term::fg::bright_red) << exp.what() << Term::color(Term::style::reset) << std::endl;   
         return EXIT_FAILURE;
     }

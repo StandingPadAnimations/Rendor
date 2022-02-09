@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "RendorBoostFileMapper.hpp"
+
 // Boost libraries and macros
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
@@ -17,11 +19,16 @@ namespace bfs = boost::filesystem;
 
 #define RENDOR_VERSION 0
 
-struct RendorEngineInterpreter{
+struct RendorEngineInterpreter
+{
     static void run(const std::string);
 };
 
-struct RendorEngineCompiler{
+struct RendorEngineCompiler
+{
+    inline static bool WarningsToErrors = false;
+    inline static bool DebugMode = false;
+    inline static bool OptimizeByteCode = true;
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 

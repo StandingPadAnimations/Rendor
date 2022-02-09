@@ -26,15 +26,8 @@ void RendorEngineInterpreter::run (const std::string FilePath)
         } 
     }
 
-    // Open file and execute code 
-    std::ifstream File(AbsPath);
+    boost::interprocess::file_mapping File(FilePath.c_str(), boost::interprocess::read_only);
+    boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
 
-    if (File.is_open()) 
-    {
-        Interpreter::ExecuteByteCode(File);
-    } 
-    else 
-    {
-        throw error::RendorException("File is not open");
-    }
+    Interpreter::ExecuteByteCode(RendorFileMemory);
 }

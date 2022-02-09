@@ -97,11 +97,28 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     Scope->push_back(std::make_unique<Reference>(value, LineNumber)); // Add argument to Node
                 }
 
+                else if (ParserTempID == TempID::FowardDefinition)
+                {
+                    Scope->push_back(std::make_unique<FowardEdef>(value, LineNumber)); // Add argument to Node
+                }
+
                 /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
                 else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Function arguments 
                 {
-                    auto& EdefNode = dynamic_cast<Edef&>(*Scope->back());
-                    EdefNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node
+                    if (Scope->back()->Type == NodeType::Edef)
+                    {
+                        auto& EdefNode = static_cast<Edef&>(*Scope->back());
+                        EdefNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node
+                    }
+                }
+
+                else if (ParserTempID == TempID::FowardArgsDefinition)
+                {
+                    if (Scope->back()->Type == NodeType::FowardEdef)
+                    {
+                        auto& FowardNode = static_cast<FowardEdef&>(*Scope->back());
+                        FowardNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node
+                    }
                 }
 
                 /* ------------------------------ if statements ----------------------------- */
@@ -224,6 +241,12 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     ParserTempIDList.pop_back();
                     ParserTempIDList.emplace_back(TempID::FunctionArgumentsDefinition);
                 }
+
+                else if (ParserTempID == TempID::FowardDefinition)
+                {
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::FowardArgsDefinition);
+                }
                 
                 /* -------------------- Function Calls in the main scope -------------------- */
                 else if (ParserTempID == TempID::IdentifierDefinition)
@@ -272,6 +295,11 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                 {
                     ParserTempIDList.pop_back();
                     ParserTempIDList.emplace_back(TempID::FunctionScope);
+                }
+
+                else if (ParserTempID == TempID::FowardArgsDefinition)
+                {
+                    ParserTempIDList.pop_back();
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -511,6 +539,16 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
                     ParserTempIDList.emplace_back(TempID::IfStatementDefinition);
                 }
 
+                else if (value == "~forward")
+                {
+                    ParserTempIDList.pop_back();
+                    ParserTempIDList.emplace_back(TempID::FowardDefinition);
+                    if (*ScopeList.back() != Script.Global.ConnectedNodes)
+                    {
+                        throw error::RendorException("Compiler Error!");
+                    }
+                }
+
                 else 
                 {
                     throw error::RendorException("Not supported yet");
@@ -559,12 +597,6 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
             }
         }
     }
-    
-    std::cout << "Inspecting AST for errors" << std::endl;
-    // for (const auto& Node : (*Script.GlobalBody))
-    // {
-    //     DeltaInspectAST(Node);
-    // }
 
     /* -------------------------------------------------------------------------- */
     /*                             ByteCode generation                            */
@@ -576,11 +608,13 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
         ByteCode.emplace_back("NOT_SCRIPT TRUE");
     }
     /* -------------------------- Loading global scope -------------------------- */
+    ByteCode.emplace_back("BYTECODE_STANDARD 2");
     ByteCode.emplace_back("LOAD 0");
 
     /* ---------------- Generating the bytecode from the AST tree --------------- */
     for (const auto& Node : (*Script.GlobalBody))
     {
+        DeltaInspectAST(Node);
         ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
     }
     /* ------------------------- ending the global scope ------------------------ */

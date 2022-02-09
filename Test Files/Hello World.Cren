@@ -1,38 +1,38 @@
+BYTECODE_STANDARD 2
 LOAD 0
 DEFINE main
 CONST 1
 ASSIGN int
-CONST 1
+CONST 1.5
 ASSIGN flo
 CONST _SHello World
 ASSIGN string
 CONST true
 ASSIGN bool
-CONST &_A 1 2 5 + *
+CONST 8
 ASSIGN arithmethic
 CALL echo
-CONST _&arithmethic
+CONST _Shi
 FINALIZE_CALL echo
 CALL input
 CONST _SEnter Args(bar): 
 FINALIZE_CALL input
 ASSIGN bar
 CALL xyz
-CONST _&bool
-CONST _&bar
+CONST (_&flo,_&bar)
 FINALIZE_CALL xyz
-CONST _&bar
-CONST _&string
+CONST _Shi
+ASSIGN bool
+CONST (_&int,true)
 OPERATOR EQUAL
-JMP_IF_FALSE 32
+JMP_IF_FALSE 4
 CALL echo
-CONST _SHello World!!!!!!!
+CONST _Sint
 FINALIZE_CALL echo
 ENDIF STATE
-CONST _&flo
-CONST 1
+CONST (_&flo,1)
 OPERATOR GREATER_OR_EQUAL
-JMP_IF_FALSE 41
+JMP_IF_FALSE 4
 CALL echo
 CONST _Sflo is 1.0
 FINALIZE_CALL echo
@@ -42,13 +42,17 @@ DEFINE xyz
 ARGUMENT bar
 ARGUMENT foo
 CALL echo
-CONST _&foo
+CONST _&bar
 FINALIZE_CALL echo
 CALL echo
 CONST _&bar
 FINALIZE_CALL echo
 FUNCTION END
 END 0
+
+
+
+
 
 
 

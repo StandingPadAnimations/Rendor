@@ -1,14 +1,15 @@
 #ifndef RENDORERROR
 #define RENDORERROR
-
-// Imports needed. All classes here use the exception class.
 #include <exception>
 #include <iostream>
 #include <string>
+#include <string_view>
 
-// All classes work by throwing them as exceptions when a error occurs, then catching it in the main function within Rendor.cpp
+#include "cpp-terminal/base.hpp"
+#include "RendorEngine.hpp"
+
 namespace error{
-    // Exception for Rendor in general as well as the Lexer as the Lexer should have few errors
+    // Exception for Rendor in general
     class RendorException: public std::exception {
         private:
             std::string message_;
@@ -18,7 +19,24 @@ namespace error{
                 return message_.c_str();
             }
     };
+
     inline RendorException::RendorException(const std::string& message) : message_(message) {
+    }
+
+    inline void LogWarning(std::string_view Warning)
+    {
+        switch (RendorEngineCompiler::WarningsToErrors)
+        {
+            case true:
+            {
+                throw error::RendorException(std::string{Warning});
+            }
+            default:
+            {
+                std::cout << Term::color(Term::fg::bright_magenta) << Warning << std::endl;
+                break;
+            }
+        }
     }
 }
 

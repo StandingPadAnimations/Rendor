@@ -24,8 +24,6 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         throw error::RendorException(ErrorMessage);
     } 
 
-    // * Variables for command line arguments
-    bool DebugMode = false;
 
     if (Arguments.size() >= 2) // * for all arguments other then the file 
     { 
@@ -37,6 +35,26 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         }
 
         if
+        ((std::find(Arguments.begin(), Arguments.end(), "-we") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-warn-errors") != Arguments.end()))
+        {
+            WarningsToErrors = true;
+        }
+
+        if(std::find(Arguments.begin(), Arguments.end(), "-O0") != Arguments.end())
+        {
+            OptimizeByteCode = false;
+        }
+
+        if(std::find(Arguments.begin(), Arguments.end(), "-O1") != Arguments.end())
+        {
+            if (!OptimizeByteCode)
+            {
+                throw error::RendorException("Can not enable and disable optimization at the same time!");
+            }
+        }
+
+        if
         ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
         (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))
         {
@@ -44,17 +62,10 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         }
     }
 
-    std::ifstream File(FileInput);
     std::vector<std::string> ByteCode;
-    std::string AllCode;
-    
     {
-        for (std::string PreProcessLine; std::getline(File, PreProcessLine);)
-        {
-            boost::algorithm::trim(PreProcessLine);
-            AllCode += PreProcessLine + ";";
-        }
-
+        boost::interprocess::file_mapping File(FileInput.c_str(), boost::interprocess::read_only);
+        boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
@@ -62,7 +73,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         std::cout << color(fg::green) << "Tokenizing..." << std::endl;
-        Tokens = RenLexer.Tokenize(AllCode); // Tokenizes code for parser 
+        Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
 
         // Parses
         std::cout << color(fg::green) << "Generating AST tree..." << std::endl;

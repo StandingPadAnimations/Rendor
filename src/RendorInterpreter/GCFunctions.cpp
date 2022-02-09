@@ -25,142 +25,6 @@ void Interpreter::GarbageCollector()
     WhiteObjects.clear();
 }
 
-/* ------------------------ Function to add constants ----------------------- */
-TypeObject Interpreter::CreateConstant(std::string_view Constant)
-{
-    if (Constant[0] == '_')
-    {
-        std::string ActualConstant{Constant.begin() + 2, Constant.end()};
-        switch (Constant[1])
-        {
-            /* --------------------------------- Strings -------------------------------- */
-            case 'S':
-            {
-                auto FindIterator = std::find_if(
-                Objects.begin(), 
-                Objects.end(),
-                [&ActualConstant] (TypeObjectPtr Ptr) 
-                {
-                    if (!Ptr.expired())
-                    {
-                        return Ptr.lock()->m_Value == ActualConstant;
-                    } 
-                    else 
-                    {
-                        return false;
-                    }
-                }
-                );
-                
-                // Add new string to Objects
-                if (FindIterator == Objects.end())
-                {
-                    TypeObject Obj = std::make_shared<String>(std::string{ActualConstant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                    return WhiteObjects.back();
-                } 
-                else 
-                {
-                    return FindIterator->lock();
-                }
-                break;
-            }
-
-            /* ---------------------------- Copying Variables --------------------------- */
-            case '&':
-            {
-                if (GlobalVariables->contains(ActualConstant))
-                {
-                    return (*GlobalVariables)[ActualConstant]->m_ValueClass;
-                }
-                else if (CurrentScopeVariables->contains(ActualConstant))
-                {
-                    return (*CurrentScopeVariables)[ActualConstant]->m_ValueClass; 
-                }
-                else 
-                {
-                    throw error::RendorException("Reference to undefined variable: " + ActualConstant);
-                }
-                break;
-            }
-
-            default:
-            {
-                throw error::RendorException("Unsupported Constant Declared");
-            }
-        }
-    }
-
-    else if (Constant[0] == '&')
-    {
-        std::string ActualConstant{Constant.begin() + 3, Constant.end()};
-        if (Constant[2] == 'A')
-        {
-            return CreateConstant(PostFixEval(ActualConstant));
-        }
-    }
-
-    else 
-    {
-        auto FindIterator = std::find_if(
-        Objects.begin(), 
-        Objects.end(),
-        [&Constant] (TypeObjectPtr Ptr) 
-        {
-            if (!Ptr.expired())
-            {
-                return Ptr.lock()->m_Value == Constant;
-            } 
-            else 
-            {
-                return false;
-            }
-        }
-        );
-
-        /* -------------------------- If item doesn't exist ------------------------- */
-        if (FindIterator == Objects.end())
-        {
-            /* ----------------------------- Ints and floats ---------------------------- */
-            if 
-            (Constant.find_first_not_of("1234567890.") == std::string::npos) 
-            {
-                if (Constant.find_first_of(".") != std::string::npos)
-                {
-                    TypeObject Obj = std::make_shared<Float>(std::string{Constant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                }
-                else 
-                {
-                    TypeObject Obj = std::make_shared<Int>(std::string{Constant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                }
-            }
-            
-            /* -------------------------------- Booleans -------------------------------- */
-            else if 
-            ((Constant == "true") ||
-            (Constant == "false"))
-            {
-                TypeObject Obj = std::make_shared<Bool>(std::string{Constant});
-                WhiteObjects.push_back(Obj);
-                Objects.push_back(Obj);
-            }
-
-            /* ------------------------------ return result ----------------------------- */
-            return WhiteObjects.back();
-        }
-        else 
-        {
-            return FindIterator->lock();
-        }
-    }
-
-    return TypeObject();
-}
 
 void Interpreter::MarkConstantBlack(TypeObject Const)
 {
@@ -190,33 +54,62 @@ void Interpreter::MarkConstantBlack(TypeObject Const)
     }
 }
 
+void Interpreter::AddToConstantsArray(TypeTuple ConstantToBePlaced)
+{
+    auto [Const1, Const2] = ConstantToBePlaced;
+    AddToConstantsArray(Const1);
+    AddToConstantsArray(Const2);
+}
+
 void Interpreter::AddToConstantsArray(TypeObjectPtr ConstantToBePlaced)
 {
-    if (Constants.size() == 2)
+    if (!ConstantToBePlaced.expired())
     {
-        switch (ConstantIndex)
+        if (Constants.size() == 2)
         {
-            case 0:
+            switch (ConstantIndex)
             {
-                ++ConstantIndex;
-                break;
+                case 0:
+                {
+                    ++ConstantIndex;
+                    break;
+                }
+                
+                case 1:
+                {
+                    --ConstantIndex;
+                    break;
+                }
             }
-            
-            case 1:
-            {
-                --ConstantIndex;
-                break;
-            }
+            Constants[ConstantIndex] = ConstantToBePlaced;
         }
-        Constants[ConstantIndex] = ConstantToBePlaced;
+        else if (Constants.size() == 1)
+        {
+            Constants[1] = (ConstantToBePlaced);
+            ++ConstantIndex;
+        }
+        else 
+        {
+            Constants[0] = (ConstantToBePlaced);
+        }
     }
-    else if (Constants.size() == 1)
+}
+
+TypeObjectPtr Interpreter::GetConstFromVariable(const std::string& Variable)
+{
+    /* ------------------------ Check if variable exists ------------------------ */
+    if (GlobalVariables->contains(Variable))
     {
-        Constants[1] = (ConstantToBePlaced);
-        ++ConstantIndex;
+        return (*GlobalVariables)[Variable]->m_ValueClass;
+    }
+    else if (CurrentScopeVariables->contains(Variable))
+    {
+        return (*CurrentScopeVariables)[Variable]->m_ValueClass;
     }
     else 
     {
-        Constants[0] = (ConstantToBePlaced);
+        throw error::RendorException("Variable " + Variable + " doesn't exist!");
     }
+
+    return TypeObjectPtr();
 }

@@ -3,9 +3,15 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
+#include <array>
 
 #include "RendorCompiler/MathEvaluator.hpp"
 #include "RendorCompiler/Nodes.hpp"
+#include "RendorEngine.hpp"
+#include "ByteCodeSpliting.hpp"
+
+#include <boost/format.hpp>
 
 class RendorDeltaOptimizer
 {

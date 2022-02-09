@@ -3,29 +3,30 @@
 // input(message) : takes in user input
 // sum(int) : calculates sum of all numbers up to input 
 
-
-
 // Main function where the program enters
+
+~forward xyz(foo, bar)
 edef main() 
 {
     // Variables
     int = 1 // ints
-    flo = 1.0 // floats
+    flo = 1.5 // floats
     string = "Hello World" // strings
     bool = true // booleans 
-    arithmethic = 1(2+5)
+    arithmethic = 1+1(2+5)
 
     // ++int
 
-    echo(arithmethic)
+    echo("hi")
 
     // Example function call
     bar = input("Enter Args(bar): ")
-    xyz(bool, bar)
+    xyz(flo, bar)
 
-    if (bar == string)
+    bool = "hi"
+    if (int)
     {
-        echo("Hello World!!!!!!!")
+        echo("int")
     }
 
     if (flo >= 1)
@@ -37,7 +38,7 @@ edef main()
 // function xyz with arguments foo and bar
 edef xyz(foo, bar)
 {
-    echo(foo)
+    echo(bar)
     echo(bar)
 }
 

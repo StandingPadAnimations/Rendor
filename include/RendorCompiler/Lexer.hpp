@@ -11,6 +11,9 @@
 #include <string_view>
 #include <map>
 
+#include "RendorBoostFileMapper.hpp"
+#include "Exceptions.hpp"
+
 #define BOOST_FILESYSTEM_VERSION 3
 #define BOOST_FILESYSTEM_NO_DEPRECATED 
 #include <boost/filesystem.hpp>
@@ -35,6 +38,7 @@ namespace Lex{
         RBRACE,
         NEWLINE, 
         COMMA,
+        SEMICOLON,
         BIOP,
         UnOp,
 
@@ -49,28 +53,28 @@ namespace Lex{
     class Lexer{
         public:            
             // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(const std::string&);
+            std::vector<std::pair<Token, std::string>> Tokenize(const boost::interprocess::mapped_region&);
 
             // Contains paths of imports to compile later 
             std::vector<boost::filesystem::path> Imports;
             
         private:
             // Keywords to check for 
-            std::array<std::string, 5> Keywords {"while", "if", "return", "edef", "else"};
+            std::array<std::string_view, 6> Keywords {"while", "if", "return", "edef", "else", "~forward"};
 
             // Functions
-            std::array<std::string, 3> Functions {"echo", "input", "sum"};
+            std::array<std::string_view, 3> Functions {"echo", "input", "sum"};
 
             // Operators to check for 
-            std::array<std::string, 4> Operators {"and", "or", "not", "is"};
+            std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
 
-            std::map<std::string, char> BiOpTokens {{{"="}, '='},
-                                                    {{">"}, '='},
-                                                    {{"<"}, '='},
-                                                    {{"!"}, '='}};
+            std::map<std::string_view, char, std::less<>> BiOpTokens   {{{"="}, '='},
+                                                                        {{">"}, '='},
+                                                                        {{"<"}, '='},
+                                                                        {{"!"}, '='}};
 
-            std::map<std::string, char> UnOpTokens {{{"+"}, '+'},
-                                                    {{"-"}, '-'}};
+            std::map<std::string_view, char, std::less<>> UnOpTokens   {{{"+"}, '+'},
+                                                                        {{"-"}, '-'}};
 
             enum class BufferID 
             {

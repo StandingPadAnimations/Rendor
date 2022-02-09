@@ -12,6 +12,8 @@ enum class TempID{
     ArithAssemble,
     IdentifierDefinition,
     VariableDefition,
+    FowardDefinition,
+    FowardArgsDefinition,
     FunctionDefiniton,
     FunctionArgumentsDefinition,
 
@@ -30,8 +32,7 @@ enum class NodeType{
     Body,
     Scope,
     Rdef,
-    MarkRdef,
-    MarkGlobal,
+    FowardEdef,
     AssignVariable,
     IfElse,
     Increment,
@@ -221,6 +222,17 @@ struct Reference : Node
     Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
     {
         Type = NodeType::Reference;
+    }
+};
+
+struct FowardEdef : Node
+{
+    std::string Name = "";
+    std::vector<std::pair<std::string, NodeType>> Args;
+
+    explicit FowardEdef(std::string Name, uint32_t LineNumber) : Node(LineNumber), Name(Name)
+    {
+        Type = NodeType::FowardEdef;
     }
 };
 
