@@ -3,18 +3,16 @@ CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc
 
 BIN         := bin
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
-TERMSRC     := include/cpp-terminal
+ASM_SRC     := include/cpp-terminal
 SRC         := src/RendorInterpreter
 INCLUDE     := include
 LIBRARIES   := 
 
 EXECUTABLE  := RendorInterpreter/rendorvm
 
-SOURCES     := $(wildcard $(SRC)/*.cpp)
-TERM_SRCS   := $(wildcard $(TERMSRC)/*.cpp)
-
-OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
-TERM_OBJS   := $(patsubst $(TERMSRC)/%.cpp,$(OBJDIR)/%.o,$(TERM_SRCS))
+SOURCES     := $(wildcard $(SRC)/*.cpp) 
+SOURCETERM  := $(wildcard $(SRCTERM)/*.cpp)
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) $(patsubst $(SRCTERM)/%.cpp,$(OBJDIR)/%.o,$(SOURCETERM))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt
@@ -28,9 +26,6 @@ run: clean all
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
-
-$(OBJECTS): $(OBJDIR)/%.o: $(TERM_OBJS) $(SRC)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 $(TERM_OBJS): $(OBJDIR)/%.o: $(TERMSRC)/%.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
