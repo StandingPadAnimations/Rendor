@@ -4,32 +4,48 @@
 #include <string_view>
 #include <vector>
 #include <map>
-#include <
+#include <functional>
+
+#include "RendorInterpreter/RendorTypes.hpp"
+#include "RendorInterpreter/RendorAPI.hpp"
+#include "RendorInterpreter/RendorInternalAPI.hpp"
+#include "Exceptions.hpp"
 
 #define ASMJIT_STATIC
 #include "../src/asmjit/x86.h"
 
-enum class RendorJitArgTypes
-{
-    INT_64,
-    DOUBLE,
-    STRING,
-    BOOL
-};
+typedef void (*RendorFunc)(void);
 
-class RendorJit
+class RendorJITErrorHandeler : public asmjit::ErrorHandler 
 {
     public:
-        RendorJit()
+        void handleError(asmjit::Error err, const char* message, asmjit::BaseEmitter* origin) 
+        override 
         {
-            m_RendorJitCodeHolder.init(m_RendorJitRuntime.environment());
+            printf("AsmJit error: %s\n", message);
         }
+};
 
-    private:
-        static asmjit::JitRuntime m_RendorJitRuntime;
-        static asmjit::CodeHolder m_RendorJitCodeHolder;
+struct RendorJIT
+{
+    static asmjit::JitRuntime m_RendorJITRuntime;
+    static asmjit::CodeHolder m_RendorJITCodeHolder;
+    static asmjit::x86::Compiler m_RendorJITCompiler;
+    static RendorJITErrorHandeler m_RendorJITErrorHandeler;
+    static std::vector<RendorFunc*> m_RendorJITFunctions;
+    static std::map<std::string_view, std::pair<VariableType, asmjit::x86::Gp>> Variables;
 
-        static void CreateFunction(std::string_view Name, std::vector<RendorJitArgTypes>& Types);
+    RendorJIT()
+    {
+        m_RendorJITCodeHolder.init(m_RendorJITRuntime.environment());
+        m_RendorJITCodeHolder.setErrorHandler(&m_RendorJITErrorHandeler);
+    }
+
+    inline static size_t FunctionArgIndex = 0;
+    static std::vector<VariableType>* FunctionArgs;
+    static void CreateFunction();
+    static void GenerateCode(std::string_view Command, std::string_view Args);
+    static RendorFunc* GetGeneratedFunction();
 };
 
 

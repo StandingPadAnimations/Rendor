@@ -8,18 +8,25 @@
 #include <cstdint>
 #include <tuple>
 
+using std::unique_ptr;
+using std::tuple;
+using std::variant;
+using std::function;
+using std::optional;
+using std::vector;
+using std::equal_to;
 
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "UnorderedMapLookUp.hpp"
 /* ---------------------------- Typedefs for STL ---------------------------- */
-typedef std::shared_ptr<Type> TypeObject;
-typedef std::weak_ptr<Type> TypeObjectPtr;
-typedef std::vector<TypeObjectPtr> TypePtrVector;
-typedef std::vector<std::string> StringVector;
-typedef std::unordered_map<std::string, std::unique_ptr<Variable>, string_hash, std::equal_to<>> VariableScopeMap;
-typedef std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)> RendorFunctionPtr;
-typedef std::variant<int64_t, double> MathVariant;
-typedef std::tuple<TypeObjectPtr, TypeObjectPtr> TypeTuple;
+using TypeObject = std::shared_ptr<Type>;
+using TypeObjectPtr = std::weak_ptr<Type>;
+using TypePtrVector = std::vector<TypeObjectPtr>;
+using StringVector = std::vector<std::string>;
+using VariableScopeMap = std::unordered_map<std::string, std::unique_ptr<Variable>, string_hash, std::equal_to<>>;
+using RendorFunctionPtr = std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)>;
+using MathVariant = std::variant<int64_t, double>;
+using TypeTuple = std::tuple<TypeObjectPtr, TypeObjectPtr>;
 
 #endif // RENDOR_DEF_HPP

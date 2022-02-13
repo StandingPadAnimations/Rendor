@@ -3,7 +3,10 @@
 #include <string_view>
 #include <array>
 
-typedef std::array<std::string_view, 2> ByteCodeArray;
+using std::array;
+using std::string_view;
+using ByteCodeArray = std::array<std::string_view, 2>;
+
 inline ByteCodeArray SplitByteCode(std::string_view ByteCodeOp)
 {
     size_t ByteCodeSpaceIndex = ByteCodeOp.find_first_of(" ");

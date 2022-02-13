@@ -4,6 +4,13 @@
 #include <memory>
 #include <string_view>
 
+using std::vector;
+using std::unique_ptr;
+using std::string_view;
+
+#include "RendorInterpreter/RendorTypes.hpp"
+#include "RendorInterpreter/RendorJit.hpp"
+
 struct RendorCodeObject
 {
     RendorCodeObject() = default;
@@ -12,7 +19,9 @@ struct RendorCodeObject
 
 struct Function : RendorCodeObject
 {
+    std::vector<VariableType> TypesForPastCall;
     std::vector<std::string_view> ByteCode;
+    RendorFunc* JITFunc;
 };
 
 struct Script : RendorCodeObject

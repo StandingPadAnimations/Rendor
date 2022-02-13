@@ -5,6 +5,12 @@
 #include <vector> 
 #include <memory>
 
+using std::vector;
+using std::unique_ptr;
+using std::shared_ptr;
+using std::string_view;
+using std::string;
+
 #include "RendorInterpreter/RendorTypes.hpp"
 
 

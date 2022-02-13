@@ -6,11 +6,18 @@
 #include <variant>
 #include <memory>
 
+using std::unique_ptr;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::string;
+
 #include "Exceptions.hpp"
 
 #include <boost/lexical_cast.hpp>
+using boost::lexical_cast;
 
-enum class VariableType{
+enum class VariableType
+{
     Int,
     Float,
     String,
@@ -20,7 +27,8 @@ enum class VariableType{
     Function
 };
 
-enum class Operator{
+enum class Operator
+{
     EQUAL,
     NOT_EQUAL,
     GREATER_THAN,
@@ -56,7 +64,6 @@ struct Type
 struct NullType : Type
 {
     VariableType TypeOfVariable(){return VariableType::NullType;}
-    
     std::string RetriveVariable()
     {
         return "Null";
@@ -71,7 +78,7 @@ struct Int : Type
     int64_t ConvertedValue;
     explicit Int(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Int;}
-    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator); 
+    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 
 /* -------------------------------------------------------------------------- */
@@ -81,7 +88,6 @@ struct Float : Type
 {
     double ConvertedValue;
     explicit Float(std::string Value);
-
     VariableType TypeOfVariable(){return VariableType::Float;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
@@ -89,7 +95,6 @@ struct Float : Type
 struct String : Type
 {
     explicit String(std::string Value) : Type(Value){}
-
     VariableType TypeOfVariable(){return VariableType::String;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };

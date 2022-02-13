@@ -5,8 +5,8 @@
 #include <string>
 #include <string_view>
 
-#include "cpp-terminal/base.hpp"
 #include "RendorEngine.hpp"
+#include "cpp-terminal/base.hpp"
 
 namespace error{
     // Exception for Rendor in general

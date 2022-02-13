@@ -6,6 +6,10 @@
 #include <string>
 #include <vector>
 
+using std::vector;
+using std::fstream;
+using std::string;
+
 #include "RendorBoostFileMapper.hpp"
 
 // Boost libraries and macros
@@ -14,7 +18,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/algorithm/string/trim.hpp>
-
+using boost::format;
 namespace bfs = boost::filesystem;
 
 #define RENDOR_VERSION 0

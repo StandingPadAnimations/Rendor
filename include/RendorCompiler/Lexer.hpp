@@ -1,5 +1,5 @@
-#ifndef LEXER
-#define LEXER
+#ifndef LEXER_HPP
+#define LEXER_HPP
 // Includes everything needed for the Lexer class.
 #include <iostream>
 #include <string>
@@ -10,6 +10,15 @@
 #include <functional>
 #include <string_view>
 #include <map>
+
+using std::string;
+using std::string_view;
+using std::array;
+using std::find;
+using std::vector;
+using std::map;
+using std::unordered_map;
+using std::pair;
 
 #include "RendorBoostFileMapper.hpp"
 #include "Exceptions.hpp"
@@ -89,4 +98,4 @@ namespace Lex{
             bool LexerCharCheck(char Char);
     };
 }
-#endif // * LEXER
+#endif // LEXER_HPP

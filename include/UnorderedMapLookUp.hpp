@@ -5,6 +5,11 @@
 #include <functional>
 #include <cstdint>
 
+using std::hash;
+using std::string_view;
+using std::string;
+
+
 // Code is from here: https://www.cppstories.com/2021/heterogeneous-access-cpp20/
 struct string_hash {
     using is_transparent = void;

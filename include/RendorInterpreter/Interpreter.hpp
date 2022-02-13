@@ -16,13 +16,34 @@
 #include <variant>
 #include <tuple>
 
+using std::cout;
+using std::cin;
+using std::string;
+using std::string_view;
+using std::find_if;
+using std::find;
+using std::remove_if;
+using std::unique_ptr;
+using std::shared_ptr;
+using std::weak_ptr;
+using std::tuple;
+using std::array;
+using std::variant;
+using std::ifstream;
+using std::pair;
+using std::map;
+using std::unordered_map;
+using std::equal_to;
+using std::function;
+using std::optional;
+using std::list;
+using std::vector;
 
 // Other Parts of the Rendor Engine Interpreter 
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "RendorInterpreter/RendorDefinitions.hpp"
 #include "RendorInterpreter/CodeObjects.hpp"
-
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
 
@@ -32,13 +53,30 @@
 #include <boost/circular_buffer.hpp>
 #include <boost/tokenizer.hpp>
 
+using boost::interprocess::mapped_region;
+
 
 class Interpreter
 {
     public:
+        /* -------------------- Used for internals in other files ------------------- */
         static void ExecuteByteCode(const boost::interprocess::mapped_region& File);
         static void DisposeConst(TypeObject RendorConstID);
 
+        /* ----------- Used to grab function arguments for JITed functions ---------- */
+        static int64_t GrabInt64FromArgs();
+        static double GrabDoubleFromArgs();
+        static const char* GrabStringFromArgs();
+        static bool GrabBoolFromArgs();
+
+        /* --------------- Used to grab constants for JITed functions --------------- */
+        static int64_t GrabInt64FromConsts();
+        static double GrabDoubleFromConsts();
+        static const char* GrabStringFromConsts();
+        static bool GrabBoolFromConsts();
+
+        /* ------------- Grab the type of the currently pointed constant ------------ */
+        static VariableType GrabPointedType();
     private:
         /* -------------------------------------------------------------------------- */
         /*                             Built in functions                             */

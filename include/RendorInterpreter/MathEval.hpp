@@ -1,6 +1,7 @@
 #ifndef MATH_EVAL_HPP
 #define MATH_EVAL_HPP
 #include <string>
+using std::string;
 #include "RendorInterpreter/RendorDefinitions.hpp"
 
 // Code from Rythm#6156 with slight changes 
