@@ -1,4 +1,4 @@
-#include "RendorInterpreter/RendorTypes.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*                                     Int                                    */

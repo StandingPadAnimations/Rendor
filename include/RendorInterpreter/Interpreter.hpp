@@ -8,6 +8,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <unordered_map>
 #include <fstream>
 #include <algorithm>
 #include <functional>
@@ -40,10 +41,10 @@ using std::list;
 using std::vector;
 
 // Other Parts of the Rendor Engine Interpreter 
-#include "RendorInterpreter/RendorTypes.hpp"
-#include "RendorInterpreter/VariableType.hpp"
-#include "RendorInterpreter/RendorDefinitions.hpp"
-#include "RendorInterpreter/CodeObjects.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
+#include "RendorInterpreter/Resources/VariableType.hpp"
+#include "RendorInterpreter/Resources/RendorDefinitions.hpp"
+#include "RendorInterpreter/Resources/CodeObjects.hpp"
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
 

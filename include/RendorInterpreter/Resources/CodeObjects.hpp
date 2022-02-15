@@ -8,8 +8,9 @@ using std::vector;
 using std::unique_ptr;
 using std::string_view;
 
-#include "RendorInterpreter/RendorTypes.hpp"
-#include "RendorInterpreter/RendorJit.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
+#include "RendorInterpreter/JIT/RendorJit.hpp"
+#include "RendorInterpreter/Resources/RendorDefinitions.hpp"
 
 struct RendorCodeObject
 {

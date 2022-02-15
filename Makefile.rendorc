@@ -10,7 +10,7 @@ LIBRARIES   := g++
 
 EXECUTABLE  := RendorCompiler/rendorc
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) 
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(wildcard $(SRC)/BackEnd/*.cpp) $(wildcard $(SRC)/InspectAndOptimize/*.cpp) $(wildcard $(SRC)/Lexer/*.cpp) $(wildcard $(SRC)/Math/*.cpp) $(wildcard $(SRC)/Parser/*.cpp)  
 SOURCETERM  := $(wildcard $(SRCTERM)/*.cpp)
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) $(patsubst $(SRCTERM)/%.cpp,$(OBJDIR)/%.o,$(SOURCETERM))
 
@@ -35,3 +35,8 @@ $(OBJDIR)/%.o: $(SRCTERM)/%.cpp
 
 clean:
 	-rm $(OBJDIR)/*.o
+	-rm $(OBJDIR)/BackEnd/*.o
+	-rm $(OBJDIR)InspectAndOptimize/*.o
+	-rm $(OBJDIR)Lexer/*.o
+	-rm $(OBJDIR)/Math/*.o
+	-rm $(OBJDIR)/Parser/*.o
