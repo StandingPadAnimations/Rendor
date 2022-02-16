@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc -static-libstdc++ -ggdb
 
 BIN         := bin
 OBJDIR      := bin/RendorCompiler/ObjectFiles
@@ -36,7 +36,7 @@ $(OBJDIR)/%.o: $(SRCTERM)/%.cpp
 clean:
 	-rm $(OBJDIR)/*.o
 	-rm $(OBJDIR)/BackEnd/*.o
-	-rm $(OBJDIR)InspectAndOptimize/*.o
-	-rm $(OBJDIR)Lexer/*.o
+	-rm $(OBJDIR)/InspectAndOptimize/*.o
+	-rm $(OBJDIR)/Lexer/*.o
 	-rm $(OBJDIR)/Math/*.o
 	-rm $(OBJDIR)/Parser/*.o
