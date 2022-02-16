@@ -8,6 +8,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include <unordered_map>
 #include <fstream>
 #include <algorithm>
 #include <functional>
@@ -40,10 +41,11 @@ using std::list;
 using std::vector;
 
 // Other Parts of the Rendor Engine Interpreter 
-#include "RendorInterpreter/RendorTypes.hpp"
-#include "RendorInterpreter/VariableType.hpp"
-#include "RendorInterpreter/RendorDefinitions.hpp"
-#include "RendorInterpreter/CodeObjects.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
+#include "RendorInterpreter/Resources/VariableType.hpp"
+#include "RendorInterpreter/Resources/RendorDefinitions.hpp"
+#include "RendorInterpreter/Resources/CodeObjects.hpp"
+#include "RendorInterpreter/Resources/ByteCodeEnum.hpp"
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
 
@@ -88,6 +90,35 @@ class Interpreter
         /* -------------------------------------------------------------------------- */
         /*                            Interpreter Internals                           */
         /* -------------------------------------------------------------------------- */
+
+        /* -------------------------------- Bytecode -------------------------------- */
+        inline static std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
+        {
+            {"LOAD",            ByteCodeEnum::LOAD},
+
+            {"CONST",           ByteCodeEnum::CONST_OP},
+            {"ASSIGN",          ByteCodeEnum::ASSIGN},
+            {"ARGUMENT",        ByteCodeEnum::ARGUMENT},
+
+            {"DEFINE",          ByteCodeEnum::DEFINE},
+            {"CALL",            ByteCodeEnum::CALL},
+            {"FINALIZE_CALL",   ByteCodeEnum::FINALIZE_CALL},
+            {"FUNCTION",        ByteCodeEnum::FUNCTION},
+
+            {"OPERATOR",        ByteCodeEnum::OPERATOR},
+            {"JMP_IF_FALSE",    ByteCodeEnum::JMP_IF_FALSE},
+            {"ENDIF",           ByteCodeEnum::ENDIF},
+        };
+
+        inline static std::unordered_map<std::string, Operator, string_hash, std::equal_to<>> OperatorMapping
+        {
+            {"EQUAL",               Operator::EQUAL},
+            {"NOT_EQUAL",           Operator::NOT_EQUAL},
+            {"GREATER_THAN",        Operator::GREATER_THAN},
+            {"GREATER_OR_EQUAL",    Operator::GREATER_OR_EQUAL},
+            {"LESS_THAN",           Operator::LESS_THAN},
+            {"LESS_OR_EQUAL",       Operator::LESS_OR_EQUAL},
+        };
         /* ----------------------------- Rendor's Memory ---------------------------- */
         inline static std::unordered_map<std::string, std::unique_ptr<Function>, string_hash, std::equal_to<>> UserDefinedFunctions; // Stores index of user defined functions in the main file
         inline static std::array<TypeObjectPtr, 2> Constants; // for temp access to constants

@@ -16,8 +16,8 @@ using std::optional;
 using std::vector;
 using std::equal_to;
 
-#include "RendorInterpreter/RendorTypes.hpp"
-#include "RendorInterpreter/VariableType.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
+#include "RendorInterpreter/Resources/VariableType.hpp"
 #include "UnorderedMapLookUp.hpp"
 /* ---------------------------- Typedefs for STL ---------------------------- */
 using TypeObject = std::shared_ptr<Type>;
@@ -28,5 +28,9 @@ using VariableScopeMap = std::unordered_map<std::string, std::unique_ptr<Variabl
 using RendorFunctionPtr = std::function<std::optional<TypeObject>(std::vector<TypeObjectPtr>&)>;
 using MathVariant = std::variant<int64_t, double>;
 using TypeTuple = std::tuple<TypeObjectPtr, TypeObjectPtr>;
+
+/* ----------------------------- Typedef for JIT ---------------------------- */
+typedef void (*RendorFunc)(void);
+
 
 #endif // RENDOR_DEF_HPP

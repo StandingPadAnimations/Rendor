@@ -1,6 +1,6 @@
 #include "RendorInterpreter/Interpreter.hpp"
-#include "RendorInterpreter/VariableType.hpp"
-#include "RendorInterpreter/RendorTypes.hpp"
+#include "RendorInterpreter/Resources/VariableType.hpp"
+#include "RendorInterpreter/Resources/RendorTypes.hpp"
 
 Variable::Variable(std::string Name) : m_Name(Name)
 {

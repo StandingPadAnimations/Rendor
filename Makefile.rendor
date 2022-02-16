@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ -ggdb
 
 BIN         := bin
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
@@ -9,7 +9,7 @@ LIBRARIES   := -Llib
 
 EXECUTABLE  := RendorInterpreter/rendorvm
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) 
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(wildcard $(SRC)/JIT/*.cpp) $(wildcard $(SRC)/API/*.cpp) $(wildcard $(SRC)/GarbageCollector/*.cpp) 
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) 
 
 BOOSTFILE   := boost_filesystem-mt
@@ -31,3 +31,6 @@ $(OBJDIR)/%.o: $(SRC)/%.cpp
 
 clean:
 	-rm $(OBJDIR)/*.o
+	-rm $(OBJDIR)/API/*.o
+	-rm $(OBJDIR)/GarbageCollector/*.o
+	-rm $(OBJDIR)/JIT/*.o

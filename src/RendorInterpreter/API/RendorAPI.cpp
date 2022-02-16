@@ -1,5 +1,5 @@
-#include "RendorInterpreter/RendorInternalAPI.hpp"
-#include "RendorInterpreter/RendorAPI.hpp"
+#include "RendorInterpreter/API/RendorInternalAPI.hpp"
+#include "RendorInterpreter/API/RendorAPI.hpp"
 
 /* ------------------------------ external API ------------------------------ */
 int64_t GrabInt64FromArgs_API()

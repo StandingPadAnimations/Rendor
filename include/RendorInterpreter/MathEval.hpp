@@ -2,7 +2,7 @@
 #define MATH_EVAL_HPP
 #include <string>
 using std::string;
-#include "RendorInterpreter/RendorDefinitions.hpp"
+#include "RendorInterpreter/Resources/RendorDefinitions.hpp"
 
 // Code from Rythm#6156 with slight changes 
 inline int64_t Rythm_RendorPow(int64_t& x, int64_t& y){
