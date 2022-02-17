@@ -95,16 +95,13 @@ class Interpreter
         inline static std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
         {
             {"LOAD",            ByteCodeEnum::LOAD},
-
             {"CONST",           ByteCodeEnum::CONST_OP},
             {"ASSIGN",          ByteCodeEnum::ASSIGN},
             {"ARGUMENT",        ByteCodeEnum::ARGUMENT},
-
             {"DEFINE",          ByteCodeEnum::DEFINE},
             {"CALL",            ByteCodeEnum::CALL},
             {"FINALIZE_CALL",   ByteCodeEnum::FINALIZE_CALL},
             {"FUNCTION",        ByteCodeEnum::FUNCTION},
-
             {"OPERATOR",        ByteCodeEnum::OPERATOR},
             {"JMP_IF_FALSE",    ByteCodeEnum::JMP_IF_FALSE},
             {"ENDIF",           ByteCodeEnum::ENDIF},

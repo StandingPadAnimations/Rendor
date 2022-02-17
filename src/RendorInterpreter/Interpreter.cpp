@@ -308,6 +308,11 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
                 ByteCodeOperation = ByteCodeOperation.substr(Pos1, Pos2);
             }
         }
+        else 
+        {
+            continue;
+        }
+        
         size_t ByteCodeSpaceIndex  = ByteCodeOperation.find_first_of(" ");
         std::string_view Command  (ByteCodeOperation.begin(), ByteCodeOperation.begin() + ByteCodeSpaceIndex);
         std::string_view Args     (ByteCodeOperation.begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation.end());
@@ -317,7 +322,7 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
         /* -------------------------------------------------------------------------- */
 
         /* ---------------------------- Load Global Scope --------------------------- */
-        switch (ByteCodeMapping[std::string{Args}])
+        switch (Interpreter::ByteCodeMapping[std::string{Command}])
         {
             case ByteCodeEnum::LOAD:
             {
