@@ -1,27 +1,27 @@
 #include "RendorInterpreter/JIT/RendorJit.hpp"
 
-void RendorJIT::CreateArgRepr(VariableType Type, std::string_view VariableName)
+void RendorJIT::CreateArgRepr(VariableType Type, std::string& VariableName)
 {
     switch (Type)
     {
-        case VariableType::Int:
+        case VariableType::Int64:
         {
-            m_IR.emplace_back("_a_i64_" + std::string{VariableName});
+            m_IR->emplace_back("arg_i64_" + VariableName);
             break;
         }
-        case VariableType::Float:
+        case VariableType::Double:
         {
-            m_IR.emplace_back("_a_d_" + std::string{VariableName});
+            m_IR->emplace_back("arg_d_" + VariableName);
             break;
         }
         case VariableType::String:
         {
-            m_IR.emplace_back("_a_s_" + std::string{VariableName});
+            m_IR->emplace_back("arg_s_" + VariableName);
             break;
         }
         case VariableType::Bool:
         {
-            m_IR.emplace_back("_a_b_" + std::string{VariableName});
+            m_IR->emplace_back("arg_b_" + VariableName);
             break;
         }
         default:
@@ -29,4 +29,5 @@ void RendorJIT::CreateArgRepr(VariableType Type, std::string_view VariableName)
             throw error::RendorException("RendorJIT argument error");
         }
     }
+    Variables[m_IR->back()].first = Type;
 }

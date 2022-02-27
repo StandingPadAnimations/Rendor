@@ -18,8 +18,8 @@ using boost::lexical_cast;
 
 enum class VariableType
 {
-    Int,
-    Float,
+    Int64,
+    Double,
     String,
     Bool,
     NullType,
@@ -77,7 +77,7 @@ struct Int : Type
 {
     int64_t ConvertedValue;
     explicit Int(std::string Value);
-    VariableType TypeOfVariable(){return VariableType::Int;}
+    VariableType TypeOfVariable(){return VariableType::Int64;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 
@@ -88,7 +88,7 @@ struct Float : Type
 {
     double ConvertedValue;
     explicit Float(std::string Value);
-    VariableType TypeOfVariable(){return VariableType::Float;}
+    VariableType TypeOfVariable(){return VariableType::Double;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 

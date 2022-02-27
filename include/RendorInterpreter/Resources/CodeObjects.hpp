@@ -20,8 +20,8 @@ struct RendorCodeObject
 
 struct Function : RendorCodeObject
 {
-    std::vector<VariableType> TypesForPastCall;
     std::vector<std::string_view> ByteCode;
+    std::vector<std::string> IR{10};
     RendorFunc* JITFunc;
 };
 

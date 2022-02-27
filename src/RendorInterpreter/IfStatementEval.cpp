@@ -8,12 +8,12 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Int
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
         auto& Const2Object = static_cast<Int&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
         auto& Const2Object = static_cast<Float&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
@@ -124,12 +124,12 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
         auto& Const2Object = static_cast<Int&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
         auto& Const2Object = static_cast<Float&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
@@ -287,12 +287,12 @@ bool Bool::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonO
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
         auto& Const2Object = static_cast<Int&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
         auto& Const2Object = static_cast<Float&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;

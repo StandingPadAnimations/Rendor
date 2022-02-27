@@ -46,8 +46,13 @@ using std::vector;
 #include "RendorInterpreter/Resources/RendorDefinitions.hpp"
 #include "RendorInterpreter/Resources/CodeObjects.hpp"
 #include "RendorInterpreter/Resources/ByteCodeEnum.hpp"
+#include "RendorInterpreter/Resources/RendorGCData.hpp"
+#include "RendorInterpreter/JIT/RendorJit.hpp"
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
+
+using rengc::RendorGCData;
+using rengc::RendorStack;
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
@@ -92,7 +97,7 @@ class Interpreter
         /* -------------------------------------------------------------------------- */
 
         /* -------------------------------- Bytecode -------------------------------- */
-        inline static std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
+        inline static const std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
         {
             {"LOAD",            ByteCodeEnum::LOAD},
             {"CONST",           ByteCodeEnum::CONST_OP},
@@ -107,7 +112,7 @@ class Interpreter
             {"ENDIF",           ByteCodeEnum::ENDIF},
         };
 
-        inline static std::unordered_map<std::string, Operator, string_hash, std::equal_to<>> OperatorMapping
+        inline static const std::unordered_map<std::string, Operator, string_hash, std::equal_to<>> OperatorMapping
         {
             {"EQUAL",               Operator::EQUAL},
             {"NOT_EQUAL",           Operator::NOT_EQUAL},
@@ -124,12 +129,13 @@ class Interpreter
         /* ------------------ Shared for garbage collection reasons ----------------- */
         inline static std::vector<VariableScopeMap> VariablesCallStack;
         inline static std::vector<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
+
+        /* ------------------------------ jit compiling ----------------------------- */
+        inline static RendorJIT JitCompiler;
         
         /* ------------------ Rendor Memory(for tri-color marking) ------------------ */
-        inline static std::vector<TypeObject> WhiteObjects; // objects that need to be yeeted
-        inline static std::vector<TypeObject> GreyObjects;  // objects that need to be scanned
-        inline static std::vector<TypeObject> BlackObjects; // objects that have been scanned
-        inline static std::vector<TypeObjectPtr> Objects;   // All Objects 
+        inline static rengc::RendorGCData<TypeObject> ObjectMemory;
+        inline static rengc::RendorStack<TypeObject, 50> ObjectStack;
 
         /* -------------- Pointers to certain parts of Rendor's memory -------------- */
         inline static VariableScopeMap *CurrentScopeVariables = NULL;
