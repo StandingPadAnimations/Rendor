@@ -14,12 +14,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: update
       run: sudo apt-get update
-    - name: GCC 11
-      run: sudo apt install gcc-11 g++-11
-    - name: Remove g++ link
-      run: rm /usr/bin/g++
-    - name: set g++ link
-      run: ln -s /usr/bin/g++-11 /usr/bin/g++
+    - name: g++ 11
+      run: |
+            sudo apt install gcc-10 g++-11
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11
+            sudo update-alternatives --set gcc /usr/bin/gcc-11
     - name: g++ version
       run: g++ --version
     - name: boost
