@@ -22,7 +22,7 @@ jobs:
     - name: g++ version
       run: g++ --version
     - name: boost
-      run: sudo apt install libboost-all-dev
+      run: sudo apt install libboost-1.77
     - name: make rendor
       run: make -f Makefile.rendorc
     - name: make rendorc
