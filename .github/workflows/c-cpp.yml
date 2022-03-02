@@ -18,8 +18,9 @@ jobs:
       run: sudo apt install gcc-11 g++-11
     - name: boost
       run: sudo apt-get install -yq libboost-all-dev
-    - name: set GCC version
+    - name: set GCC version 1
       run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+    - name: set GCC version 2
       run: sudo update-alternatives --set g++ /usr/bin/g++11
     - name: GCC version
       run: g++- --version
