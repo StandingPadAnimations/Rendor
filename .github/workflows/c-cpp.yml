@@ -19,7 +19,7 @@ jobs:
     - name: boost
       run: sudo apt-get install -yq libboost-all-dev
     - name: GCC version
-      run: g++ --version
+      run: g++-11 --version
     - name: make rendor
       run: make -f Makefile.rendorc
     - name: make rendorc
