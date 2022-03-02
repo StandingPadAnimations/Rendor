@@ -19,7 +19,7 @@ jobs:
     - name: boost
       run: sudo apt-get install -yq libboost-all-dev
     - name: set GCC version
-      run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 11
+      run: sudo update-alternatives --set g++ /usr/bin/g++11
     - name: GCC version
       run: g++- --version
     - name: make rendor
