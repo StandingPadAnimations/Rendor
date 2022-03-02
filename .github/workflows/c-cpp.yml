@@ -16,14 +16,14 @@ jobs:
       run: sudo apt-get update
     - name: GCC 11
       run: sudo apt install gcc-11 g++-11
+    - name: Remove g++ link
+      run: rm /usr/bin/g++
+    - name: set g++ link
+      run: ln -s /usr/bin/g++-11 /usr/bin/g++
+    - name: g++ version
+      run: g++ --version
     - name: boost
       run: sudo apt-get install -yq libboost-all-dev
-    - name: set GCC version 1
-      run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-    - name: set GCC version 2
-      run: sudo update-alternatives --set g++ /usr/bin/g++11
-    - name: GCC version
-      run: g++- --version
     - name: make rendor
       run: make -f Makefile.rendorc
     - name: make rendorc
