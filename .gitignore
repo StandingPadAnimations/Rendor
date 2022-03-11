@@ -3,8 +3,7 @@
 /bin/RendorCompiler/rendorc.exe
 /bin/RendorInterpreter/rendorvm.exe
 
-/bin/RendorCompiler/ObjectFiles/*.o
-/bin/RendorInterpreter/ObjectFiles/*.o
+/bin/**/*.o
 
 .gitconfig
 Makefile

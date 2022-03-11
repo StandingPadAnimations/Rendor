@@ -1,5 +1,0 @@
-edef main(){
-    world = "Hello World"
-    num = world
-    echo(num)
-}

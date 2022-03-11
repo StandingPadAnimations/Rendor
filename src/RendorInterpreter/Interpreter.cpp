@@ -147,6 +147,7 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
                         default:
                         {
                             AddToConstantsArray(Result.value());
+                            FunctionArgsCallStack.pop_back();
                             break;
                         }
                     }

@@ -1,20 +1,17 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++
 
 BIN         := bin
-OBJDIR      := bin/RendorInterpreter/ObjectFiles
-TERMSRC     := include/cpp-terminal
-SRC         := src/RendorInterpreter
-INCLUDE     := include
-LIBRARIES   := 
+INCLUDE     := -Iinclude
 
+SRC         := src/RendorInterpreter
+DIRS        := API GarbageCollector Logic
+
+OBJDIR      := bin/RendorInterpreter/ObjectFiles
 EXECUTABLE  := RendorInterpreter/rendorvm
 
-SOURCES     := $(wildcard $(SRC)/*.cpp)
-TERM_SRCS   := $(wildcard $(TERMSRC)/*.cpp)
-
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
-TERM_OBJS   := $(patsubst $(TERMSRC)/%.cpp,$(OBJDIR)/%.o,$(TERM_SRCS))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt
@@ -27,13 +24,11 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
-$(OBJECTS): $(OBJDIR)/%.o: $(TERM_OBJS) $(SRC)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
-
-$(TERM_OBJS): $(OBJDIR)/%.o: $(TERMSRC)/%.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
+$(OBJDIR)/%.o: $(SRC)/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
 clean:
+	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o

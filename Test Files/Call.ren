@@ -1,6 +1,0 @@
-edef main(){
-    UserUnput = input('Say something: ')
-    echo("This should print input")
-    echo(UserUnput)
-    echo("c:")
-}

@@ -1,18 +1,22 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++
 
 BIN         := bin
-OBJDIR      := bin/RendorCompiler/ObjectFiles
-SRC         := src/RendorCompiler
-SRCTERM     := src/cpp-terminal
-INCLUDE     := include
-LIBRARIES   := g++
+INCLUDE     := -Iinclude
 
+SRC         := src/RendorCompiler
+CPP_TERM    := src/cpp-terminal
+DIRS        := BackEnd InspectAndOptimize Lexer Logic Parser
+
+OBJDIR      := bin/RendorCompiler/ObjectFiles
+TERM_OBJ    := bin/cpp-terminal
 EXECUTABLE  := RendorCompiler/rendorc
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) 
-SOURCETERM  := $(wildcard $(SRCTERM)/*.cpp)
-OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) $(patsubst $(SRCTERM)/%.cpp,$(OBJDIR)/%.o,$(SOURCETERM))
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+
+TERM_SOURCE := $(wildcard $(CPP_TERM)/*.cpp)
+TERM_OBJECT :=  $(patsubst $(CPP_TERM)/%.cpp,$(TERM_OBJ)/%.o,$(TERM_SOURCE))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt
@@ -23,15 +27,17 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(OBJECTS)
+$(BIN)/$(EXECUTABLE): $(OBJECTS) $(TERM_OBJECT)
 	@echo 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
-$(OBJDIR)/%.o: $(SRCTERM)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
+$(TERM_OBJ)/%.o: $(CPP_TERM)/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
 clean:
+	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o
+	-rm $(TERM_OBJ)/*.o
