@@ -32,7 +32,7 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
 
         for (std::vector<std::pair<std::string, NodeType>>::reverse_iterator Arg = EdefNode.Args.rbegin(); Arg != EdefNode.Args.rend(); ++Arg) // Arguments 
         {
-            ByteCode.emplace_back((boost::format("ARGUMENT %s") % Arg->first).str());
+            ByteCode.emplace_back((boost::format("ASSIGN %s") % Arg->first).str());
         }
 
         for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
@@ -111,28 +111,28 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         case NodeType::Int:
         {
             auto& IntNode = static_cast<Int&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST %s") % IntNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST INT64, %s") % IntNode.Value).str());
             break;
         }
 
         case NodeType::Double:
         {
             auto& DoubleNode = static_cast<Double&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST %s") % DoubleNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST DOUBLE, %s") % DoubleNode.Value).str());
             break;
         }
 
         case NodeType::String:
         {
             auto& StringNode = static_cast<String&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST _S%s") % StringNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST STRING, %s") % StringNode.Value).str());
             break;
         }
 
         case NodeType::Bool:
         {
             auto& BoolNode = static_cast<Bool&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST %s") % BoolNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST BOOL, %s") % BoolNode.Value).str());
             break;
         }
 
@@ -140,14 +140,14 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         {
             auto& ArithNode = static_cast<Arithmethic&>(*Node); 
             std::string Operation = OperationToPostfix(ArithNode.Value);
-            ByteCode.emplace_back((boost::format("CONST &_A%s") % Operation).str());
+            ByteCode.emplace_back((boost::format("CONST ARITHMETHIC, %s") % Operation).str());
             break;
         }
 
         case NodeType::Reference:
         {
             auto& ReferenceNode = static_cast<Reference&>(*Node); 
-            ByteCode.emplace_back((boost::format("CONST _&%s") % ReferenceNode.Value).str());
+            ByteCode.emplace_back((boost::format("CONST REFERENCE, %s") % ReferenceNode.Value).str());
             break;
         }
 
@@ -155,7 +155,6 @@ void Parser::TypeConstants(const NodeType& ClassType, const NodeObject& Node)
         {
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node); 
 
-            ByteCode.emplace_back((boost::format("CALL %s") % FunctionCallNode.Function).str());
             for (const auto& Arg : FunctionCallNode.Args) // Arguments 
             {
                 TypeConstants(Arg->Type, Arg);

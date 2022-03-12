@@ -10,9 +10,10 @@
 
 #include <boost/lexical_cast.hpp>
 
-enum class VariableType{
-    Int,
-    Float,
+enum class VariableType
+{
+    Int64,
+    Double,
     String,
     Bool,
     NullType,
@@ -20,7 +21,8 @@ enum class VariableType{
     Function
 };
 
-enum class Operator{
+enum class Operator
+{
     EQUAL,
     NOT_EQUAL,
     GREATER_THAN,
@@ -66,23 +68,23 @@ struct NullType : Type
 /* -------------------------------------------------------------------------- */
 /*                                     Int                                    */
 /* -------------------------------------------------------------------------- */
-struct Int : Type
+struct Int64 : Type
 {
     int64_t ConvertedValue;
-    explicit Int(std::string Value);
-    VariableType TypeOfVariable(){return VariableType::Int;}
+    explicit Int64(std::string Value);
+    VariableType TypeOfVariable(){return VariableType::Int64;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator); 
 };
 
 /* -------------------------------------------------------------------------- */
 /*                                    Float                                   */
 /* -------------------------------------------------------------------------- */
-struct Float : Type
+struct Double : Type
 {
     double ConvertedValue;
-    explicit Float(std::string Value);
+    explicit Double(std::string Value);
 
-    VariableType TypeOfVariable(){return VariableType::Float;}
+    VariableType TypeOfVariable(){return VariableType::Double;}
     bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
 };
 

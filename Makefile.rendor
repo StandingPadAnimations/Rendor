@@ -5,13 +5,18 @@ BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorInterpreter
+STD_SRC     := src/RendorSTD
 DIRS        := API GarbageCollector Logic
 
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
+STD_OBJDIR  := bin/RendorSTD
 EXECUTABLE  := RendorInterpreter/rendorvm
 
 SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+
+STD_SOURCES := $(wildcard $(STD_SRC)/*.cpp)
+STD_OBJECTS := $(patsubst $(STD_SRC)/%.cpp,$(STD_OBJDIR)/%.o,$(SOURCES))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt
@@ -22,11 +27,14 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(OBJECTS)
+$(BIN)/$(EXECUTABLE): $(OBJECTS) $(STD_OBJECTS)
 	@echo 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
+
+$(STD_OBJECTS)/%.o: $(STD_SRC)/%.cpp 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
 clean:

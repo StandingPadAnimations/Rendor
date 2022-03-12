@@ -23,12 +23,12 @@ Type::Type(const std::string& Value) : m_Value(Value)
     ++IntForID;
 }
 
-Int::Int(std::string Value) : Type(Value)
+Int64::Int64(std::string Value) : Type(Value)
 {
     ConvertedValue = boost::lexical_cast<int64_t>(Value);
 }
 
-Float::Float(std::string Value) : Type(Value)
+Double::Double(std::string Value) : Type(Value)
 {
     ConvertedValue = std::stod(Value);
 }

@@ -1,5 +1,5 @@
-#ifndef INTERPRETER
-#define INTERPRETER
+#ifndef INTERPRETER_HPP
+#define INTERPRETER_HPP
 
 #include <iostream>
 #include <string>
@@ -14,12 +14,15 @@
 #include <optional>
 #include <memory>
 #include <variant>
+#include <stack>
+#include <tuple>
 
 // Other Parts of the Rendor Engine Interpreter 
 #include "RendorInterpreter/RendorTypes.hpp"
 #include "RendorInterpreter/VariableType.hpp"
 #include "RendorInterpreter/RendorDefinitions.hpp"
 #include "RendorInterpreter/CodeObjects.hpp"
+#include "RendorInterpreter/ByteCodeEnum.hpp"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
@@ -31,54 +34,108 @@
 #include <boost/tokenizer.hpp>
 
 
+// Standard Library
+#include "RendorSTD/Rendor_IO.hpp"
+#include "RendorSTD/Rendor_Math.hpp"
+
+enum class ConstType
+{
+    INT64,
+    DOUBLE,
+    STRING,
+    BOOL,
+    ARITHMETHIC,
+    REFERENCE
+};
+
+
 class Interpreter
 {
     public:
         static void ExecuteByteCode(const boost::interprocess::mapped_region& File);
         static void DisposeConst(TypeObject RendorConstID);
 
-    private:
-        /* -------------------------------------------------------------------------- */
-        /*                             Built in functions                             */
-        /* -------------------------------------------------------------------------- */
-        static std::optional<TypeObject> RENDOR_ECHO_FUNCTION  (std::vector<TypeObjectPtr>& EchoArgs);
-        static std::optional<TypeObject> RENDOR_INPUT_FUNCTION (std::vector<TypeObjectPtr>& InputArgs);
-        static std::optional<TypeObject> RENDOR_SUM_FUNCTION   (std::vector<TypeObjectPtr>& SumArgs);
+        /* ------------------------------ API functions ----------------------------- */
+        static int64_t GrabInt64FromStack();
+        static double GrabDoubleFromStack();
+        static const char* GrabConstCharFromStack();
+        static const char* GrabConstFromStackAsConstChar();
+        static bool GrabBoolFromStack();
+        static VariableType GrabObjTypeFromStack();
 
+        static void DropInt64OnStack(int64_t Const);
+        static void DropDoubleOnStack(double Const);
+        static void DropConstCharOnStack(const char* Const);
+        static void DropBoolOnStack(bool Const);
+        static void PopStack();
+
+    private:
         /* -------------------------------------------------------------------------- */
         /*                            Interpreter Internals                           */
         /* -------------------------------------------------------------------------- */
+        /* -------------------------------- Bytecode -------------------------------- */
+        inline static const std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
+        {
+            {"LOAD",            ByteCodeEnum::LOAD},
+            {"CONST",           ByteCodeEnum::CONST_OP},
+            {"ASSIGN",          ByteCodeEnum::ASSIGN},
+            {"ARGUMENT",        ByteCodeEnum::ASSIGN},
+            {"DEFINE",          ByteCodeEnum::DEFINE},
+            {"FINALIZE_CALL",   ByteCodeEnum::FINALIZE_CALL},
+            {"FUNCTION",        ByteCodeEnum::FUNCTION},
+            {"OPERATOR",        ByteCodeEnum::OPERATOR},
+            {"JMP_IF_FALSE",    ByteCodeEnum::JMP_IF_FALSE},
+            {"ENDIF",           ByteCodeEnum::ENDIF},
+        };
+
+        inline static const std::unordered_map<std::string, Operator, string_hash, std::equal_to<>> OperatorMapping
+        {
+            {"EQUAL",               Operator::EQUAL},
+            {"NOT_EQUAL",           Operator::NOT_EQUAL},
+            {"GREATER_THAN",        Operator::GREATER_THAN},
+            {"GREATER_OR_EQUAL",    Operator::GREATER_OR_EQUAL},
+            {"LESS_THAN",           Operator::LESS_THAN},
+            {"LESS_OR_EQUAL",       Operator::LESS_OR_EQUAL},
+        };
+
+        inline static const std::unordered_map<std::string, ConstType, string_hash, std::equal_to<>> TypeMapping
+        {
+            {"INT64",           ConstType::INT64},
+            {"DOUBLE",          ConstType::DOUBLE},
+            {"STRING",          ConstType::STRING},
+            {"BOOL",            ConstType::BOOL},
+            {"ARITHMETHIC",     ConstType::ARITHMETHIC},
+            {"REFERENCE",       ConstType::REFERENCE},
+        };
+
+
         /* ----------------------------- Rendor's Memory ---------------------------- */
         inline static std::unordered_map<std::string, std::unique_ptr<Function>, string_hash, std::equal_to<>> UserDefinedFunctions; // Stores index of user defined functions in the main file
-        inline static std::array<TypeObjectPtr, 2> Constants; // for temp access to constants
-        inline static size_t ConstantIndex = 0;
 
         /* ------------------ Shared for garbage collection reasons ----------------- */
         inline static std::vector<VariableScopeMap> VariablesCallStack;
-        inline static std::vector<std::vector<TypeObjectPtr>> FunctionArgsCallStack;
         
         /* ------------------ Rendor Memory(for tri-color marking) ------------------ */
+        inline static std::unordered_map<std::string, std::tuple<size_t, GCColor>, string_hash, std::equal_to<>> Objects;
         inline static std::vector<TypeObject> WhiteObjects; // objects that need to be yeeted
         inline static std::vector<TypeObject> GreyObjects;  // objects that need to be scanned
         inline static std::vector<TypeObject> BlackObjects; // objects that have been scanned
-        inline static std::vector<TypeObjectPtr> Objects;   // All Objects 
+        inline static std::stack<std::tuple<Type*, TypeObject_U>> RendorStack;
 
+        inline static const std::unordered_map<GCColor, std::vector<TypeObject>*> VectorMapping
+        {
+            {GCColor::BLACK, &BlackObjects},
+            {GCColor::GREY,  &GreyObjects},
+            {GCColor::WHITE, &WhiteObjects},
+        };
         /* -------------- Pointers to certain parts of Rendor's memory -------------- */
         inline static VariableScopeMap *CurrentScopeVariables = NULL;
         inline static VariableScopeMap *GlobalVariables = NULL;
 
         /* ----------------------- if statement related things ---------------------- */
         inline static std::vector<bool> IfStatementBoolResult; 
-
-        // Functions
-        inline static std::unordered_map<std::string, StringVector, string_hash, std::equal_to<>> FunctionArgs  {{"echo",  {"EchoArgs"}}, 
-                                                                                                {"input",  {"InputArgs"}}, 
-                                                                                                {"sum",    {"SumArgs"}}};
-                                                                    
-        inline static std::unordered_map<std::string, RendorFunctionPtr, string_hash, std::equal_to<>> BuiltInFunctions {{"echo",  RENDOR_ECHO_FUNCTION}, 
-                                                                                                        {"input", RENDOR_INPUT_FUNCTION}, 
-                                                                                                        {"sum",   RENDOR_SUM_FUNCTION}};
-                                                                
+        inline static std::unordered_map<std::string, RendorFunctionPtr, string_hash, std::equal_to<>> CppFunctions;
+        
 
         /* ------------------------------ Bytecode Loop ----------------------------- */
         static void ByteCodeLoop(std::vector<std::string_view>& ByteCode);
@@ -89,20 +146,13 @@ class Interpreter
         /* ---------------------------- Garbage Collector --------------------------- */
         static void GarbageCollector();
         static void MarkConstantBlack(TypeObject Const);
-        static TypeObject CreateConstant(std::string_view Constant);
-        static void AddToConstantsArray(TypeObjectPtr ConstantToBePlaced);
-        static TypeObjectPtr GetConstFromVariable(const std::string& Variable);
+        static void CreateConstant(std::string_view Constant);
+        static void GetConstFromVariable(const std::string& Variable);
+        static void FindConst(std::string_view Const);
 
         /* -------------------------------- Math Eval ------------------------------- */
-        static std::string PostFixEval(std::string_view PostFixOperation);
-
-        enum class RendorState
-        {
-            None,
-            FunctionCall
-        };
-
-        inline static std::vector<RendorState> RendorStateIDList {RendorState::None};
+        static void PostFixEval(std::string_view PostFixOperation);
+        static void MathVariantToConst(MathVariant& MathConst);
 };
 
-#endif // INTERPRETER
+#endif // INTERPRETER_HPP

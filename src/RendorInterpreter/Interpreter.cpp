@@ -26,7 +26,6 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
         /*                      Preparing bytecode for execution                      */
         /* -------------------------------------------------------------------------- */
         std::string_view ByteCodeOperation = ByteCode[Op];
-        RendorState RendorStateID = RendorStateIDList.back();
         int ByteCodeSize = ByteCodeOperation.size();
 
         if (ByteCodeSize == 0)
@@ -38,243 +37,166 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
         std::string_view Command  (ByteCodeOperation.begin(), ByteCodeOperation.begin() + ByteCodeSpaceIndex);
         std::string_view Args     (ByteCodeOperation.begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation.end());
 
+        if (!ByteCodeMapping.contains(Command))
+        {
+            throw error::RendorException("Unreconized bytecode operation error: " + std::string{ByteCodeOperation});
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                            Execution begins here                           */
         /* -------------------------------------------------------------------------- */
-        if (Command == "DEFINE")
+        switch (ByteCodeMapping.at(std::string{Command}))
         {
-            VariablesCallStack.emplace_back(VariableScopeMap()); // add Variable map for current scope
-            CurrentScopeVariables = &VariablesCallStack.back();
-            GlobalVariables = &VariablesCallStack[0];
-            
-            if (!CurrentScopeVariables)
+            case ByteCodeEnum::DEFINE:
             {
-                throw error::RendorException("Current Scoped variables can't be accessed!");
-            }
-        }
-
-        /* ---------------------------- Ending functions ---------------------------- */
-        else if (Command == "FUNCTION")
-        {
-            if (Args == "END")
-            {
-                VariablesCallStack.pop_back();
-                GarbageCollector(); // Remove constants from memory 
+                VariablesCallStack.emplace_back(VariableScopeMap()); // add Variable map for current scope
                 CurrentScopeVariables = &VariablesCallStack.back();
-                return; 
-            }
-        }
-
-        /* -------------------------------- Constants ------------------------------- */
-        else if 
-        (Command == "CONST")
-        {
-            switch (RendorStateID)
-            {
-                /* ----------------------------- Function Calls ----------------------------- */
-                case RendorState::FunctionCall:
+                GlobalVariables = &VariablesCallStack[0];
+                
+                if (!CurrentScopeVariables)
                 {
-                    TypeObjectPtr Const = CreateConstant(Args);
-                    FunctionArgsCallStack.back().push_back(Const);
-                    break;
+                    throw error::RendorException("Current Scoped variables can't be accessed!");
+                }
+                break;
+            }
+
+            /* ---------------------------- Ending functions ---------------------------- */
+            case ByteCodeEnum::FUNCTION:
+            {
+                if (Args == "END")
+                {
+                    VariablesCallStack.pop_back();
+                    GarbageCollector(); // Remove constants from memory 
+                    CurrentScopeVariables = &VariablesCallStack.back();
+                    return; 
+                }
+                break;
+            }
+
+            /* -------------------------------- Constants ------------------------------- */
+            case ByteCodeEnum::CONST_OP:
+            {
+                CreateConstant(Args);
+                break;
+            }
+
+            /* --------------------------- assigning variables -------------------------- */
+            case ByteCodeEnum::ASSIGN:
+            {
+                std::string Var{Args};
+                TypeObject Const = std::move(std::get<1>(RendorStack.top()));
+                PopStack();
+
+                /* ------------------------ Check if variable exists ------------------------ */
+                if (GlobalVariables->contains(Args))
+                {
+                    (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
+                }
+                else if (CurrentScopeVariables->contains(Args))
+                {
+                    (*CurrentScopeVariables)[Var]->m_ValueClass = Const; // Just change value 
+                }
+                else 
+                {
+                    (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
+                    (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
+                }
+                MarkConstantBlack(Const);
+                break;
+            }
+
+            case ByteCodeEnum::FINALIZE_CALL:
+            {
+                /* ----------------------- If it's a built in function ---------------------- */
+                if (CppFunctions.contains(Args))
+                {
+                    CppFunctions[std::string{Args}]();
                 }
 
-                /* ------------------------------ Default stuff ----------------------------- */
-                default:
+                /* -------------------------- user defined function ------------------------- */
+                else if (UserDefinedFunctions.contains(Args))
                 {
-                    AddToConstantsArray(CreateConstant(Args));
-                    break;
+                    ByteCodeLoop(UserDefinedFunctions[std::string{Args}]->ByteCode);
                 }
-            }
-        }
 
-        /* --------------------------- assigning variables -------------------------- */
-        else if 
-        (Command == "ASSIGN")
-        {
-            std::string Var{Args};
-            TypeObject Const = Constants[ConstantIndex].lock();
-            MarkConstantBlack(Const);
-
-            /* ------------------------ Check if variable exists ------------------------ */
-            if (GlobalVariables->contains(Args))
-            {
-                (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
-            }
-            else if (CurrentScopeVariables->contains(Args))
-            {
-                (*CurrentScopeVariables)[Var]->m_ValueClass = Const; // Just change value 
-            }
-            else 
-            {
-                (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
-                (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
-            }
-        }
-
-        /* ---------------------------- calling functions --------------------------- */
-        else if (Command == "CALL")
-        {
-            if ((BuiltInFunctions.contains(Args)) || (UserDefinedFunctions.contains(Args)))
-            {
-                RendorStateIDList.emplace_back(RendorState::FunctionCall);
-                FunctionArgsCallStack.emplace_back(TypePtrVector());
-            }
-            else 
-            {
-                throw error::RendorException("Function does not exist!");
-            }
-        }
-
-        else if (Command == "FINALIZE_CALL")
-        {
-            /* ----------------------- If it's a built in function ---------------------- */
-            if (BuiltInFunctions.contains(Args))
-            {
-                std::optional<TypeObjectPtr> Result = BuiltInFunctions[std::string{Args}](FunctionArgsCallStack.back());
-                RendorStateIDList.pop_back();
-
-                if (Result.has_value())
+                /* -------------------------- non-existant function ------------------------- */
+                else 
                 {
-                    switch (RendorStateIDList.back())
+                    throw error::RendorException("Function does not exist!");
+                }
+
+                /* ---------------------- clean up after function call ---------------------- */
+                break;
+            }
+
+            case ByteCodeEnum::OPERATOR:
+            {
+                TypeObject Const1;
+                TypeObject Const2 = Constants[ConstantIndex].lock();
+
+                /* ----------------------------- First Constant ----------------------------- */
+                switch (ConstantIndex)
+                {
+                    case 0:
                     {
-                        case RendorState::FunctionCall:
-                        {
-                            FunctionArgsCallStack.pop_back();
-                            FunctionArgsCallStack.back().push_back(Result.value());
-                            break;
-                        }
-                        default:
-                        {
-                            AddToConstantsArray(Result.value());
-                            FunctionArgsCallStack.pop_back();
-                            break;
-                        }
+                        Const1 = Constants[1].lock();
+                        break;
+                    }
+
+                    case 1:
+                    {
+                        Const1 = Constants[0].lock();
+                        break;
+                    }
+
+                    default:
+                    {
+                        break;
                     }
                 }
+                /* ------------------------------- Evaluation ------------------------------- */
+                IfStatementBoolResult.emplace_back(Const1->IfStatementMethod(Const2, OperatorMapping[std::string{Args}]));
+                break;
             }
 
-            /* -------------------------- user defined function ------------------------- */
-            else if (UserDefinedFunctions.contains(Args))
+            case ByteCodeEnum::JMP_IF_FALSE:
             {
-                ByteCodeLoop(UserDefinedFunctions[std::string{Args}]->ByteCode);
-                RendorStateIDList.pop_back();
-                FunctionArgsCallStack.pop_back();
-            }
-
-            /* -------------------------- non-existant function ------------------------- */
-            else 
-            {
-                throw error::RendorException("Function does not exist!");
-            }
-
-            /* ---------------------- clean up after function call ---------------------- */
-        }
-
-        else if (Command == "ARGUMENT")
-        {
-            std::string Var{Args};
-            TypeObject Const = FunctionArgsCallStack.back().back().lock();
-            MarkConstantBlack(Const);
-
-            /* ----------------------------- Assign Variable ---------------------------- */
-            (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
-            (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
-            FunctionArgsCallStack.back().pop_back();
-        }
-
-        else if (Command == "OPERATOR")
-        {
-            TypeObject Const1;
-            TypeObject Const2 = Constants[ConstantIndex].lock();
-            Operator CompOp = Operator::EQUAL;
-
-            /* ----------------------------- Second Constant ---------------------------- */
-            switch (ConstantIndex)
-            {
-                case 0:
+                switch (IfStatementBoolResult.back())
                 {
-                    Const1 = Constants[1].lock();
-                    break;
+                    case true:
+                    {
+                        break;
+                    }
+                    case false:
+                    {
+                        Op += boost::lexical_cast<size_t>(Args);
+                        break;
+                    }
                 }
-
-                case 1:
-                {
-                    Const1 = Constants[0].lock();
-                    break;
-                }
-
-                default:
-                {
-                    break;
-                }
-            }
-            
-            /* -------------------------------- Operator -------------------------------- */
-            if (Args == "EQUAL")
-            {
-                CompOp = Operator::EQUAL;
-            }
-            else if (Args == "NOT_EQUAL")
-            {
-                CompOp = Operator::NOT_EQUAL;
-            }
-            else if (Args == "GREATER_THAN")
-            {
-                CompOp = Operator::GREATER_THAN;
-            }
-            else if (Args == "LESS_THAN")
-            {
-                CompOp = Operator::LESS_THAN;
-            }
-            else if (Args == "GREATER_OR_EQUAL")
-            {
-                CompOp = Operator::GREATER_OR_EQUAL;
-            }
-            else if (Args == "LESS_OR_EQUAL")
-            {
-                CompOp = Operator::LESS_OR_EQUAL;
+                break;
             }
 
-            /* ------------------------------- Evaluation ------------------------------- */
-            IfStatementBoolResult.emplace_back(Const1->IfStatementMethod(Const2, CompOp));
-        }
-
-        else if (Command == "JMP_IF_FALSE")
-        {
-            switch (IfStatementBoolResult.back())
+            case ByteCodeEnum::ENDIF:
             {
-                case true:
+                switch (IfStatementBoolResult.back())
                 {
-                    break;
+                    case true:
+                    {
+                        break;
+                    }
+                    case false:
+                    {
+                        break;
+                    }
                 }
-                case false:
-                {
-                    Op += boost::lexical_cast<size_t>(Args);
-                    break;
-                }
+                IfStatementBoolResult.pop_back();
+                break;
             }
-        }
 
-        else if ("ENDIF")
-        {
-            switch (IfStatementBoolResult.back())
+            default: 
             {
-                case true:
-                {
-                    break;
-                }
-                case false:
-                {
-                    break;
-                }
+                break;
             }
-            IfStatementBoolResult.pop_back();
-        }
-
-        else 
-        {
-            throw error::RendorException("Unreconized bytecode operation error: " + std::string{ByteCodeOperation});
         }
     }
 }
@@ -311,6 +233,11 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
                 ByteCodeOperation = ByteCodeOperation.substr(Pos1, Pos2);
             }
         }
+        else 
+        {
+            continue;
+        }
+        
         size_t ByteCodeSpaceIndex  = ByteCodeOperation.find_first_of(" ");
         std::string_view Command  (ByteCodeOperation.begin(), ByteCodeOperation.begin() + ByteCodeSpaceIndex);
         std::string_view Args     (ByteCodeOperation.begin() + (ByteCodeSpaceIndex + 1), ByteCodeOperation.end());
@@ -320,65 +247,80 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
         /* -------------------------------------------------------------------------- */
 
         /* ---------------------------- Load Global Scope --------------------------- */
-        if (Command == "LOAD")
+        switch (Interpreter::ByteCodeMapping[std::string{Command}])
         {
-            if (Args == "0")
+            case ByteCodeEnum::LOAD:
             {
-                VariablesCallStack.emplace_back(VariableScopeMap()); // add Variable map for the global scope
-                GlobalVariables = &VariablesCallStack.back();
-
-                if (!GlobalVariables)
+                if (Args == "0")
                 {
-                    throw error::RendorException("Global Variables can't be accesed!");
+                    VariablesCallStack.emplace_back(VariableScopeMap()); // add Variable map for the global scope
+                    GlobalVariables = &VariablesCallStack.back();
+
+                    if (!GlobalVariables)
+                    {
+                        throw error::RendorException("Global Variables can't be accesed!");
+                    }
                 }
+                break;
             }
-        }
 
-        /* --------------------------- Defining functions --------------------------- */
-        else if (Command == "DEFINE")
-        {
-            UserDefinedFunctions[std::string{Args}] = std::make_unique<Function>();
-            Scope = &UserDefinedFunctions[std::string{Args}]->ByteCode;
-        }
-
-        else if (Command == "FUNCTION")
-        {
-            Scope->emplace_back(ByteCodeOperation);
-            if (Args == "END")
+            /* --------------------------- Defining functions --------------------------- */
+            case ByteCodeEnum::DEFINE:
             {
-                Scope = nullptr;
+                UserDefinedFunctions[std::string{Args}] = std::make_unique<Function>();
+                Scope = &UserDefinedFunctions[std::string{Args}]->ByteCode;
+                break;
             }
-        }
 
-        /* -------------------------------- Constants ------------------------------- */
-        else if 
-        ((Command == "CONST") &&
-        (Scope == 0))
-        {
-            AddToConstantsArray(CreateConstant(Args));
-        }
-
-        /* ------------------ Making variables in the global scope ------------------ */
-        else if 
-        ((Command == "ASSIGN") &&
-        (Scope == 0))
-        {
-            
-            std::string Var{Args};
-            TypeObject Const = Constants[ConstantIndex].lock();
-            MarkConstantBlack(Const);
-            /* ------------------------ Check if variable exists ------------------------ */
-            if (GlobalVariables->contains(Args))
+            case ByteCodeEnum::FUNCTION:
             {
-                (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
+                Scope->emplace_back(ByteCodeOperation);
+                if (Args == "END")
+                {
+                    Scope = nullptr;
+                }
+                break;
             }
-            else 
+
+            /* -------------------------------- Constants ------------------------------- */
+            case ByteCodeEnum::CONST_OP:
             {
-                (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
-                (*GlobalVariables)[Var]->m_ValueClass = Const;
+                if (Scope == 0)
+                {
+                    break;
+                }
+                AddToConstantsArray(ParseConstant(Args));
+                break;
+            }
+
+            /* ------------------ Making variables in the global scope ------------------ */
+            case ByteCodeEnum::ASSIGN:
+            {
+                if (Scope == 0)
+                {
+                    break;
+                }
+                std::string Var{Args};
+                TypeObject Const = Constants[ConstantIndex].lock();
+                MarkConstantBlack(Const);
+                /* ------------------------ Check if variable exists ------------------------ */
+                if (GlobalVariables->contains(Args))
+                {
+                    (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
+                }
+                else 
+                {
+                    (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
+                    (*GlobalVariables)[Var]->m_ValueClass = Const;
+                }
+                break;
+            }
+
+            default:
+            {
+                break;
             }
         }
-
         if (Scope != nullptr)
         {
             Scope->emplace_back(ByteCodeOperation);

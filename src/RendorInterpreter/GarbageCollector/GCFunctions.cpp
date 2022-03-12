@@ -6,117 +6,69 @@
 /* ---------------------------- Garbage Collector --------------------------- */
 void Interpreter::GarbageCollector()
 {
-    WhiteObjects.clear();
-    for (auto Constant : GreyObjects)
-    {
-        BlackObjects.push_back(std::move(Constant));
-        break;
-    }
 
-    /* ------------------------ Remove all empty pointers ----------------------- */
-    if (Objects.size())
-    {
-        Objects.erase(std::remove_if(Objects.begin(), Objects.end(), 
-        [](TypeObjectPtr Ptr)
-        {
-            return Ptr.expired() || Ptr.lock()->ColorOfObj == GCColor::WHITE;
-        }));
-    }
-    WhiteObjects.clear();
 }
 
 /* ------------------------ Function to add constants ----------------------- */
-TypeObject Interpreter::CreateConstant(std::string_view Constant)
+void Interpreter::CreateConstant(std::string_view Constant)
 {
-    if (Constant[0] == '_')
+    size_t CommaIndex = Constant.find_first_of(",");
+    std::string Type  (Constant.begin(), Constant.begin() + CommaIndex);
+    std::string Const (Constant.begin() + (CommaIndex + 1), Constant.end());
+
+    switch (TypeMapping.at(Type))
     {
-        std::string ActualConstant{Constant.begin() + 2, Constant.end()};
-
-        if (Constant.size() <= 2)
+        case ConstType::INT64:
         {
-            ActualConstant = "";
+            TypeObject_U Object = std::make_unique<Int64>(Const);
+            RendorStack.emplace(Object.get(), std::move(Object));
         }
-
-        switch (Constant[1])
+        case ConstType::DOUBLE:
         {
-            /* --------------------------------- Strings -------------------------------- */
-            case 'S':
-            {
-                auto FindIterator = std::find_if(
-                Objects.begin(), 
-                Objects.end(),
-                [&ActualConstant] (TypeObjectPtr Ptr) 
-                {
-                    if (!Ptr.expired())
-                    {
-                        return Ptr.lock()->m_Value == ActualConstant;
-                    } 
-                    else 
-                    {
-                        return false;
-                    }
-                }
-                );
-                
-                // Add new string to Objects
-                if (FindIterator == Objects.end())
-                {
-                    TypeObject Obj = std::make_shared<String>(std::string{ActualConstant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                    return WhiteObjects.back();
-                } 
-                else 
-                {
-                    return FindIterator->lock();
-                }
-                break;
-            }
-
-            /* ---------------------------- Copying Variables --------------------------- */
-            case '&':
-            {
-                if (GlobalVariables->contains(ActualConstant))
-                {
-                    return (*GlobalVariables)[ActualConstant]->m_ValueClass;
-                }
-                else if (CurrentScopeVariables->contains(ActualConstant))
-                {
-                    return (*CurrentScopeVariables)[ActualConstant]->m_ValueClass; 
-                }
-                else 
-                {
-                    throw error::RendorException("Reference to undefined variable: " + ActualConstant);
-                }
-                break;
-            }
-
-            default:
-            {
-                throw error::RendorException("Unsupported Constant Declared");
-            }
+            TypeObject_U Object = std::make_unique<Double>(Const);
+            RendorStack.emplace(Object.get(), std::move(Object));
+        }
+        case ConstType::STRING:
+        {
+            TypeObject_U Object = std::make_unique<String>(Const);
+            RendorStack.emplace(Object.get(), std::move(Object));
+        }
+        case ConstType::BOOL:
+        {
+            TypeObject_U Object = std::make_unique<Bool>(Const);
+            RendorStack.emplace(Object.get(), std::move(Object));
+        }
+        case ConstType::ARITHMETHIC:
+        {
+            
+        }
+        case ConstType::REFERENCE:
+        {
+            GetConstFromVariable(std::string{Const});
+        }
+        default:
+        {
+            break;
         }
     }
+}
 
-    else if (Constant[0] == '&')
-    {
-        std::string ActualConstant{Constant.begin() + 3, Constant.end()};
-        if (Constant[2] == 'A')
-        {
-            return CreateConstant(PostFixEval(ActualConstant));
-        }
-    }
+void Interpreter::FindConst(std::string_view Const)
+{
+    auto [Index, List] = Objects[std::string{Const}];
+    std::vector<TypeObject>* VectorToSearch = VectorMapping.at(List);
 
-    else 
+    /* ----------------- if the vector is smaller then the index ---------------- */
+    if (Index + 1 > VectorToSearch->size())
     {
         auto FindIterator = std::find_if(
-        Objects.begin(), 
-        Objects.end(),
-        [&Constant] (TypeObjectPtr Ptr) 
+        VectorToSearch->begin(), 
+        VectorToSearch->end(),
+        [&Const] (TypeObjectPtr Ptr) 
         {
             if (!Ptr.expired())
             {
-                return Ptr.lock()->m_Value == Constant;
+                return Ptr.lock()->m_Value == Const;
             } 
             else 
             {
@@ -124,124 +76,43 @@ TypeObject Interpreter::CreateConstant(std::string_view Constant)
             }
         }
         );
-
-        /* -------------------------- If item doesn't exist ------------------------- */
-        if (FindIterator == Objects.end())
-        {
-            /* ----------------------------- Ints and floats ---------------------------- */
-            if 
-            (Constant.find_first_not_of("1234567890.") == std::string::npos) 
-            {
-                if (Constant.find_first_of(".") != std::string::npos)
-                {
-                    TypeObject Obj = std::make_shared<Float>(std::string{Constant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                }
-                else 
-                {
-                    TypeObject Obj = std::make_shared<Int>(std::string{Constant});
-                    WhiteObjects.push_back(Obj);
-                    Objects.push_back(Obj);
-                }
-            }
-            
-            /* -------------------------------- Booleans -------------------------------- */
-            else if 
-            ((Constant == "true") ||
-            (Constant == "false"))
-            {
-                TypeObject Obj = std::make_shared<Bool>(std::string{Constant});
-                WhiteObjects.push_back(Obj);
-                Objects.push_back(Obj);
-            }
-
-            /* ------------------------------ return result ----------------------------- */
-            return WhiteObjects.back();
-        }
-        else 
-        {
-            return FindIterator->lock();
-        }
+        RendorStack.emplace(FindIterator->get());
+        return;
     }
 
-    return TypeObject();
+    /* -------------------------------- otherwise ------------------------------- */
+    for (size_t i = Index; Index >= 0; --Index)
+    {
+        Type* Ptr = VectorToSearch->at(Index).get();
+        if (Ptr != nullptr)
+        {
+            if (Ptr->m_Value == Const)
+            {
+                RendorStack.emplace(Ptr);
+                return;
+            }
+        } 
+    }
 }
 
 void Interpreter::MarkConstantBlack(TypeObject Const)
 {
-    if (Const.use_count()){
-        switch (Const->ColorOfObj)
-        {
-            case GCColor::BLACK:
-            {
-                break;
-            }
-
-            case GCColor::GREY:
-            {
-                auto OriginalPtr = std::find(GreyObjects.begin(), GreyObjects.end(), Const);
-                BlackObjects.push_back(std::move(*OriginalPtr));
-                break;
-            }
-
-            default:
-            {
-                auto OriginalPtr = std::find(WhiteObjects.begin(), WhiteObjects.end(), Const);
-                BlackObjects.push_back(std::move(*OriginalPtr));
-                break;
-            }
-        }
-        Const->ColorOfObj = GCColor::BLACK;
-    }
+    Const->ColorOfObj = GCColor::BLACK;
+    BlackObjects.push_back(std::move(Const));
 }
 
-void Interpreter::AddToConstantsArray(TypeObjectPtr ConstantToBePlaced)
+void Interpreter::GetConstFromVariable(const std::string& Variable)
 {
-    if (Constants.size() == 2)
+    if (CurrentScopeVariables->contains(Variable))
     {
-        switch (ConstantIndex)
-        {
-            case 0:
-            {
-                ++ConstantIndex;
-                break;
-            }
-            
-            case 1:
-            {
-                --ConstantIndex;
-                break;
-            }
-        }
-        Constants[ConstantIndex] = ConstantToBePlaced;
+        RendorStack.emplace((*CurrentScopeVariables)[Variable].get());
     }
-    else if (Constants.size() == 1)
+    else if (GlobalVariables->contains(Variable))
     {
-        Constants[1] = (ConstantToBePlaced);
-        ++ConstantIndex;
+        RendorStack.emplace((*GlobalVariables)[Variable].get());
     }
     else 
     {
-        Constants[0] = (ConstantToBePlaced);
+        throw error::RendorException("Undefined variable: " + Variable);
     }
-}
-
-TypeObjectPtr Interpreter::GetConstFromVariable(const std::string& Variable)
-{
-    /* ------------------------ Check if variable exists ------------------------ */
-    if (GlobalVariables->contains(Variable))
-    {
-        return (*GlobalVariables)[Variable]->m_ValueClass;
-    }
-    else if (CurrentScopeVariables->contains(Variable))
-    {
-        return (*CurrentScopeVariables)[Variable]->m_ValueClass;
-    }
-    else 
-    {
-        throw error::RendorException("Variable " + Variable + " doesn't exist!");
-    }
-
-    return TypeObjectPtr();
 }
