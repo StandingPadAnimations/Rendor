@@ -66,4 +66,19 @@ void Interpreter::PostFixEval(std::string_view PostFixOperation)
     {
         throw error::RendorException("WTH Error; Size of stack in arithmethic operation is larger then expected. Please report this as an issue on the Rendor Github.");
     }
+
+    if (Stack.back().index() == 0)
+    {
+        std::visit([&](int64_t Num1v) 
+        { 
+            DropInt64OnStack(Num1v);
+        }, Stack.back());
+    }
+    else
+    {
+        std::visit([&](double Num1v) 
+        { 
+            DropDoubleOnStack(Num1v);
+        }, Stack.back());
+    }
 }

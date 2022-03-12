@@ -5,6 +5,9 @@ enum class ByteCodeEnum
 {
     /* ------------------------------- Load Scope ------------------------------- */
     LOAD,
+    END,
+    CIMPORT,
+    IMPORT,
 
     /* -------------------------------- Constants ------------------------------- */
     CONST_OP,
@@ -17,7 +20,7 @@ enum class ByteCodeEnum
 
     /* --------------------------------- If-Else -------------------------------- */
     OPERATOR,
-    JMP_IF_FALSE,
+    JMP,
     ENDIF,
 };
 

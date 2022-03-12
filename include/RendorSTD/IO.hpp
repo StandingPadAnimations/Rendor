@@ -2,7 +2,8 @@
 #define RENDOR_STD_IO_HPP
 #include "RendorAPI/RendorAPI.h"
 
-static void RENDOR_ECHO_FUNCTION();
-static void RENDOR_INPUT_FUNCTION();
+void RENDOR_ECHO_FUNCTION();
+void RENDOR_INPUT_FUNCTION();
+RENDOR_INIT RendorModule_IO();
 
 #endif // RENDOR_STD_IO_HPP

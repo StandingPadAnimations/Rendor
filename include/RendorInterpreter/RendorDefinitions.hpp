@@ -14,6 +14,7 @@
 typedef std::shared_ptr<Type> TypeObject;
 typedef std::weak_ptr<Type> TypeObjectPtr;
 typedef std::unique_ptr<Type> TypeObject_U;
+typedef std::tuple<Type*, TypeObject_U> TypeTuple;
 typedef std::vector<TypeObjectPtr> TypePtrVector;
 typedef std::vector<std::string> StringVector;
 typedef std::unordered_map<std::string, std::unique_ptr<Variable>, string_hash, std::equal_to<>> VariableScopeMap;

@@ -41,7 +41,7 @@ enum class GCColor
 struct Type 
 {
     virtual VariableType TypeOfVariable(){return VariableType::NullType;};
-    virtual bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator) = 0;
+    virtual bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) = 0;
 
     std::string m_Value;
     std::string m_ID;
@@ -73,7 +73,7 @@ struct Int64 : Type
     int64_t ConvertedValue;
     explicit Int64(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Int64;}
-    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator); 
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator); 
 };
 
 /* -------------------------------------------------------------------------- */
@@ -85,7 +85,7 @@ struct Double : Type
     explicit Double(std::string Value);
 
     VariableType TypeOfVariable(){return VariableType::Double;}
-    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
 };
 
 struct String : Type
@@ -93,7 +93,7 @@ struct String : Type
     explicit String(std::string Value) : Type(Value){}
 
     VariableType TypeOfVariable(){return VariableType::String;}
-    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
 };
 
 struct Bool : Type
@@ -101,7 +101,7 @@ struct Bool : Type
     bool ConvertedValue;
     explicit Bool(std::string Value);
     VariableType TypeOfVariable(){return VariableType::Bool;}
-    bool IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator);
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
 };
 
 #endif // RENDOR_TYPES_HPP

@@ -3,19 +3,19 @@
 /* -------------------------------------------------------------------------- */
 /*                                     Int                                    */
 /* -------------------------------------------------------------------------- */
-bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
+bool Int64::IfStatementMethod(Type* Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Int
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
-        auto& Const2Object = static_cast<Int&>(*Const2);
+        auto& Const2Object = static_cast<Int64&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
-        auto& Const2Object = static_cast<Float&>(*Const2);
+        auto& Const2Object = static_cast<Double&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
     else if (Const2->TypeOfVariable() == VariableType::Bool)
@@ -119,19 +119,19 @@ bool Int::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOp
 /*                                    Float                                   */
 /* -------------------------------------------------------------------------- */
 
-bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
+bool Double::IfStatementMethod(Type* Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
-        auto& Const2Object = static_cast<Int&>(*Const2);
+        auto& Const2Object = static_cast<Int64&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
-        auto& Const2Object = static_cast<Float&>(*Const2);
+        auto& Const2Object = static_cast<Double&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
     else if (Const2->TypeOfVariable() == VariableType::Bool)
@@ -235,7 +235,7 @@ bool Float::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Comparison
 /* -------------------------------------------------------------------------- */
 /*                                   String                                   */
 /* -------------------------------------------------------------------------- */
-bool String::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
+bool String::IfStatementMethod(Type* Const2, Operator ComparisonOperator)
 {
     std::string Const2Converted; // String is only compatible with string
     std::string ConvertedValue = m_Value;
@@ -282,19 +282,19 @@ bool String::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator Compariso
 /* -------------------------------------------------------------------------- */
 /*                                    Bool                                    */
 /* -------------------------------------------------------------------------- */
-bool Bool::IfStatementMethod(std::shared_ptr<Type>& Const2, Operator ComparisonOperator)
+bool Bool::IfStatementMethod(Type* Const2, Operator ComparisonOperator)
 {
     std::variant<int64_t, double, bool> Const2Converted; // All compatible types with Float
 
     /* ------------------------- Retrive value of Const2 ------------------------ */
-    if (Const2->TypeOfVariable() == VariableType::Int)
+    if (Const2->TypeOfVariable() == VariableType::Int64)
     {
-        auto& Const2Object = static_cast<Int&>(*Const2);
+        auto& Const2Object = static_cast<Int64&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
-    else if (Const2->TypeOfVariable() == VariableType::Float)
+    else if (Const2->TypeOfVariable() == VariableType::Double)
     {
-        auto& Const2Object = static_cast<Float&>(*Const2);
+        auto& Const2Object = static_cast<Double&>(*Const2);
         Const2Converted = Const2Object.ConvertedValue;
     }
     else if (Const2->TypeOfVariable() == VariableType::Bool)

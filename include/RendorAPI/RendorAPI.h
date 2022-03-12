@@ -9,19 +9,13 @@
 #define RENDOR_INIT void
 #endif
 
-EXTERNAL struct RendorMethod
-{
-    const char* Name;
-    size_t ArgCount;
-    void (*RendorFunc)(void);
-};
-
+#include "RendorAPI/RendorModuleDef.h"
 enum TypeEnum
 {
-    INT64,
-    DOUBLE,
-    STRING,
-    BOOL
+    C_INT64,
+    C_DOUBLE,
+    C_STRING,
+    C_BOOL
 };
 
 EXTERNAL int64_t Rendor_GrabInt64FromStack();
@@ -34,6 +28,6 @@ EXTERNAL void Rendor_DropInt64OnStack(int64_t Const);
 EXTERNAL void Rendor_DropDoubleOnStack(double Const);
 EXTERNAL void Rendor_DropConstCharOnStack(const char* Const);
 EXTERNAL void Rendor_DropBoolOnStack(int Const);
-EXTERNAL void Rendor_InitModule(RendorMethod MethodList[]);
+EXTERNAL void Rendor_InitModule(RendorMethod *MethodList, size_t size);
 
 #endif // RENDOR_API_H

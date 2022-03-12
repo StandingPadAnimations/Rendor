@@ -24,6 +24,8 @@
 #include "RendorInterpreter/CodeObjects.hpp"
 #include "RendorInterpreter/ByteCodeEnum.hpp"
 
+#include "RendorAPI/RendorModuleDef.h"
+
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
 
@@ -35,8 +37,8 @@
 
 
 // Standard Library
-#include "RendorSTD/Rendor_IO.hpp"
-#include "RendorSTD/Rendor_Math.hpp"
+#include "RendorSTD/IO.hpp"
+#include "RendorSTD/Math.hpp"
 
 enum class ConstType
 {
@@ -69,6 +71,8 @@ class Interpreter
         static void DropBoolOnStack(bool Const);
         static void PopStack();
 
+        static void InitModule(RendorMethod *MethodList, size_t size);
+
     private:
         /* -------------------------------------------------------------------------- */
         /*                            Interpreter Internals                           */
@@ -77,6 +81,7 @@ class Interpreter
         inline static const std::unordered_map<std::string, ByteCodeEnum, string_hash, std::equal_to<>> ByteCodeMapping
         {
             {"LOAD",            ByteCodeEnum::LOAD},
+            {"END",             ByteCodeEnum::END},
             {"CONST",           ByteCodeEnum::CONST_OP},
             {"ASSIGN",          ByteCodeEnum::ASSIGN},
             {"ARGUMENT",        ByteCodeEnum::ASSIGN},
@@ -84,8 +89,10 @@ class Interpreter
             {"FINALIZE_CALL",   ByteCodeEnum::FINALIZE_CALL},
             {"FUNCTION",        ByteCodeEnum::FUNCTION},
             {"OPERATOR",        ByteCodeEnum::OPERATOR},
-            {"JMP_IF_FALSE",    ByteCodeEnum::JMP_IF_FALSE},
+            {"JMP",             ByteCodeEnum::JMP},
             {"ENDIF",           ByteCodeEnum::ENDIF},
+            {"CIMPORT",         ByteCodeEnum::CIMPORT},
+            {"IMPORT",          ByteCodeEnum::IMPORT},
         };
 
         inline static const std::unordered_map<std::string, Operator, string_hash, std::equal_to<>> OperatorMapping
@@ -133,7 +140,6 @@ class Interpreter
         inline static VariableScopeMap *GlobalVariables = NULL;
 
         /* ----------------------- if statement related things ---------------------- */
-        inline static std::vector<bool> IfStatementBoolResult; 
         inline static std::unordered_map<std::string, RendorFunctionPtr, string_hash, std::equal_to<>> CppFunctions;
         
 

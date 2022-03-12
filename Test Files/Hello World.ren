@@ -1,44 +1,18 @@
-// Curent built in functions include:
-// echo(value) : prints to console
-// input(message) : takes in user input
-// sum(int) : calculates sum of all numbers up to input 
 
-// Main function where the program enters
-
-~forward xyz(foo, bar)
+~forward foo(bar)
 edef main() 
 {
-    // Variables
-    int = 1 // ints
-    flo = 1.5 // floats
-    string = "Hello World" // strings
-    bool = true // booleans 
-    arithmethic = 1+1(2+5)
+    arithmethic = 1(2+5)
+    echo("Hello")
+    echo("bar")
 
-    // ++int
-
-    echo("hi")
-
-    // Example function call
-    bar = input("Enter Args(bar): ")
-    xyz(flo, bar)
-
-    bool = "hi"
-    if (int)
+    if (arithmethic > 10)
     {
-        echo("int")
-    }
-
-    if (flo >= 1)
-    {
-        echo("flo is 1.0")
+        echo("yee")
     }
 }
 
-// function xyz with arguments foo and bar
-edef xyz(foo, bar)
+edef foo(bar)
 {
     echo(bar)
-    echo(bar)
 }
-

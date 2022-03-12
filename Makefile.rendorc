@@ -16,7 +16,7 @@ SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 TERM_SOURCE := $(wildcard $(CPP_TERM)/*.cpp)
-TERM_OBJECT :=  $(patsubst $(CPP_TERM)/%.cpp,$(TERM_OBJ)/%.o,$(TERM_SOURCE))
+TERM_OBJECT := $(patsubst $(CPP_TERM)/%.cpp,$(TERM_OBJ)/%.o,$(TERM_SOURCE))
 
 BOOSTFILE   := boost_filesystem-mt
 BOOSTSYS    := boost_system-mt

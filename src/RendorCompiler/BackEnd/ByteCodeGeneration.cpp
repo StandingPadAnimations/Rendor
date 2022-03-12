@@ -83,7 +83,7 @@ std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& Nod
         {
             ByteCode.emplace_back("OPERATOR LESS_OR_EQUAL");
         }
-        ByteCode.emplace_back("JMP_IF_FALSE ");
+        ByteCode.emplace_back("JMP ");
         
         /* -------------------- For the JMP_IF_FALSE instruction -------------------- */
         size_t IndexOfJMP = ByteCode.size() - 1;

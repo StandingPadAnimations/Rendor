@@ -7,6 +7,7 @@
 void Interpreter::ExecuteByteCode(const boost::interprocess::mapped_region& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
+    RendorModule_IO();
 
     /* ------------------------- Define stuff like main ------------------------- */
     ByteCodeLoopDefinition(File);
@@ -131,65 +132,31 @@ void Interpreter::ByteCodeLoop(std::vector<std::string_view>& ByteCode)
 
             case ByteCodeEnum::OPERATOR:
             {
-                TypeObject Const1;
-                TypeObject Const2 = Constants[ConstantIndex].lock();
+                TypeTuple Tuple2 = std::move(RendorStack.top());
+                PopStack();
+                TypeTuple Tuple1 = std::move(RendorStack.top());
+                PopStack();
 
-                /* ----------------------------- First Constant ----------------------------- */
-                switch (ConstantIndex)
-                {
-                    case 0:
-                    {
-                        Const1 = Constants[1].lock();
-                        break;
-                    }
+                Type* Const1 = std::get<0>(Tuple1);
+                Type* Const2 = std::get<0>(Tuple2);
 
-                    case 1:
-                    {
-                        Const1 = Constants[0].lock();
-                        break;
-                    }
-
-                    default:
-                    {
-                        break;
-                    }
-                }
                 /* ------------------------------- Evaluation ------------------------------- */
-                IfStatementBoolResult.emplace_back(Const1->IfStatementMethod(Const2, OperatorMapping[std::string{Args}]));
+                bool EvalResult = Const1->IfStatementMethod(Const2, OperatorMapping.at(std::string{Args}));
+                if (EvalResult)
+                {
+                    ++Op;
+                }
                 break;
             }
 
-            case ByteCodeEnum::JMP_IF_FALSE:
+            case ByteCodeEnum::JMP:
             {
-                switch (IfStatementBoolResult.back())
-                {
-                    case true:
-                    {
-                        break;
-                    }
-                    case false:
-                    {
-                        Op += boost::lexical_cast<size_t>(Args);
-                        break;
-                    }
-                }
+                Op += boost::lexical_cast<size_t>(Args);
                 break;
             }
 
             case ByteCodeEnum::ENDIF:
             {
-                switch (IfStatementBoolResult.back())
-                {
-                    case true:
-                    {
-                        break;
-                    }
-                    case false:
-                    {
-                        break;
-                    }
-                }
-                IfStatementBoolResult.pop_back();
                 break;
             }
 
@@ -247,7 +214,7 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
         /* -------------------------------------------------------------------------- */
 
         /* ---------------------------- Load Global Scope --------------------------- */
-        switch (Interpreter::ByteCodeMapping[std::string{Command}])
+        switch (ByteCodeMapping.at(std::string{Command}))
         {
             case ByteCodeEnum::LOAD:
             {
@@ -261,6 +228,11 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
                         throw error::RendorException("Global Variables can't be accesed!");
                     }
                 }
+                break;
+            }
+
+            case ByteCodeEnum::CIMPORT:
+            {
                 break;
             }
 
@@ -285,34 +257,40 @@ void Interpreter::ByteCodeLoopDefinition(const boost::interprocess::mapped_regio
             /* -------------------------------- Constants ------------------------------- */
             case ByteCodeEnum::CONST_OP:
             {
-                if (Scope == 0)
+                if (Scope != nullptr)
                 {
                     break;
                 }
-                AddToConstantsArray(ParseConstant(Args));
+                CreateConstant(Args);
                 break;
             }
 
             /* ------------------ Making variables in the global scope ------------------ */
             case ByteCodeEnum::ASSIGN:
             {
-                if (Scope == 0)
+                if (Scope != nullptr)
                 {
                     break;
                 }
                 std::string Var{Args};
-                TypeObject Const = Constants[ConstantIndex].lock();
-                MarkConstantBlack(Const);
+                TypeObject Const = std::move(std::get<1>(RendorStack.top()));
+                PopStack();
+
                 /* ------------------------ Check if variable exists ------------------------ */
                 if (GlobalVariables->contains(Args))
                 {
                     (*GlobalVariables)[Var]->m_ValueClass = Const; // Just change value 
                 }
+                else if (CurrentScopeVariables->contains(Args))
+                {
+                    (*CurrentScopeVariables)[Var]->m_ValueClass = Const; // Just change value 
+                }
                 else 
                 {
-                    (*GlobalVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
-                    (*GlobalVariables)[Var]->m_ValueClass = Const;
+                    (*CurrentScopeVariables)[Var] = std::make_unique<Variable>(Var); // Create new variable object and then change value 
+                    (*CurrentScopeVariables)[Var]->m_ValueClass = Const;
                 }
+                MarkConstantBlack(Const);
                 break;
             }
 

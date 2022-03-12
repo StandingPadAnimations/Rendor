@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "RendorSTD/Rendor_IO.hpp"
+#include "RendorSTD/IO.hpp"
 
 void RENDOR_ECHO_FUNCTION()
 {
@@ -17,13 +17,12 @@ void RENDOR_INPUT_FUNCTION()
     Rendor_DropConstCharOnStack(Input.c_str());
 }
 
-RendorMethod Rendor_IO_InitList[] = {
+static RendorMethod Rendor_IO_InitList[] = {
     {"echo", 1, RENDOR_ECHO_FUNCTION},
     {"input", 1, RENDOR_INPUT_FUNCTION},
-    {NULL, 0, NULL}
 };
 
 RENDOR_INIT RendorModule_IO()
 {
-    Rendor_InitModule(Rendor_IO_InitList);
+    Rendor_InitModule(Rendor_IO_InitList, 2);
 }

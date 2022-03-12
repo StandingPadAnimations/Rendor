@@ -71,3 +71,17 @@ void Interpreter::DropBoolOnStack(bool Const)
     TypeObject_U Object = std::make_unique<Bool>(std::to_string(Const));
     RendorStack.emplace(Object.get(), std::move(Object));
 }
+
+
+/* -------------------------------------------------------------------------- */
+/*                              Module functions                              */
+/* -------------------------------------------------------------------------- */
+
+void Interpreter::InitModule(RendorMethod *MethodList, size_t size)
+{
+    for (size_t Index = 0; Index < size; ++Index)
+    {
+        RendorMethod Method = MethodList[Index];
+        CppFunctions.emplace(Method.Name, Method.RendorFunc);
+    }
+}

@@ -2,6 +2,7 @@
 #define RENDOR_STD_MATH_HPP
 #include "RendorAPI/RendorAPI.h"
 
-static void RENDOR_SUM_FUNCTION();
+void RENDOR_SUM_FUNCTION();
+RENDOR_INIT RendorModule_Math();
 
 #endif // RENDOR_STD_MATH_HPP

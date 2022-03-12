@@ -40,25 +40,26 @@ TypeEnum Rendor_GrabObjTypeFromStack()
     {
         case VariableType::Int64:
         {
-            return TypeEnum::INT64;
+            return TypeEnum::C_INT64;
         }
         case VariableType::Double:
         {
-            return TypeEnum::DOUBLE;
+            return TypeEnum::C_DOUBLE;
         }
         case VariableType::String:
         {
-            return TypeEnum::STRING;
+            return TypeEnum::C_STRING;
         }
         case VariableType::Bool:
         {
-            return TypeEnum::BOOL;
+            return TypeEnum::C_BOOL;
         }
         default:
         {
             break;
         }
     }
+    return TypeEnum::C_INT64;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -79,4 +80,13 @@ void Rendor_DropConstCharOnStack(const char* Const)
 void Rendor_DropBoolOnStack(int Const)
 {
     Interpreter::DropBoolOnStack(Const);
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Module stuff                                */
+/* -------------------------------------------------------------------------- */
+
+void Rendor_InitModule(RendorMethod *MethodList, size_t size)
+{
+    Interpreter::InitModule(MethodList, size);
 }

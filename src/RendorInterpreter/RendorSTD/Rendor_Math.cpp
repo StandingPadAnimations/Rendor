@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "RendorSTD/Rendor_Math.hpp"
+#include "RendorSTD/Math.hpp"
 
 void RENDOR_SUM_FUNCTION()
 {
@@ -8,12 +8,11 @@ void RENDOR_SUM_FUNCTION()
     Rendor_DropInt64OnStack(IntArg);
 }
 
-RendorMethod Rendor_MATH_InitList[] = {
+static RendorMethod Rendor_MATH_InitList[] = {
     {"sum", 1, RENDOR_SUM_FUNCTION},
-    {NULL, 0, NULL}
 };
 
-RENDOR_INIT RendorModule_IO()
+RENDOR_INIT RendorModule_Math()
 {
-    Rendor_InitModule(Rendor_MATH_InitList);
+    Rendor_InitModule(Rendor_MATH_InitList, 1);
 }
