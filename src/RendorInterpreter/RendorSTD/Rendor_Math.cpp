@@ -10,9 +10,10 @@ void RENDOR_SUM_FUNCTION()
 
 static RendorMethod Rendor_MATH_InitList[] = {
     {"sum", 1, RENDOR_SUM_FUNCTION},
+    {NULL, 0, NULL}
 };
 
 RENDOR_INIT RendorModule_Math()
 {
-    Rendor_InitModule(Rendor_MATH_InitList, 1);
+    Rendor_InitModule(Rendor_MATH_InitList);
 }

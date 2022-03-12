@@ -20,9 +20,10 @@ void RENDOR_INPUT_FUNCTION()
 static RendorMethod Rendor_IO_InitList[] = {
     {"echo", 1, RENDOR_ECHO_FUNCTION},
     {"input", 1, RENDOR_INPUT_FUNCTION},
+    {NULL, 0, NULL}
 };
 
 RENDOR_INIT RendorModule_IO()
 {
-    Rendor_InitModule(Rendor_IO_InitList, 2);
+    Rendor_InitModule(Rendor_IO_InitList);
 }

@@ -71,7 +71,7 @@ class Interpreter
         static void DropBoolOnStack(bool Const);
         static void PopStack();
 
-        static void InitModule(RendorMethod *MethodList, size_t size);
+        static void InitModule(RendorMethod *MethodList);
 
     private:
         /* -------------------------------------------------------------------------- */

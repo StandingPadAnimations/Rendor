@@ -28,6 +28,6 @@ EXTERNAL void Rendor_DropInt64OnStack(int64_t Const);
 EXTERNAL void Rendor_DropDoubleOnStack(double Const);
 EXTERNAL void Rendor_DropConstCharOnStack(const char* Const);
 EXTERNAL void Rendor_DropBoolOnStack(int Const);
-EXTERNAL void Rendor_InitModule(RendorMethod *MethodList, size_t size);
+EXTERNAL void Rendor_InitModule(RendorMethod *MethodList);
 
 #endif // RENDOR_API_H

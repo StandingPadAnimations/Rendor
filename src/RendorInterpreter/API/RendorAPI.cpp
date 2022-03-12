@@ -77,11 +77,18 @@ void Interpreter::DropBoolOnStack(bool Const)
 /*                              Module functions                              */
 /* -------------------------------------------------------------------------- */
 
-void Interpreter::InitModule(RendorMethod *MethodList, size_t size)
+void Interpreter::InitModule(RendorMethod *MethodList)
 {
-    for (size_t Index = 0; Index < size; ++Index)
+    bool IterateArray = false;
+    size_t Index = 0;
+    do 
     {
         RendorMethod Method = MethodList[Index];
+        if (Method.Name == NULL)
+        {
+            IterateArray = false;
+        }
+
         CppFunctions.emplace(Method.Name, Method.RendorFunc);
-    }
+    } while (IterateArray);
 }
