@@ -1,6 +1,6 @@
 #include "RendorEngine.hpp"
-#include "RendorCompiler/Lexer.hpp"
-#include "RendorCompiler/Parser.hpp"
+#include "RendorCompiler/Lexer/Lexer.hpp"
+#include "RendorCompiler/Parser/Parser.hpp"
 #include "cpp-terminal/base.hpp"
 
 using Term::color;

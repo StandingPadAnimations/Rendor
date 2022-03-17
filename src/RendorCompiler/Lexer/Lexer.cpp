@@ -1,4 +1,4 @@
-#include "RendorCompiler/Lexer.hpp"
+#include "RendorCompiler/Lexer/Lexer.hpp"
 using namespace Lex;
 
 std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interprocess::mapped_region& MappedCode){

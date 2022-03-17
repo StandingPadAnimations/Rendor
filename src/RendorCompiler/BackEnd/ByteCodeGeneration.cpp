@@ -1,4 +1,4 @@
-#include "RendorCompiler/Parser.hpp"
+#include "RendorCompiler/Parser/Parser.hpp"
 
 /* -------------------------------------------------------------------------- */
 /*                      Bytecode Generation loop function                     */

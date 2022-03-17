@@ -1,4 +1,7 @@
 /*
+
+بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
+In the name of God, the Gracious, the Merciful
 ---------------------------------
 ---------------------------------
 PLEASE READ BEFORE CONTINUING 

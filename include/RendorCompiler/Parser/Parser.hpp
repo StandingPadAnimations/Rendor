@@ -1,5 +1,5 @@
-#ifndef PARSER
-#define PARSER
+#ifndef PARSER_HPP
+#define PARSER_HPP
 #include <iostream>
 #include <string>
 #include <string_view>
@@ -7,12 +7,12 @@
 #include <memory>
 #include <map>
 
-#include "RendorCompiler/Lexer.hpp"
-#include "RendorCompiler/Mathparsing.hpp"
-#include "RendorCompiler/MathEvaluator.hpp"
-#include "RendorCompiler/RendorDeltaOptimizer.hpp"
-#include "RendorCompiler/ASTGenerationFunctions.hpp"
-#include "RendorCompiler/Nodes.hpp"
+#include "RendorCompiler/Lexer/Lexer.hpp"
+#include "RendorCompiler/Math/Mathparsing.hpp"
+#include "RendorCompiler/Math/MathEvaluator.hpp"
+#include "RendorCompiler/Parser/RendorDeltaOptimizer.hpp"
+#include "RendorCompiler/Parser/ASTGenerationFunctions.hpp"
+#include "RendorCompiler/Nodes/Nodes.hpp"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
@@ -32,6 +32,22 @@ class Parser
     private:
         inline static Main Script;
         inline static std::vector<std::string> ByteCode;
+
+        /* ----------------------------- AST generation ----------------------------- */
+        inline static std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
+        inline static std::vector<TempID> ParserTempIDList {TempID::None};
+        inline static TempID ParserTempID = ParserTempIDList.back();
+        inline static std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
+        inline static uint32_t LineNumber = 0;
+        inline static bool IsScript = false;
+
+        static void PopTempID();
+        static void AddTempID(TempID ID);
+        static void PopScope();
+        static void AddScope(std::vector<std::unique_ptr<Node>>* Ptr);
+        static void PushToScope(std::unique_ptr<Node> Node);
+        static void ReplaceNode(std::unique_ptr<Node> Node);
+        static NodeType GetTypeOfNode();
 
         /* --------------------------- Bytecode generation -------------------------- */
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
@@ -55,4 +71,4 @@ class Parser
 };
 
 
-#endif // * PARSER
+#endif // PARSER_HPP

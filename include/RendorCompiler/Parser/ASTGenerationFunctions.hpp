@@ -1,6 +1,6 @@
 #ifndef AST_GENERATION_FUNCTIONS_HPP
 #define AST_GENERATION_FUNCTIONS_HPP
-#include "RendorCompiler/Nodes.hpp"
+#include "RendorCompiler/Nodes/Nodes.hpp"
 #include "Exceptions.hpp"
 
 template<typename T1, typename T2>

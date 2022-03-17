@@ -6,8 +6,8 @@
 #include <string_view>
 #include <array>
 
-#include "RendorCompiler/MathEvaluator.hpp"
-#include "RendorCompiler/Nodes.hpp"
+#include "RendorCompiler/Math/MathEvaluator.hpp"
+#include "RendorCompiler/Nodes/Nodes.hpp"
 #include "RendorEngine.hpp"
 #include "ByteCodeSpliting.hpp"
 
