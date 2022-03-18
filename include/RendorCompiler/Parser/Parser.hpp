@@ -28,6 +28,7 @@ class Parser
     public:
         inline static Main Script;
         static void ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
+        static void DeltaInspectAST(const NodeObject& Node);
     
     private:
 
@@ -52,7 +53,6 @@ class Parser
         static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
 
         /* ----------------------------- AST inspection ----------------------------- */
-        static void DeltaInspectAST(const NodeObject& Node);
         static bool InvalidIdentifier(char& CharactherToCheck);
 
         /* ---------------------------- Repeated actions ---------------------------- */

@@ -79,6 +79,13 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
         ByteCode = RenParser.ASTGeneration(Tokens); 
 
+        std::cout << "Generating bytecode..." << std::endl;
+        for (const auto& Node : (*Script.GlobalBody))
+        {
+            DeltaInspectAST(Node);
+            Node->CodeGen();
+        }
+
         // Adds it to output Cren File
         if (ByteCode.size() > 0)
         {

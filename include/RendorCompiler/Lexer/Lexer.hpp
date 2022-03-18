@@ -54,9 +54,6 @@ namespace Lex{
         public:            
             // Tokenizes Lines of code from Rendor Files
             std::vector<std::pair<Token, std::string>> Tokenize(const boost::interprocess::mapped_region&);
-
-            // Contains paths of imports to compile later 
-            std::vector<boost::filesystem::path> Imports;
             
         private:
             // Keywords to check for 
