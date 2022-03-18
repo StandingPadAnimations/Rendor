@@ -10,6 +10,11 @@ struct Increment : Node
     {
         Type = NodeType::Increment;
     }
+
+    void CodeGen()
+    {
+        NodeByteCodeGen.CreateIncr(Args);
+    }
 };
 
 struct Decrement : Node
@@ -18,6 +23,11 @@ struct Decrement : Node
     explicit Decrement(std::string Args, uint32_t LineNumber) : Node(LineNumber), Args(Args)
     {
         Type = NodeType::Decrement;
+    }
+
+    void CodeGen()
+    {
+        NodeByteCodeGen.CreateDecr(Args);
     }
 };
 

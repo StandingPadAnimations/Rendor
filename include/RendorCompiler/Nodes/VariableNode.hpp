@@ -13,6 +13,12 @@ struct AssignVariable : Node
     {
         Type = NodeType::AssignVariable;
     }
+
+    void CodeGen()
+    {
+        Value->CodeGen();
+        NodeByteCodeGen.CreateVariable(VariableName);
+    }
 };
 
 #endif // VARIABLE_NODE_HPP

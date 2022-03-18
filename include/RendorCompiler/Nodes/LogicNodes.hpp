@@ -10,6 +10,10 @@ struct BiOp : Node
     {
         Type = NodeType::BiOp;
     }
+    void CodeGen()
+    {
+        NodeByteCodeGen.CreateLogic(Operator);
+    }
 };
 
 struct Condition : Node
@@ -21,6 +25,12 @@ struct Condition : Node
     Condition(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Condition;
+    }
+    void CodeGen()
+    {
+        Operator->CodeGen();
+        Condition1->CodeGen();
+        Condition2->CodeGen();
     }
 };
 

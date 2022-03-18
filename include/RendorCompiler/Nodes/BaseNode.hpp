@@ -5,7 +5,10 @@
 #include <vector>
 #include <memory>
 
-enum class TempID{
+#include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
+
+enum class TempID
+{
     None,
 
     // Definitions
@@ -28,9 +31,9 @@ enum class TempID{
     IfElseScope
 };
 
-enum class NodeType{
+enum class NodeType
+{
     Body,
-    Scope,
     Rdef,
     FowardEdef,
     AssignVariable,
@@ -51,13 +54,17 @@ enum class NodeType{
     Arithmethic,
 };
 
-struct Node{
+struct Node
+{
     NodeType Type;
+    ByteCodeType ConstType;
     uint32_t LineNumber = 0;
     
+    RendorByteCodeGenerator NodeByteCodeGen;
     Node() = default;
     Node(uint32_t LineNumber) : LineNumber(LineNumber){}
     virtual ~Node(){};
+    virtual void CodeGen() = 0;
 };
 
 typedef std::unique_ptr<Node> NodeObject;

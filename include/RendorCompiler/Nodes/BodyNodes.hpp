@@ -10,15 +10,12 @@ struct Body : Node
     {
         Type = NodeType::Body;
     }
-};
-
-struct Scope : Node
-{
-    std::string ScopeName = "";
-    Body ScopeBody;
-    Scope(uint32_t LineNumber) : Node(LineNumber)
+    void CodeGen()
     {
-        Type = NodeType::Scope;
+        for (const auto& Node : ConnectedNodes) // actual body 
+        {
+            Node->CodeGen();
+        }
     }
 };
 

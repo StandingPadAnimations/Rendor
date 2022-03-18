@@ -14,6 +14,15 @@ struct IfElse : Node
     {
         Type = NodeType::IfElse;
     }
+    void CodeGen()
+    {
+        Conditions->CodeGen();
+        NodeByteCodeGen.CreateJMP(0);
+        size_t Index = NodeByteCodeGen.GetIndex();
+        IfElseBody.CodeGen();
+        NodeByteCodeGen.CreateEndIf();
+        NodeByteCodeGen.ByteCode[Index] = "JMP " + std::to_string(NodeByteCodeGen.GetIndex() - Index);
+    }
 };
 
 #endif // IF_ELSE_NODE_HPP

@@ -7,49 +7,6 @@
 std::string Parser::ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass)
 {
     /* -------------------------------------------------------------------------- */
-    /*                             assigning variables                            */
-    /* -------------------------------------------------------------------------- */
-    if (ClassType == NodeType::AssignVariable) 
-    {
-        auto& AssignmentNode = static_cast<AssignVariable&>(*NodeClass);
-        TypeConstants(AssignmentNode.Value->Type, AssignmentNode.Value);
-        return (boost::format("ASSIGN %s") % AssignmentNode.VariableName).str();
-    }
-
-    else if (ClassType == NodeType::FowardEdef)
-    {
-        return "";
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                             defining functions                             */
-    /* -------------------------------------------------------------------------- */
-    else if (ClassType == NodeType::Edef)
-    {
-        auto& EdefNode = static_cast<Edef&>(*NodeClass); 
-
-        ByteCode.emplace_back((boost::format("DEFINE %s") % EdefNode.Name).str());
-
-        for (std::vector<std::pair<std::string, NodeType>>::reverse_iterator Arg = EdefNode.Args.rbegin(); Arg != EdefNode.Args.rend(); ++Arg) // Arguments 
-        {
-            ByteCode.emplace_back((boost::format("ASSIGN %s") % Arg->first).str());
-        }
-
-        for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
-        {
-            ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
-        }
-
-        return "FUNCTION END";
-    }
-
-    else if (ClassType == NodeType::FunctionCall)
-    {
-        TypeConstants(NodeClass->Type, NodeClass);
-        return "";
-    }
-
-    /* -------------------------------------------------------------------------- */
     /*                         Defining if-else statements                        */
     /* -------------------------------------------------------------------------- */
     else if (ClassType == NodeType::IfElse)

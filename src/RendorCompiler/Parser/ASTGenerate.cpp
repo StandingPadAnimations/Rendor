@@ -25,7 +25,7 @@ To avoid issues with scopes
 /* -------------------------------------------------------------------------- */
 /*                               Parser function                              */
 /* -------------------------------------------------------------------------- */
-std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
+void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens)
 {
     for (auto const& [token, value] : Tokens)
     {        
@@ -610,6 +610,4 @@ std::vector<std::string> Parser::ASTGeneration(const std::vector<std::pair<Lex::
     ByteCode.emplace_back("END 0"); 
     /* ---------------------------- Optimize bytecode --------------------------- */
     RendorDeltaOptimizer::DeltaOptimizer(ByteCode);
-    /* ----------------------------- return bytecode ---------------------------- */
-    return ByteCode;
 }

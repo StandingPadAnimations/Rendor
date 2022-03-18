@@ -12,6 +12,15 @@ struct FunctionCall : Node
     {
         Type = NodeType::FunctionCall;
     }
+
+    void CodeGen()
+    {
+        for (auto const& Node : Args)
+        {
+            Node->CodeGen();
+        }
+        NodeByteCodeGen.CallFunction(Function);
+    }
 };
 
 struct Edef : Node
@@ -24,6 +33,17 @@ struct Edef : Node
     {
         Type = NodeType::Edef;
     }
+
+    void CodeGen()
+    {
+        NodeByteCodeGen.CreateFunc(Name);
+        for (std::vector<std::pair<std::string, NodeType>>::reverse_iterator Arg = Args; Arg != Args; ++Arg) // Arguments 
+        {
+            NodeByteCodeGen.CreateVariable(Arg->first);
+        }
+        FunctionBody.CodeGen()
+        NodeByteCodeGen.EndFunc();
+    }
 };
 
 struct FowardEdef : Node
@@ -34,6 +54,10 @@ struct FowardEdef : Node
     explicit FowardEdef(std::string Name, uint32_t LineNumber) : Node(LineNumber), Name(Name)
     {
         Type = NodeType::FowardEdef;
+    }
+    void CodeGen()
+    {
+        return;
     }
 };
 

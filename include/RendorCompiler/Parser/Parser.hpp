@@ -10,7 +10,6 @@
 #include "RendorCompiler/Lexer/Lexer.hpp"
 #include "RendorCompiler/Math/Mathparsing.hpp"
 #include "RendorCompiler/Math/MathEvaluator.hpp"
-#include "RendorCompiler/Parser/RendorDeltaOptimizer.hpp"
 #include "RendorCompiler/Parser/ASTGenerationFunctions.hpp"
 #include "RendorCompiler/Nodes/Nodes.hpp"
 
@@ -27,11 +26,10 @@ typedef std::vector<NodeType> FunctionArgsVector;
 class Parser
 {
     public:
-        static std::vector<std::string> ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
+        inline static Main Script;
+        static void ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
     
     private:
-        inline static Main Script;
-        inline static std::vector<std::string> ByteCode;
 
         /* ----------------------------- AST generation ----------------------------- */
         inline static std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
