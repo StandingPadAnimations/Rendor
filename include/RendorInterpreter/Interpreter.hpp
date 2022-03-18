@@ -127,7 +127,7 @@ class Interpreter
         inline static std::vector<TypeObject> WhiteObjects; // objects that need to be yeeted
         inline static std::vector<TypeObject> GreyObjects;  // objects that need to be scanned
         inline static std::vector<TypeObject> BlackObjects; // objects that have been scanned
-        inline static std::stack<std::tuple<Type*, TypeObject_U>, std::list> RendorStack;
+        inline static std::stack<std::tuple<Type*, TypeObject_U>, std::list<std::tuple<Type*, TypeObject_U>>> RendorStack;
 
         inline static const std::unordered_map<GCColor, std::vector<TypeObject>*> VectorMapping
         {
