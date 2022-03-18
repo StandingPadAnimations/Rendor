@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
 #include "RendorBoostFileMapper.hpp"
 
 // Boost libraries and macros
@@ -21,14 +22,21 @@ namespace bfs = boost::filesystem;
 
 struct RendorEngineInterpreter
 {
+    /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string);
 };
 
 struct RendorEngineCompiler
 {
+    /* ---------------------------------- Flags --------------------------------- */
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;
+
+    /* -------------------------------- ByteCode -------------------------------- */
+    inline static RendorByteCodeGenerator Main_ByteCode;
+
+    /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 
