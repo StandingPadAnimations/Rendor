@@ -7,7 +7,7 @@
 void Interpreter::ExecuteByteCode(const boost::interprocess::mapped_region& File)
 {
     std::cout.sync_with_stdio(false); // Makes cout faster by making it not sync with C print statements(We're not using C)
-    RendorModule_IO();
+    RendorVM_Module_IO();
 
     /* ------------------------- Define stuff like main ------------------------- */
     ByteCodeLoopDefinition(File);

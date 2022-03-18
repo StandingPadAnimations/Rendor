@@ -13,7 +13,12 @@ static RendorMethod Rendor_MATH_InitList[] = {
     {NULL, 0, NULL}
 };
 
-RENDOR_INIT RendorModule_Math()
+RENDOR_INIT RendorVM_Module_IO()
 {
-    Rendor_InitModule(Rendor_MATH_InitList);
+    RendorVM_InitModule(Rendor_MATH_InitList);
+}
+
+RENDOR_INIT RendorC_Module_IO()
+{
+    RendorC_InitModule(Rendor_MATH_InitList);
 }

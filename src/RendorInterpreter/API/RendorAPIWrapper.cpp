@@ -86,7 +86,7 @@ void Rendor_DropBoolOnStack(int Const)
 /*                                Module stuff                                */
 /* -------------------------------------------------------------------------- */
 
-void Rendor_InitModule(RendorMethod *MethodList)
+void RendorVM_InitModule(RendorMethod *MethodList)
 {
     Interpreter::InitModule(MethodList);
 }
