@@ -6,11 +6,11 @@
 struct BiOp : Node
 {
     std::string Operator = "";
-    BiOp(std::string OperatorInput, uint32_t LineNumber) : Node(LineNumber), Operator(OperatorInput)
+    explicit BiOp(std::string OperatorInput, uint32_t LineNumber) : Node(LineNumber), Operator(std::move(OperatorInput))
     {
         Type = NodeType::BiOp;
     }
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateLogic(Operator);
     }
@@ -22,11 +22,11 @@ struct Condition : Node
     std::unique_ptr<BiOp> Operator;
     NodeObject Condition2;
 
-    Condition(uint32_t LineNumber) : Node(LineNumber)
+    explicit Condition(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::Condition;
     }
-    void CodeGen()
+    void CodeGen() override
     {
         Operator->CodeGen();
         Condition1->CodeGen();

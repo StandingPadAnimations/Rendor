@@ -4,7 +4,7 @@
 #include "Exceptions.hpp"
 
 template<typename T1, typename T2>
-inline void AddTokenToConditions(T1& Node, const std::string &value, uint32_t& LineNumber)
+inline void AddTokenToConditions(const T1& Node, const std::string &value, const uint32_t& LineNumber)
 {
     if 
     ((Node.Conditions->Condition1) &&
@@ -25,7 +25,7 @@ inline void AddTokenToConditions(T1& Node, const std::string &value, uint32_t& L
     }
 }
 
-inline void AddToArithmethicNode(AssignVariable& AssignVariableNode, const std::string &value, uint32_t& LineNumber)
+inline void AddToArithmethicNode(AssignVariable& AssignVariableNode, const std::string &value, const uint32_t& LineNumber)
 {
     switch (AssignVariableNode.Value->Type)
     {

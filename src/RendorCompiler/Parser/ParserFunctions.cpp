@@ -29,3 +29,8 @@ NodeType Parser::GetTypeOfNode()
 {
     return Scope->back()->Type;
 }
+
+void Parser::AddNameSpace(const std::string& NameSpace)
+{
+    NameSpaces.push_back(NameSpace);
+}

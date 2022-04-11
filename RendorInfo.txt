@@ -1,13 +1,4 @@
-ByteCode key for Rendor:
-    Load {
-        0 : Global
-        1 : Main 
-    }
-    Body
-    Load_Scope {ScopeName} 
-    Keyword {Keyword, Args[]}
-    If {Conditions[]}
-    Bop {Op, Arg1, Arg2}
-    Assign {Type, name, value}
-    Edef {Name, Args[]}
-    Call {Function, Args[]}
+RBI (Rendor ByteCode Interface)
+
+Functions:
+DEFINE .F namespaces...->name(types...)

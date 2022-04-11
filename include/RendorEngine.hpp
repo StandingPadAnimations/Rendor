@@ -5,18 +5,17 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
-#include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
 #include "RendorBoostFileMapper.hpp"
 
-// Boost libraries and macros
-#define BOOST_FILESYSTEM_VERSION 3
-#define BOOST_FILESYSTEM_NO_DEPRECATED 
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#define FMT_HEADER_ONLY 1
+#include <fmt/format.h>
+#include <fmt/color.h>
+
 #include <boost/algorithm/string/trim.hpp>
 
-namespace bfs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define RENDOR_VERSION 0
 
@@ -32,9 +31,7 @@ struct RendorEngineCompiler
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;
-
-    /* -------------------------------- ByteCode -------------------------------- */
-    inline static RendorByteCodeGenerator Main_ByteCode;
+    inline static std::vector<std::string> ByteCode;
 
     /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);

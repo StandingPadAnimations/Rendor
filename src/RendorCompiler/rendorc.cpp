@@ -1,7 +1,22 @@
 /*
 
+
 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
-In the name of God, the Gracious, the Merciful
+ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ
+ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
+مَٰلِكِ يَوۡمِ ٱلدِّينِ
+إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ
+ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ
+صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ
+
+In the name of God, the Gracious, the Merciful.
+All praise belongs to God, Lord of all the worlds.
+The Gracious, the Merciful.
+Master of the Day of Judgement.
+Thee alone do we worship, and Thee alone do we implore for help.
+Guide us in the right path.
+The path of those on whom Thou hast bestowed Thy blessings, those who have not incurred Thy displeasure, and those who have not gone astray.
+- Chapter 1 of the Holy Quran Surah Al-Fatihah
 ---------------------------------
 ---------------------------------
 PLEASE READ BEFORE CONTINUING 
@@ -41,7 +56,6 @@ While the extension isn't required, it does make the code more readable in my op
 #include <iostream>
 
 #include "RendorEngine.hpp"
-#include "cpp-terminal/base.hpp"
 
 int main (int argc, char *argv[])
 {
@@ -70,7 +84,7 @@ int main (int argc, char *argv[])
         #if DEBUGMODE
         std::cin.get();
         #endif     
-        std::cout << Term::color(Term::fg::bright_red) << exp.what() << Term::color(Term::style::reset) << std::endl;   
+        fmt::print(fg(fmt::color::red), "{}\n", exp.what());
         return EXIT_FAILURE;
     }
     return 0;

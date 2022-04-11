@@ -6,11 +6,12 @@
 struct Body : Node
 {
     std::vector<NodeObject> ConnectedNodes;
+    std::string NameSpace = "";
     Body()
     {
         Type = NodeType::Body;
     }
-    void CodeGen()
+    void CodeGen() override
     {
         for (const auto& Node : ConnectedNodes) // actual body 
         {

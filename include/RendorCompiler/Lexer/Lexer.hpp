@@ -26,8 +26,9 @@ namespace Lex{
     enum class Token{
         // Identifiers, keywords, and functions
         IDENTIFIER, 
-        BUILT_IN_FUNCTION,
         KEYWORD,
+        TYPE_HINT,
+        ATTRIBUTE,
         OPERATOR,
 
         // Symbols
@@ -57,10 +58,9 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::array<std::string_view, 6> Keywords {"while", "if", "return", "edef", "else", "~forward"};
-
-            // Functions
-            std::array<std::string_view, 3> Functions {"echo", "input", "sum"};
+            std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern"};
+            std::vector<std::string_view> Attributes {"~module_destroy"};
+            std::vector<std::string_view> Types {"int64", "double", "string", "bool"};
 
             // Operators to check for 
             std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
@@ -68,7 +68,8 @@ namespace Lex{
             std::map<std::string_view, char, std::less<>> BiOpTokens   {{{"="}, '='},
                                                                         {{">"}, '='},
                                                                         {{"<"}, '='},
-                                                                        {{"!"}, '='}};
+                                                                        {{"!"}, '='},
+                                                                        {{"-"}, '>'}};
 
             std::map<std::string_view, char, std::less<>> UnOpTokens   {{{"+"}, '+'},
                                                                         {{"-"}, '-'}};

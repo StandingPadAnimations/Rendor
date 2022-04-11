@@ -6,63 +6,18 @@
 #include <memory>
 
 #include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
-
-enum class TempID
-{
-    None,
-
-    // Definitions
-    ArithAssemble,
-    IdentifierDefinition,
-    VariableDefition,
-    FowardDefinition,
-    FowardArgsDefinition,
-    FunctionDefiniton,
-    FunctionArgumentsDefinition,
-
-    // Function things
-    FunctionCall,
-    FunctionScope,
-
-    // If-else statements 
-    IfStatementDefinition,
-    ElseDefinition,
-    ConditionDefinition,
-    IfElseScope
-};
-
-enum class NodeType
-{
-    Body,
-    Rdef,
-    FowardEdef,
-    AssignVariable,
-    IfElse,
-    Increment,
-    Decrement,
-    FunctionCall,
-    Edef,
-    Condition,
-    BiOp,
-
-    Any,
-    Int, 
-    Double,
-    String,
-    Bool,
-    Reference,
-    Arithmethic,
-};
+#include "RendorCompiler/Nodes/NodeType.hpp"
 
 struct Node
 {
     NodeType Type;
     ByteCodeType ConstType;
     uint32_t LineNumber = 0;
-    
     RendorByteCodeGenerator NodeByteCodeGen;
     Node() = default;
-    Node(uint32_t LineNumber) : LineNumber(LineNumber){}
+    
+    //cppcheck-suppress uninitMemberVar
+    explicit Node(uint32_t LineNumber) : LineNumber(LineNumber){}
     virtual ~Node(){};
     virtual void CodeGen() = 0;
 };

@@ -1,18 +1,13 @@
 #include "RendorEngine.hpp"
 #include "RendorCompiler/Lexer/Lexer.hpp"
 #include "RendorCompiler/Parser/Parser.hpp"
-#include "cpp-terminal/base.hpp"
 
-using Term::color;
-using Term::fg;
-using Term::bg;
-using Term::style;
 
 void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::string>& Arguments)
 {
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
-    bfs::path AbsPath(FileInput);
+    fs::path AbsPath(FileInput);
     std::string AbsPathExt = AbsPath.extension().string();
     std::string AbsPathParentDir = AbsPath.parent_path().string();
     std::ios_base::sync_with_stdio(false);
@@ -20,8 +15,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
     {
-        std::string ErrorMessage = (boost::format("%s%sFatal Error; %sMissing Rendor File input") % color(fg::red) % color(style::bold) % color(fg::reset)).str();
-        throw error::RendorException(ErrorMessage);
+        throw error::RendorException("Fatal Error; Missing Rendor File input");
     } 
 
 
@@ -58,11 +52,10 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
         (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))
         {
-            std::cout << color(fg::red) << "C++ transpiling not supported in this version" << color(style::reset) << std::endl;
+            fmt::print(fg(fmt::color::red), "C++ transpiling not supported in this version\n");
         }
     }
 
-    std::vector<std::string> ByteCode;
     {
         boost::interprocess::file_mapping File(FileInput.c_str(), boost::interprocess::read_only);
         boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
@@ -72,27 +65,26 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         Parser RenParser;
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
-        std::cout << color(fg::green) << "Tokenizing..." << std::endl;
+        fmt::print(fg(fmt::color::green), "Tokenizing...\n");
         Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
 
         // Parses
-        std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
-        ByteCode = RenParser.ASTGeneration(Tokens); 
+        fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
+        RenParser.ASTGeneration(Tokens); 
 
-        std::cout << "Generating bytecode..." << std::endl;
-        for (const auto& Node : (*Script.GlobalBody))
+        fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
+        for (const auto& Node : (*Parser::Script.GlobalBody))
         {
-            DeltaInspectAST(Node);
+            Parser::DeltaInspectAST(Node);
             Node->CodeGen();
         }
 
         // Adds it to output Cren File
-        if (ByteCode.size() > 0)
         {
-            std::cout << color(fg::green) << "Outputing bytecode..." << std::endl;
+            fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
             std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
             std::ofstream CrenOutput(AbsPathParentDir + AbsPathCrenOutput);
-            for (auto const& Op : ByteCode)
+            for (auto const& Op : RendorEngineCompiler::ByteCode)
             {
                 CrenOutput << Op << "\n";
             }
@@ -100,17 +92,16 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
     
         if (DebugMode)
         { 
-            std::cout << color(fg::green) << "----------------------------DEBUG MODE----------------------------" << std::endl;
+            fmt::print(fg(fmt::color::green), "----------------------------DEBUG MODE----------------------------\n");
             for (auto const& [token, value] : Tokens)
             {
-                std::cout << color(fg::green) << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
+                fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
             }
             std::cout << " " << std::endl;
-            for (auto const& command : ByteCode)
+            for (auto const& command : RendorEngineCompiler::ByteCode)
             {
-                std::cout << color(fg::green) << command << std::endl;
+                fmt::print(fg(fmt::color::green), command);
             }
         }
-        std::cout << color(fg::reset) << std::endl;
     }
 }

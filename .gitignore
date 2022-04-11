@@ -4,6 +4,10 @@
 /bin/RendorInterpreter/rendorvm.exe
 
 /bin/**/*.o
+/bin/**/*.dll
 
 .gitconfig
 Makefile
+.clangd
+.clang-tidy
+compile_flags.txt

@@ -106,9 +106,9 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 (*CurrentVariables)[Var] = Type;
             }
             // Inspect the body
-            for (const auto& Node : EdefNode.FunctionBody.ConnectedNodes) // actual body 
+            for (const auto& NodeInNode : EdefNode.FunctionBody.ConnectedNodes) // actual body 
             {
-                DeltaInspectAST(Node);
+                DeltaInspectAST(NodeInNode);
             }
             // Destroy variable scope
             DestroyVariableScope();
@@ -171,9 +171,9 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 // Check the validity of condition 1 as that is always provided by the user
                 InspectTypesReferences(IfNode.Conditions->Condition1->Type, IfNode.Conditions->Condition1);
             }
-            for (const auto& Node : IfNode.IfElseBody.ConnectedNodes) // actual body 
+            for (const auto& NodeInNode : IfNode.IfElseBody.ConnectedNodes) // actual body 
             {
-                DeltaInspectAST(Node);
+                DeltaInspectAST(NodeInNode);
             }
             break;
         }

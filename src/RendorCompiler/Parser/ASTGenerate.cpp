@@ -1,4 +1,6 @@
 #include "RendorCompiler/Parser/Parser.hpp"
+#include <memory>
+#include <utility>
 
 /*----------------------------------------------------------------
 In the parser loop(which streams tokens), please avoid using the continue keyword. In the past, it has caused unexpected behavior. The exception(s) are:
@@ -67,7 +69,8 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     {
                         /* ------------------------ Create FunctionCall Node ------------------------ */
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        throw error::RendorException((boost::format("Syntax Error: %s found during the definition of %s; Line %s") % value % AssignVariableNode.VariableName % LineNumber).str());
+                        
+                        throw error::RendorException(fmt::format("Syntax Error: {} found during the definition of {}; Line {}", value, AssignVariableNode.VariableName, LineNumber));
                     }
                 }
 
@@ -81,16 +84,21 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     PushToScope(std::make_unique<Edef>(value, LineNumber));
                 }
 
+                else if (ParserTempID == TempID::Extern)
+                {
+                    PopTempID();
+                    std::unique_ptr<FowardEdef> ForwardEdefNode = std::make_unique<FowardEdef>(value, LineNumber);
+                    ForwardEdefNode->Extern = true;
+                    PushToScope(std::move(ForwardEdefNode));
+                    AddTempID(TempID::FowardDefinition);
+                }
+
                 /* -------------------------- if it is an argument -------------------------- */
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
                     PushToScope(std::make_unique<Reference>(value, LineNumber)); // Add argument to Node
                 }
 
-                else if (ParserTempID == TempID::FowardDefinition)
-                {
-                    PushToScope(std::make_unique<FowardEdef>(value, LineNumber)); // Add argument to Node
-                }
 
                 /* ------------- if it's a scoped argument(like edef lol(world)) ------------ */
                 else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Function arguments 
@@ -102,12 +110,33 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     }
                 }
 
+                else if (ParserTempID == TempID::FowardDefinition)
+                {
+                    PushToScope(std::make_unique<FowardEdef>(value, LineNumber)); // Add argument to Node
+                }
+                
                 else if (ParserTempID == TempID::FowardArgsDefinition)
                 {
                     if (GetTypeOfNode() == NodeType::FowardEdef)
                     {
                         auto& FowardNode = static_cast<FowardEdef&>(*Scope->back());
-                        FowardNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node
+
+                        // Check if it's an extern statement
+                        if (FowardNode.Extern)
+                        {
+                            throw error::RendorException(fmt::format("{} is not a typehint; Line {}", value, LineNumber));
+                        }
+
+                        // grab the identifier and type
+                        auto& [Identifier, Type] = FowardNode.Args.back();
+
+                        // if the identifer is a placeholder
+                        if (Identifier == "@placeholder")
+                        {
+                            Identifier = value;
+                            break;
+                        }
+                        FowardNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node with type Any
                     }
                 }
 
@@ -129,29 +158,6 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
             }
 
             /* -------------------------------------------------------------------------- */
-            /*                             Built in functions                             */
-            /* -------------------------------------------------------------------------- */
-            case lt::BUILT_IN_FUNCTION: 
-            {
-                /* ------------------------- Functions to variables ------------------------- */
-                if(ParserTempID == TempID::VariableDefition)
-                {
-                    auto& AssignmentNode = dynamic_cast<AssignVariable&>(*Scope->back());
-                    AssignmentNode.Value = std::make_unique<FunctionCall>(value, LineNumber);
-                }
-
-                /* ---------------- Functions on their own or with functions ---------------- */
-                else
-                {
-                    PushToScope(std::make_unique<FunctionCall>(value, LineNumber));
-                    auto& FunctionNode = static_cast<FunctionCall&>(*Scope->back());
-                    AddScope(&FunctionNode.Args);
-                }
-                AddTempID(TempID::FunctionCall);
-                break;
-            }
-
-            /* -------------------------------------------------------------------------- */
             /*                                   Symbols                                  */
             /* -------------------------------------------------------------------------- */
 
@@ -166,7 +172,7 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                 }
                 else 
                 {
-                    throw error::RendorException((boost::format("Syntax Error: = found on line %s, expected variable definition") % LineNumber).str());
+                    throw error::RendorException(fmt::format("Syntax Error: = found on line {}, expected variable definition", LineNumber));
                 }
                 break;
             }
@@ -174,15 +180,6 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
             /* ---------------------------------- Comma --------------------------------- */
             case lt::COMMA:
             {
-                if (ParserTempID == TempID::FunctionCall)
-                {
-                    // Do nothing 
-                }
-
-                else if (ParserTempID == TempID::FunctionArgumentsDefinition) // Defining a funcion 
-                {
-                    // Do nothing
-                }
                 break;
             }
 
@@ -352,7 +349,7 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
 
                 else 
                 {
-                    throw error::RendorException((boost::format("Syntax Error: { found outside of function/if/else scope; Line %s") % LineNumber).str());
+                    throw error::RendorException(fmt::format("Syntax Error: {{ found outside of function/if/else scope; Line {}", LineNumber));
                 }
                 break;
             }
@@ -465,6 +462,25 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->back());
                     AddTokenToConditions<IfElse, String>(IfElseNode, value, LineNumber);
                 }
+
+                else if (ParserTempID == TempID::Import)
+                {
+                    if (GetTypeOfNode() == NodeType::Import)
+                    {
+                        auto& ImportNode = static_cast<Import&>(*Scope->back());
+                        ImportNode.Name = value;
+                    }
+                    PopTempID();
+                }
+
+                else if (ParserTempID == TempID::NameSpace)
+                {
+                    if (GetTypeOfNode() == NodeType::Body)
+                    {
+                        auto& BodyNode = static_cast<Body&>(*Scope->back());
+                        BodyNode.NameSpace = value;
+                    }
+                }
                 break;
             }
             
@@ -476,13 +492,13 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     if (GetTypeOfNode() == NodeType::AssignVariable)
                     {
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        AssignVariableNode.Value = std::make_unique<Bool>(value, LineNumber);
+                        AssignVariableNode.Value = std::make_unique<Bool>(std::string{value}, LineNumber);
                     }
                 }
 
                 else if (ParserTempID == TempID::FunctionCall) // function calls
                 {
-                    PushToScope(std::make_unique<Bool>(value, LineNumber));
+                    PushToScope(std::make_unique<Bool>(std::string{value}, LineNumber));
                 }
 
                 else if (ParserTempID == TempID::ConditionDefinition)
@@ -492,6 +508,17 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     AddTokenToConditions<IfElse, Bool>(IfElseNode, value, LineNumber);
                 }
                 break;
+            }
+            
+            case lt::TYPE_HINT:
+            {
+                if (GetTypeOfNode() == NodeType::FowardEdef)
+                {
+                    auto& FowardEdefNode = dynamic_cast<FowardEdef&>(*Scope->back());
+
+                    // @ is not a valid characther to use in an argument, thus it's safe to use
+                    FowardEdefNode.Args.emplace_back("@placeholder", TypeTable.at(value));
+                }
             }
 
             /* -------------------------------------------------------------------------- */
@@ -539,6 +566,39 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     }
                 }
 
+                /* --------------------------------- Imports -------------------------------- */
+                else if (value == "cimport")
+                {
+                    PopTempID();
+                    AddTempID(TempID::Import);
+                    PushToScope(std::make_unique<Import>(LineNumber));
+                }
+                
+                /* --------------------------------- Exports -------------------------------- */
+                else if (value == "export")
+                {
+                    PopTempID();
+                    std::unique_ptr<Export> ExportNode = std::make_unique<Export>(LineNumber);
+                    AddScope(&ExportNode->ExportBody.ConnectedNodes);
+                    PushToScope(std::move(ExportNode));
+                }
+
+                /* ------------------------------- Namespaces ------------------------------- */
+                else if (value == "namespace")
+                {
+                    PopTempID();
+                    std::unique_ptr<Body> BodyNode = std::make_unique<Body>();
+                    AddScope(&BodyNode->ConnectedNodes);
+                    PushToScope(std::move(BodyNode));
+                    AddTempID(TempID::NameSpace);
+                }
+
+                else if (value == "extern")
+                {
+                    PopTempID();
+                    AddTempID(TempID::Extern);
+                }
+
                 else 
                 {
                     throw error::RendorException("Not supported yet");
@@ -562,7 +622,7 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                         */
 
                         // ! Temporary, not permanent
-                        throw error::RendorException((boost::format("Syntax Error: extra Binary Operator found in if statement; Line %s") % LineNumber).str());
+                        throw error::RendorException(fmt::format("Syntax Error: extra Binary Operator found in if statement; Line {}", LineNumber));
                     }
                     IfElseNode.Conditions->Operator = std::make_unique<BiOp>(value, LineNumber);
                 }
@@ -587,27 +647,4 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
             }
         }
     }
-
-    /* -------------------------------------------------------------------------- */
-    /*                             ByteCode generation                            */
-    /* -------------------------------------------------------------------------- */
-    std::cout << "Generating bytecode..." << std::endl;
-    /* ----------------------------- Is it a script ----------------------------- */
-    if (!IsScript)
-    {
-        ByteCode.emplace_back("NOT_SCRIPT TRUE");
-    }
-    /* -------------------------- Loading global scope -------------------------- */
-    ByteCode.emplace_back("LOAD 0");
-
-    /* ---------------- Generating the bytecode from the AST tree --------------- */
-    for (const auto& Node : (*Script.GlobalBody))
-    {
-        DeltaInspectAST(Node);
-        ByteCode.emplace_back(ByteCodeGen(Node->Type, Node));
-    }
-    /* ------------------------- ending the global scope ------------------------ */
-    ByteCode.emplace_back("END 0"); 
-    /* ---------------------------- Optimize bytecode --------------------------- */
-    RendorDeltaOptimizer::DeltaOptimizer(ByteCode);
 }

@@ -10,11 +10,11 @@ struct IfElse : Node
     std::unique_ptr<Condition> Conditions;
     Body IfElseBody;
     std::unique_ptr<IfElse> ElseStatement;
-    IfElse(uint32_t LineNumber) : Node(LineNumber)
+    explicit IfElse(uint32_t LineNumber) : Node(LineNumber)
     {
         Type = NodeType::IfElse;
     }
-    void CodeGen()
+    void CodeGen() override
     {
         Conditions->CodeGen();
         NodeByteCodeGen.CreateJMP(0);

@@ -5,21 +5,13 @@ BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorCompiler
-CPP_TERM    := src/cpp-terminal
 DIRS        := BackEnd InspectAndOptimize Lexer Logic Parser
 
 OBJDIR      := bin/RendorCompiler/ObjectFiles
-TERM_OBJ    := bin/cpp-terminal
 EXECUTABLE  := RendorCompiler/rendorc
 
 SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
-
-TERM_SOURCE := $(wildcard $(CPP_TERM)/*.cpp)
-TERM_OBJECT := $(patsubst $(CPP_TERM)/%.cpp,$(TERM_OBJ)/%.o,$(TERM_SOURCE))
-
-BOOSTFILE   := boost_filesystem-mt
-BOOSTSYS    := boost_system-mt
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -27,14 +19,11 @@ run: clean all
 	clear
 	./$(BIN)/$(EXECUTABLE)
 
-$(BIN)/$(EXECUTABLE): $(OBJECTS) $(TERM_OBJECT)
+$(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
-	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
-
-$(TERM_OBJ)/%.o: $(CPP_TERM)/%.cpp 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
 clean:

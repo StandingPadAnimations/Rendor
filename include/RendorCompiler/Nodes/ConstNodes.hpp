@@ -7,13 +7,13 @@ struct Int : Node
 {
     std::string Value = "";
     
-    Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
-        Type = NodeType::Int;
+        Type = NodeType::Int64;
         ConstType = ByteCodeType::INT64;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }
@@ -23,13 +23,13 @@ struct Double : Node
 {
     std::string Value = "";
     
-    Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    Double(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::Double;
         ConstType = ByteCodeType::DOUBLE;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }
@@ -38,14 +38,13 @@ struct Double : Node
 struct String : Node
 {
     std::string Value = "";
-    
-    String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    String(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::String;
         ConstType = ByteCodeType::STRING;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }
@@ -55,13 +54,13 @@ struct Bool : Node
 {
     std::string Value = "";
     
-    Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    Bool(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::Bool;
         ConstType = ByteCodeType::BOOL;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }
@@ -71,13 +70,13 @@ struct Arithmethic : Node
 {
     std::string Value = "";
     
-    Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    Arithmethic(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::Arithmethic;
         ConstType = ByteCodeType::ARITH;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }
@@ -87,13 +86,13 @@ struct Reference : Node
 {
     std::string Value = "";
 
-    Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(ValueInput)
+    Reference(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::Reference;
         ConstType = ByteCodeType::REFERENCE;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         NodeByteCodeGen.CreateConst(ConstType, Value);
     }

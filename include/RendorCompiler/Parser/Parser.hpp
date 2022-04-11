@@ -11,12 +11,11 @@
 #include "RendorCompiler/Math/Mathparsing.hpp"
 #include "RendorCompiler/Math/MathEvaluator.hpp"
 #include "RendorCompiler/Parser/ASTGenerationFunctions.hpp"
+#include "RendorCompiler/Parser/TempID.hpp"
 #include "RendorCompiler/Nodes/Nodes.hpp"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
-
-#include <boost/format.hpp>
 
 using lt = Lex::Token;
 #define FALLTHROUGH [[fallthrough]]
@@ -37,8 +36,17 @@ class Parser
         inline static std::vector<TempID> ParserTempIDList {TempID::None};
         inline static TempID ParserTempID = ParserTempIDList.back();
         inline static std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
+        inline static std::vector<std::string> NameSpaces;
         inline static uint32_t LineNumber = 0;
         inline static bool IsScript = false;
+
+        inline static const std::map<std::string_view, NodeType> TypeTable 
+        {
+            {"int64",  NodeType::Int64},
+            {"double", NodeType::Double},
+            {"string", NodeType::String},
+            {"bool",   NodeType::Bool},
+        };
 
         static void PopTempID();
         static void AddTempID(TempID ID);
@@ -47,6 +55,7 @@ class Parser
         static void PushToScope(std::unique_ptr<Node> Node);
         static void ReplaceNode(std::unique_ptr<Node> Node);
         static NodeType GetTypeOfNode();
+        static void AddNameSpace(const std::string& NameSpace);
 
         /* --------------------------- Bytecode generation -------------------------- */
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
@@ -63,9 +72,6 @@ class Parser
         inline static std::vector<VariableMap> Variables;
         inline static VariableMap* CurrentVariables;
         inline static std::vector<FunctionCall*> FunctionCalls;
-        inline static std::unordered_map<std::string_view, FunctionArgsVector, string_hash, std::equal_to<>> Functions {{"echo",  {NodeType::String}},
-                                                                                                                        {"input", {NodeType::String}},
-                                                                                                                        {"sum",   {NodeType::Int}}};
 };
 
 

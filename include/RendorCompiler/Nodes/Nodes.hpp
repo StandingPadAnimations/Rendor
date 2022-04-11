@@ -9,10 +9,16 @@
 #include "RendorCompiler/Nodes/IncrDecrNodes.hpp"
 #include "RendorCompiler/Nodes/LogicNodes.hpp"
 #include "RendorCompiler/Nodes/VariableNode.hpp"
+#include "RendorCompiler/Nodes/ImportNodes.hpp"
+#include "RendorCompiler/Nodes/ExportNode.hpp"
+
+#include "RendorCompiler/Nodes/NodeType.hpp"
 
 struct Main
 {
     Body Global;
+    
+    //cppcheck-suppress unusedStructMember
     std::vector<NodeObject> *GlobalBody = &Global.ConnectedNodes;
 };
 #endif // RENDOR_NODES_HPP

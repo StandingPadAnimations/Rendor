@@ -1,0 +1,29 @@
+CXX         := g++
+CXX_FLAGS   := -std=c++20 -shared -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++
+
+BIN         := bin
+INCLUDE     := -Iinclude
+LIB_TYPE    := so
+
+SRC         := src/RendorSTD
+DIRS        := 
+
+OBJDIR      := bin/RendorSTD
+
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.$(LIB_TYPE),$(SOURCES))
+
+
+BOOSTFILE   := boost_filesystem-mt
+BOOSTSYS    := boost_system-mt
+
+all: $(OBJECTS)
+
+run: clean all
+	clear
+
+$(OBJDIR)/%.$(LIB_TYPE): $(SRC)/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ 
+
+clean:
+	-rm $(OBJDIR)/*.$(LIB_TYPE)

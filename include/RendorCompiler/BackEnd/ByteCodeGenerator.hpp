@@ -5,7 +5,7 @@
 #include <string>
 
 #include "RendorCompiler/Math/MathEvaluator.hpp"
-#include "RendorCompiler/Nodes/Nodes.hpp"
+#include "RendorCompiler/Nodes/NodeType.hpp"
 
 
 enum class ByteCodeType

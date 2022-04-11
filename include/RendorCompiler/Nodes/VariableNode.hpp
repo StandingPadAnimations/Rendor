@@ -9,12 +9,12 @@ struct AssignVariable : Node
     NodeObject Value;
 
     AssignVariable() = default;
-    explicit AssignVariable(std::string VariableNameInput, uint32_t LineNumber) : Node(LineNumber), VariableName(VariableNameInput)
+    explicit AssignVariable(std::string& VariableNameInput, uint32_t LineNumber) : Node(LineNumber), VariableName(VariableNameInput)
     {
         Type = NodeType::AssignVariable;
     }
 
-    void CodeGen()
+    void CodeGen() override
     {
         Value->CodeGen();
         NodeByteCodeGen.CreateVariable(VariableName);

@@ -5,7 +5,6 @@
 #include <string>
 #include <string_view>
 
-#include "cpp-terminal/base.hpp"
 #include "RendorEngine.hpp"
 
 namespace error{
@@ -25,18 +24,11 @@ namespace error{
 
     inline void LogWarning(std::string_view Warning)
     {
-        switch (RendorEngineCompiler::WarningsToErrors)
+        if (RendorEngineCompiler::WarningsToErrors)
         {
-            case true:
-            {
-                throw error::RendorException(std::string{Warning});
-            }
-            default:
-            {
-                std::cout << Term::color(Term::fg::bright_magenta) << Warning << std::endl;
-                break;
-            }
+            throw error::RendorException(std::string{Warning});
         }
+        std::cout << Warning << std::endl;
     }
 }
 

@@ -1,0 +1,9 @@
+cimport "Rendor_IO"
+
+export namespace std
+{
+    extern echo()
+    extern input(string)
+}
+
+~module_destroy

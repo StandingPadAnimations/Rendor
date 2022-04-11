@@ -26,7 +26,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
         (Code.find_last_not_of(" \r\n") != std::string_view::npos))
         {
             size_t Pos1 = Code.find_first_not_of(" \r\n");
-            size_t Pos2 = Code.find_last_not_of(" \r\n") + (Code.size() - Code.find_last_of("\r"));
+            size_t Pos2 = Code.find_last_not_of(" \r\n") + (Code.size() - Code.find_last_of('\r'));
             Code = Code.substr(Pos1, Pos2);
             while (Code.back() != '\r')
             {
@@ -57,17 +57,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
             if 
             (((LexerBufferID == BufferID::CharSingle) ||
             (LexerBufferID   == BufferID::CharDouble) ||
-            (LexerBufferID   == BufferID::CharTilda)) &&
-            ((Code[Char]     != '\'')                 &&
-            (Code[Char]      != '"')                  &&
-            (Code[Char]      != '`')))
-            {
-                
-            }
-
-            else if 
-            ((LexerBufferID == BufferID::Comment) &&
-            (Code[Char] != '\r'))
+            (LexerBufferID   == BufferID::CharTilda)  ||
+            (LexerBufferID   == BufferID::Comment)) &&
+            ((Code[Char]     != '\'') &&
+            (Code[Char]      != '"')  &&
+            (Code[Char]      != '`')  &&
+            (Code[Char]      != '\r')))
             {
                 
             }
@@ -154,13 +149,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     }
                 }
 
-                else if (LexerBufferID == BufferID::StringEnd)
-                {
-                    LexerBufferID = BufferID::None; // resets BufferID when needed
-                }
-
                 else if 
-                ((LexerBufferID == BufferID::Comment) &&
+                (((LexerBufferID == BufferID::Comment) ||
+                ((LexerBufferID == BufferID::StringEnd))) &&
                 ((Code[Char] == '\r') ||
                 (Code[Char]  == ';')))
                 {
@@ -174,22 +165,26 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     {
                         Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
                     }
-                    
-                    // Functions
-                    else if (std::find(Functions.begin(), Functions.end(), Buffer) != Functions.end()) // if it is a built in function
+
+                    else if (std::find(Types.begin(), Types.end(), Buffer) != Types.end()) // if it is a keyword
                     {
-                        Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+                        Tokens.emplace_back(Token::TYPE_HINT, std::string{Buffer});
                     }
 
+                    else if (std::find(Attributes.begin(), Attributes.end(), Buffer) != Attributes.end()) // if it is an attribute
+                    {
+                        Tokens.emplace_back(Token::ATTRIBUTE, std::string{Buffer});
+                    }
+                    
                     else if (std::find(Operators.begin(), Operators.end(), Buffer) != Operators.end()) // if it is a built in function
                     {
-                        Tokens.emplace_back(Token::BUILT_IN_FUNCTION, std::string{Buffer});
+                        Tokens.emplace_back(Token::OPERATOR, std::string{Buffer});
                     }
 
                     // Floats 
                     else if 
                     ((Buffer.find_last_not_of("1234567890.") == std::string::npos) &&
-                    (Buffer.find_first_of(".") != std::string::npos))
+                    (Buffer.find_first_of('.') != std::string::npos))
                     {
                         Tokens.emplace_back(Token::FLOAT, std::string{Buffer});
                     }
@@ -276,17 +271,11 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     }
                     
                     case '^':
-                        FALLTHROUGH;
                     case '*':
-                        FALLTHROUGH;
                     case '/':
-                        FALLTHROUGH;
                     case '+':
-                        FALLTHROUGH;
                     case '-':
-                        FALLTHROUGH;
                     case '>':
-                        FALLTHROUGH;
                     case '<':
                     {
                         Tokens.emplace_back(Token::BIOP, std::string{Code[Char]});
