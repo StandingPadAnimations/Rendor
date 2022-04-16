@@ -1,3 +1,0 @@
-CIMPORT Rendor_IO
-REDEF_CPP echo,std->echo()
-REDEF_CPP input,std->input(string)
