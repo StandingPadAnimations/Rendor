@@ -21,7 +21,7 @@ struct IfElse : Node
         size_t Index = NodeByteCodeGen.GetIndex();
         IfElseBody.CodeGen();
         NodeByteCodeGen.CreateEndIf();
-        NodeByteCodeGen.ByteCode[Index] = "JMP " + std::to_string(NodeByteCodeGen.GetIndex() - Index);
+        (*NodeByteCodeGen.ByteCode)[Index] = "JMP " + std::to_string(NodeByteCodeGen.GetIndex() - Index);
     }
 };
 

@@ -13,6 +13,7 @@ enum class NodeType
     Decrement,
     FunctionCall,
     Edef,
+    Attribute,
     Condition,
     BiOp,
 

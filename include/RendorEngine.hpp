@@ -7,6 +7,7 @@
 #include <vector>
 #include <filesystem>
 
+#include "RendorCompiler/BackEnd/ByteCodeContext.hpp"
 #include "RendorBoostFileMapper.hpp"
 
 #define FMT_HEADER_ONLY 1
@@ -28,6 +29,7 @@ struct RendorEngineInterpreter
 struct RendorEngineCompiler
 {
     /* ---------------------------------- Flags --------------------------------- */
+    inline static RendorContext EngineContext;
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;

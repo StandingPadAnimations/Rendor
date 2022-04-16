@@ -36,7 +36,7 @@ inline void AddToArithmethicNode(AssignVariable& AssignVariableNode, const std::
             break;
         }
 
-        case NodeType::Int:
+        case NodeType::Int64:
         {
             auto& IntNode = static_cast<Int&>(*AssignVariableNode.Value);
             std::unique_ptr<Arithmethic> ArithmethicNode = std::make_unique<Arithmethic>(IntNode.Value, LineNumber);

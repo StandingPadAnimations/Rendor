@@ -58,7 +58,7 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern"};
+            std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern", "export"};
             std::vector<std::string_view> Attributes {"~module_destroy"};
             std::vector<std::string_view> Types {"int64", "double", "string", "bool"};
 

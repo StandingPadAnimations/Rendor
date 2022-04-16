@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++
+CXX_FLAGS   := -std=c++20 -lstdc++fs -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ -ggdb
 
 BIN         := bin
 INCLUDE     := -Iinclude
@@ -21,7 +21,7 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
-	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
@@ -29,4 +29,3 @@ $(OBJDIR)/%.o: $(SRC)/%.cpp
 clean:
 	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o
-	-rm $(TERM_OBJ)/*.o

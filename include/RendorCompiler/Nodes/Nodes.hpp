@@ -11,7 +11,7 @@
 #include "RendorCompiler/Nodes/VariableNode.hpp"
 #include "RendorCompiler/Nodes/ImportNodes.hpp"
 #include "RendorCompiler/Nodes/ExportNode.hpp"
-
+#include "RendorCompiler/Nodes/AttributeNode.hpp"
 #include "RendorCompiler/Nodes/NodeType.hpp"
 
 struct Main

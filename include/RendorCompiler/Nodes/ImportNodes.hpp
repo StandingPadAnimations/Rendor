@@ -12,7 +12,13 @@ struct Import : Node
     std::string Name;
     bool CImport = false;
 
-    void CodeGen() override {};
+    void CodeGen() override 
+    {
+        if (CImport)
+        {
+            NodeByteCodeGen.CreateCppImport(Name);
+        }
+    };
 };
 
 #endif // IMPORT_NODES_HPP

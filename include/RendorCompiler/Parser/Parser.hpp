@@ -14,6 +14,7 @@
 #include "RendorCompiler/Parser/TempID.hpp"
 #include "RendorCompiler/Nodes/Nodes.hpp"
 
+#include "RendorEngine.hpp"
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
 
@@ -33,10 +34,10 @@ class Parser
 
         /* ----------------------------- AST generation ----------------------------- */
         inline static std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
+        inline static std::vector<Body*> ParentNodes;
         inline static std::vector<TempID> ParserTempIDList {TempID::None};
         inline static TempID ParserTempID = ParserTempIDList.back();
         inline static std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
-        inline static std::vector<std::string> NameSpaces;
         inline static uint32_t LineNumber = 0;
         inline static bool IsScript = false;
 
@@ -48,6 +49,14 @@ class Parser
             {"bool",   NodeType::Bool},
         };
 
+        inline static const std::map<NodeType, std::string> ReverseTypeTable 
+        {
+            {NodeType::Int64,  "int64"},
+            {NodeType::Double, "double"},
+            {NodeType::String, "string"},
+            {NodeType::Bool,   "bool"},
+        };
+
         static void PopTempID();
         static void AddTempID(TempID ID);
         static void PopScope();
@@ -56,19 +65,22 @@ class Parser
         static void ReplaceNode(std::unique_ptr<Node> Node);
         static NodeType GetTypeOfNode();
         static void AddNameSpace(const std::string& NameSpace);
+        static void AddParentNode(Body* ParentNode);
 
         /* --------------------------- Bytecode generation -------------------------- */
         static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
         static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
 
         /* ----------------------------- AST inspection ----------------------------- */
-        static bool InvalidIdentifier(char& CharactherToCheck);
+        inline static std::vector<std::string_view> NameSpaces;
+        static bool InvalidIdentifier(const char& CharactherToCheck);
+        
+        static std::string MangleName(const std::variant<std::vector<std::pair<std::string, NodeType>>*, std::vector<NodeObject>*> FunctionArguments, std::string& Name);
 
         /* ---------------------------- Repeated actions ---------------------------- */
         static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);
         static void AddVariableScope();
         static void DestroyVariableScope();
-
         inline static std::vector<VariableMap> Variables;
         inline static VariableMap* CurrentVariables;
         inline static std::vector<FunctionCall*> FunctionCalls;

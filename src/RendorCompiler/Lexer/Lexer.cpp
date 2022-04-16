@@ -39,12 +39,18 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     }
                     default:
                     {
+                        if (Pos2 > Code.size())
+                        {
+                            goto EXIT_LOOP;
+                        }
                         ++Pos2;
                         break;
                     }
                 }
-                Code = std::string_view{Line.begin(), Line.end()};
-                Code = Code.substr(Pos1, Pos2);
+                    Code = std::string_view{Line.begin(), Line.end()};
+                    Code = Code.substr(Pos1, Pos2);
+                EXIT_LOOP:
+                    break;
             }
         }
 
@@ -115,6 +121,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                         std::string BufferAsString{Buffer};
                         if (BiOpTokens[BufferAsString] == Code[Char])
                         {
+                            //cppcheck-suppress unassignedVariable
                             auto& [Token, value] = Tokens.back();
                             Token = Lex::Token::BIOP;
                             value += Code[Char];
@@ -135,6 +142,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                         std::string BufferAsString{Buffer};
                         if (UnOpTokens[BufferAsString] == Code[Char])
                         {
+                            //cppcheck-suppress unassignedVariable
                             auto& [Token, value] = Tokens.back();
                             Token = Lex::Token::UnOp;
                             value += Code[Char];
@@ -270,12 +278,18 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                         break;
                     }
                     
-                    case '^':
+                    case '^': // NOLINT
+                    FALLTHROUGH;
                     case '*':
+                    FALLTHROUGH;
                     case '/':
+                    FALLTHROUGH;
                     case '+':
+                    FALLTHROUGH;
                     case '-':
+                    FALLTHROUGH;
                     case '>':
+                    FALLTHROUGH;
                     case '<':
                     {
                         Tokens.emplace_back(Token::BIOP, std::string{Code[Char]});
@@ -371,7 +385,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
 
 bool Lexer::LexerCharCheck(char Char)
 {
-    if (
+    return
     (Char   == ' ')   ||
     (Char   == ';')   ||
     (Char   == ',')   ||
@@ -387,9 +401,5 @@ bool Lexer::LexerCharCheck(char Char)
     (Char   == '-')   ||
     (Char   == '>')   ||
     (Char   == '<')   ||
-    (Char   == '\r'))
-    {
-        return true;
-    }
-    return false;
+    (Char   == '\r');
 }

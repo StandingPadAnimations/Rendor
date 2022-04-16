@@ -41,7 +41,8 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
             {
                 if 
                 ((ParserTempID != TempID::FunctionScope) &&
-                (ParserTempID != TempID::IfElseScope))
+                (ParserTempID != TempID::IfElseScope) &&
+                (ParserTempID != TempID::NameSpace))
                 {
                     if (ParserTempIDList.size() == 2)
                     {
@@ -69,9 +70,14 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     {
                         /* ------------------------ Create FunctionCall Node ------------------------ */
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->back());
-                        
                         throw error::RendorException(fmt::format("Syntax Error: {} found during the definition of {}; Line {}", value, AssignVariableNode.VariableName, LineNumber));
                     }
+                }
+
+                else if (ParserTempID == TempID::NameSpace)
+                {
+                    // Add namespace to body
+                    ParentNodes.back()->NameSpace = value;
                 }
 
                 /* -------------------------- function definitions -------------------------- */
@@ -347,6 +353,11 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     AddScope(&ElseNode.IfElseBody.ConnectedNodes);
                 }
 
+                else if (ParserTempID == TempID::NameSpace)
+                {
+                    PopTempID();
+                }
+
                 else 
                 {
                     throw error::RendorException(fmt::format("Syntax Error: {{ found outside of function/if/else scope; Line {}", LineNumber));
@@ -519,6 +530,13 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     // @ is not a valid characther to use in an argument, thus it's safe to use
                     FowardEdefNode.Args.emplace_back("@placeholder", TypeTable.at(value));
                 }
+                break;
+            }
+
+            case lt::ATTRIBUTE:
+            {
+                PushToScope(std::make_unique<Attribute>(LineNumber));
+                break;
             }
 
             /* -------------------------------------------------------------------------- */
@@ -571,7 +589,9 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                 {
                     PopTempID();
                     AddTempID(TempID::Import);
-                    PushToScope(std::make_unique<Import>(LineNumber));
+                    std::unique_ptr<Import> ImportNode = std::make_unique<Import>(LineNumber);
+                    ImportNode->CImport = true; 
+                    PushToScope(std::move(ImportNode));
                 }
                 
                 /* --------------------------------- Exports -------------------------------- */
@@ -588,8 +608,9 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                 {
                     PopTempID();
                     std::unique_ptr<Body> BodyNode = std::make_unique<Body>();
-                    AddScope(&BodyNode->ConnectedNodes);
-                    PushToScope(std::move(BodyNode));
+                    AddParentNode(BodyNode.get()); // Add it to parent nodes
+                    AddScope(&BodyNode->ConnectedNodes); // Add the body to scopes
+                    PushToScope(std::move(BodyNode)); // Add the node to the current scope
                     AddTempID(TempID::NameSpace);
                 }
 

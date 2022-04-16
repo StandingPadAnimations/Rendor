@@ -2,5 +2,5 @@
 
 void RendorByteCodeGenerator::CreateEndIf()
 {
-    ByteCode.emplace_back("ENDIF STATE");
+    ByteCode->emplace_back("ENDIF STATE");
 }

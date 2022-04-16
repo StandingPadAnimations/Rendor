@@ -20,11 +20,16 @@ void Parser::InspectTypesReferences(const NodeType& Type, const NodeObject& Node
     }
 }
 
-bool Parser::InvalidIdentifier(char& CharactherToCheck)
+void Parser::AddParentNode(Body* ParentNode)
+{
+    ParentNodes.emplace_back(ParentNode);
+}
+
+bool Parser::InvalidIdentifier(const char& CharactherToCheck)
 {
     switch (CharactherToCheck)
     {  
-        case '0':
+        case '0': // NOLINT
         FALLTHROUGH;
         case '1':
         FALLTHROUGH;
@@ -45,6 +50,14 @@ bool Parser::InvalidIdentifier(char& CharactherToCheck)
         case '9':
         FALLTHROUGH;
         case '&':
+        FALLTHROUGH;
+        case '@':
+        FALLTHROUGH;
+        case '$':
+        FALLTHROUGH;
+        case '#':
+        FALLTHROUGH;
+        case '\\':
         {
             return true;
         }

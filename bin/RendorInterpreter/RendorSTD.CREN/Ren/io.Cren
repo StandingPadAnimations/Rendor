@@ -1,0 +1,3 @@
+CIMPORT Rendor_IO
+REDEF_CPP echo,
+REDEF_CPP input,

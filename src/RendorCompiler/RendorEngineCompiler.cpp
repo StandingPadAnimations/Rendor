@@ -100,7 +100,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
             std::cout << " " << std::endl;
             for (auto const& command : RendorEngineCompiler::ByteCode)
             {
-                fmt::print(fg(fmt::color::green), command);
+                fmt::print(fg(fmt::color::green), "{}\n", command);
             }
         }
     }

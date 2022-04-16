@@ -1,4 +1,5 @@
 #include "RendorCompiler/Parser/Parser.hpp"
+#include <fmt/color.h>
 
 void Parser::DeltaInspectAST(const NodeObject& Node)
 {
@@ -23,7 +24,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                 {
                     /* ----------------------- Inspect value for validity ----------------------- */
                     if (
-                    (AssignmentNode.Value->Type == NodeType::Int)           ||
+                    (AssignmentNode.Value->Type == NodeType::Int64)           ||
                     (AssignmentNode.Value->Type == NodeType::Double)        ||
                     (AssignmentNode.Value->Type == NodeType::String)        ||
                     (AssignmentNode.Value->Type == NodeType::Bool)          ||
@@ -56,31 +57,40 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         case NodeType::FunctionCall:
         {
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node);
-
             if (FunctionCallNode.Function.empty())
             {
-                throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
+                throw error::RendorException(fmt::format("Invalid function name; Line {}", FunctionCallNode.LineNumber));
             }
 
-            if (Functions.contains(FunctionCallNode.Function))
+            // Mangle Name 
+            const std::string MangledName = MangleName(&FunctionCallNode.Args, FunctionCallNode.Function);
+
+            // Check if function exists with the types
+            if (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName))
             {
                 size_t FunctionCallSize = FunctionCallNode.Args.size();
-                size_t FunctionArgsSize = Functions[FunctionCallNode.Function].size();
+                size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[MangledName];
 
                 if (FunctionCallSize < FunctionArgsSize)
                 {
-                    throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
+                    throw error::RendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
+                    FunctionCallNode.Function, 
+                    FunctionCallNode.LineNumber));
                 }
                 else if (FunctionCallSize > FunctionArgsSize)
                 {
-                    throw error::RendorException((boost::format("Too many arguments in function call for %s; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
+                    throw error::RendorException(fmt::format("Too many arguments in function call for {}; Line {}", 
+                    FunctionCallNode.Function, 
+                    FunctionCallNode.LineNumber));
                 }
             }
             else 
             {
                 // To visit later
                 FunctionCalls.emplace_back(&FunctionCallNode);
-                error::LogWarning((boost::format("Detected call to %s before declaration; Line %s") % FunctionCallNode.Function % FunctionCallNode.LineNumber).str());
+                error::LogWarning(fmt::format("Detected call to {} before declaration; Line {}", 
+                FunctionCallNode.Function, 
+                FunctionCallNode.LineNumber));
             }
 
             for (auto const& Arg : FunctionCallNode.Args)
@@ -95,16 +105,18 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             auto& EdefNode = static_cast<Edef&>(*Node);
             if (EdefNode.Name.empty())
             {
-                throw error::RendorException((boost::format("Invalid function name; Line %s") % Node->LineNumber).str());
+                throw error::RendorException(fmt::format("Invalid function name; Line {}", EdefNode.LineNumber));
             }
 
             // Add new variable scope
             AddVariableScope();
-            // Add variables
+
+            //cppcheck-suppress unassignedVariable
             for (const auto& [Var, Type] : EdefNode.Args)
             {
                 (*CurrentVariables)[Var] = Type;
             }
+
             // Inspect the body
             for (const auto& NodeInNode : EdefNode.FunctionBody.ConnectedNodes) // actual body 
             {
@@ -112,23 +124,31 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             }
             // Destroy variable scope
             DestroyVariableScope();
+            
+            // Mangle name
+            std::string EdefName_Mangled = MangleName(&EdefNode.Args, EdefNode.Name);
 
             // Add function
-            Functions[EdefNode.Name] = FunctionArgsVector(EdefNode.Args.size(), NodeType::Any);
-            for (auto const& Function : FunctionCalls)
+            RendorEngineCompiler::EngineContext.FunctionTable[EdefName_Mangled] = EdefNode.Args.size();
+            for (auto const& CalledFunction : FunctionCalls)
             {
-                if (Function->Function == EdefNode.Name)
+                if (CalledFunction->Function == EdefName_Mangled)
                 {
-                    size_t FunctionCallSize = Function->Args.size();
-                    size_t FunctionArgsSize = Functions[Function->Function].size();
+                    size_t FunctionCallSize = CalledFunction->Args.size();
+                    size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[CalledFunction->Function];
 
                     if (FunctionCallSize < FunctionArgsSize)
                     {
-                        throw error::RendorException((boost::format("Missing Argument in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
+                        
+                        throw error::RendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
+                        CalledFunction->Function, 
+                        CalledFunction->LineNumber));
                     }
                     else if (FunctionCallSize > FunctionArgsSize)
                     {
-                        throw error::RendorException((boost::format("Too many arguments in function call for %s; Line %s") % Function->Function % Function->LineNumber).str());
+                        throw error::RendorException(fmt::format("Too many arguments in function call for {}; Line {}", 
+                        CalledFunction->Function, 
+                        CalledFunction->LineNumber));
                     }
                 }
             }
@@ -138,7 +158,12 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
         case NodeType::FowardEdef:
         {
             auto& FowardNode = static_cast<FowardEdef&>(*Node);
-            Functions[FowardNode.Name] = FunctionArgsVector(FowardNode.Args.size(), NodeType::Any);
+            std::string FowardName_Mangled = MangleName(&FowardNode.Args, FowardNode.Name);
+            RendorEngineCompiler::EngineContext.FunctionTable[FowardName_Mangled] = FowardNode.Args.size();
+            if (FowardNode.Extern)
+            {
+                FowardNode.MangledName = FowardName_Mangled;
+            }
             break;
         }
 
@@ -158,7 +183,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                     }
                     else
                     {
-                        throw error::RendorException((boost::format("If statement contains operator, expected an expression; Line %s") % Node->LineNumber).str());
+                        throw error::RendorException(fmt::format("If statement contains operator, expected an expression; Line {}", IfNode.LineNumber));
                     }
                 }
                 else 
@@ -174,6 +199,17 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             for (const auto& NodeInNode : IfNode.IfElseBody.ConnectedNodes) // actual body 
             {
                 DeltaInspectAST(NodeInNode);
+            }
+            break;
+        }
+
+        case NodeType::Body:
+        {
+            // Check if there's a namespace and add the namespace if there is
+            auto& BodyNode = static_cast<Body&>(*Node);
+            if (!BodyNode.NameSpace.empty())
+            {
+                NameSpaces.emplace_back(BodyNode.NameSpace);
             }
             break;
         }

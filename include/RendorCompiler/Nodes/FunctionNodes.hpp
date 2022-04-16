@@ -50,6 +50,8 @@ struct Edef : Node
 struct FowardEdef : Node
 {
     std::string Name = "";
+    std::string MangledName = "";
+
     bool Extern = false;
     std::vector<std::pair<std::string, NodeType>> Args;
 
@@ -61,7 +63,7 @@ struct FowardEdef : Node
     {
         if (Extern)
         {
-            // Do something we'll add later
+            NodeByteCodeGen.RedefineCppName(Name, MangledName);
         }
         return;
     }

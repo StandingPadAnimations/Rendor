@@ -2,10 +2,10 @@
 
 void RendorByteCodeGenerator::CreateFunc(const std::string& Name)
 {
-    ByteCode.emplace_back("DEFINE " + Name);
+    ByteCode->emplace_back("DEFINE .F " + Name);
 }
 
 void RendorByteCodeGenerator::CreateFuncEnd()
 {
-    ByteCode.emplace_back("FUNCTION END");
+    ByteCode->emplace_back("FUNCTION END");
 }

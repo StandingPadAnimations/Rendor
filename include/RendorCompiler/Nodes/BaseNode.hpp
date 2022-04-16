@@ -7,6 +7,7 @@
 
 #include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
 #include "RendorCompiler/Nodes/NodeType.hpp"
+#include "RendorEngine.hpp"
 
 struct Node
 {
@@ -14,10 +15,13 @@ struct Node
     ByteCodeType ConstType;
     uint32_t LineNumber = 0;
     RendorByteCodeGenerator NodeByteCodeGen;
-    Node() = default;
     
     //cppcheck-suppress uninitMemberVar
-    explicit Node(uint32_t LineNumber) : LineNumber(LineNumber){}
+    explicit Node() : NodeByteCodeGen(&RendorEngineCompiler::EngineContext, &RendorEngineCompiler::ByteCode){}
+    //cppcheck-suppress uninitMemberVar
+    explicit Node(uint32_t LineNumber) : 
+    LineNumber(LineNumber), 
+    NodeByteCodeGen(&RendorEngineCompiler::EngineContext, &RendorEngineCompiler::ByteCode){}
     virtual ~Node(){};
     virtual void CodeGen() = 0;
 };
