@@ -97,7 +97,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
             {
                 fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
             }
-            std::cout << " " << std::endl;
+            fmt::print(" ");
             for (auto const& command : RendorEngineCompiler::ByteCode)
             {
                 fmt::print(fg(fmt::color::green), "{}\n", command);
