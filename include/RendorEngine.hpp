@@ -34,6 +34,7 @@ struct RendorEngineCompiler
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;
     inline static std::vector<std::string> ByteCode;
+    inline static std::string OutputPath = "";
 
     /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);

@@ -9,8 +9,8 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
     // ? Personally I think there may be a way to use less variables 
     fs::path AbsPath(FileInput);
     std::string AbsPathExt = AbsPath.extension().string();
-    std::string AbsPathParentDir = AbsPath.parent_path().string();
     std::ios_base::sync_with_stdio(false);
+    OutputPath = AbsPath.parent_path().string();
 
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
@@ -26,6 +26,15 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         (std::find(Arguments.begin(), Arguments.end(), "-debug") != Arguments.end()))
         {
             DebugMode = true;
+        }
+
+        if
+        ((std::find(Arguments.begin(), Arguments.end(), "-o") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-output") != Arguments.end()))
+        {
+            auto Arg = std::find(Arguments.begin(), Arguments.end(), "-o");
+            ++Arg;
+            OutputPath = *Arg;
         }
 
         if
@@ -84,7 +93,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         {
             fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
             std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            std::ofstream CrenOutput(AbsPathParentDir + AbsPathCrenOutput);
+            std::ofstream CrenOutput(OutputPath + AbsPathCrenOutput);
             for (auto const& Op : RendorEngineCompiler::ByteCode)
             {
                 CrenOutput << Op << "\n";
