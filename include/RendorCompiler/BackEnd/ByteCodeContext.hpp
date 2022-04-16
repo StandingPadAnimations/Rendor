@@ -9,7 +9,7 @@
 
 struct RendorContext
 {
-    std::map<std::string, size_t> FunctionTable;
+    std::map<std::string, size_t, std::less<>> FunctionTable;
 };
 
 #endif // RENDOR_BYTECODE_CONTEXT_HPP

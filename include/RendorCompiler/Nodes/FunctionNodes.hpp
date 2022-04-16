@@ -39,8 +39,7 @@ struct Edef : Node
         NodeByteCodeGen.CreateFunc(Name);
         for (size_t Arg = Args.size(); Arg > 0; --Arg) // Arguments 
         {
-            auto& [Argument, TypeOfArgument] = Args[Arg];
-            NodeByteCodeGen.CreateVariable(Argument);
+            NodeByteCodeGen.CreateVariable(Args[Arg].first);
         }
         FunctionBody.CodeGen();
         NodeByteCodeGen.CreateFuncEnd();

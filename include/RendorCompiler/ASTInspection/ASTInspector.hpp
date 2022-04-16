@@ -31,10 +31,12 @@ class ASTInspector
         inline static std::vector<FunctionCall*> FunctionCalls;
         inline static const std::map<NodeType, std::string> ReverseTypeTable 
         {
-            {NodeType::Int64,  "int64"},
-            {NodeType::Double, "double"},
-            {NodeType::String, "string"},
-            {NodeType::Bool,   "bool"},
+            {NodeType::Reference, "ref"},
+            {NodeType::Any,       "any"},
+            {NodeType::Int64,     "int64"},
+            {NodeType::Double,    "double"},
+            {NodeType::String,    "string"},
+            {NodeType::Bool,      "bool"},
         };
 };
 

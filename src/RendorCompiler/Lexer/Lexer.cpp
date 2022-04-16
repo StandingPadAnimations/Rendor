@@ -157,15 +157,18 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     }
                 }
 
+                else if (LexerBufferID == BufferID::StringEnd) // NOLINTNEXTLINE
+                {
+                    LexerBufferID = BufferID::None; // resets BufferID when needed
+                }
+
                 else if 
-                (((LexerBufferID == BufferID::Comment) ||
-                ((LexerBufferID == BufferID::StringEnd))) &&
+                ((LexerBufferID == BufferID::Comment) &&
                 ((Code[Char] == '\r') ||
                 (Code[Char]  == ';')))
                 {
                     LexerBufferID = BufferID::None; // resets BufferID when needed
                 }
-
                 else if (LexerBufferID == BufferID::None) // Everything that requires the BufferID to be None
                 {
                     // Keywords 

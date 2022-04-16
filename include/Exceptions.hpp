@@ -7,6 +7,8 @@
 
 #include "RendorEngine.hpp"
 
+#include <fmt/color.h>
+
 namespace error{
     // Exception for Rendor in general
     class RendorException: public std::exception {
@@ -28,7 +30,7 @@ namespace error{
         {
             throw error::RendorException(std::string{Warning});
         }
-        std::cout << Warning << std::endl;
+        fmt::print(fmt::fg(fmt::color::purple), "{}\n", Warning);
     }
 }
 

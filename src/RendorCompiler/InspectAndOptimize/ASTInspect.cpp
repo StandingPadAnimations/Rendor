@@ -24,7 +24,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                 {
                     /* ----------------------- Inspect value for validity ----------------------- */
                     if (
-                    (AssignmentNode.Value->Type == NodeType::Int64)           ||
+                    (AssignmentNode.Value->Type == NodeType::Int64)         ||
                     (AssignmentNode.Value->Type == NodeType::Double)        ||
                     (AssignmentNode.Value->Type == NodeType::String)        ||
                     (AssignmentNode.Value->Type == NodeType::Bool)          ||
@@ -36,17 +36,17 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     }
                     else 
                     {
-                        throw error::RendorException((boost::format("Variable has a invalid value; Line %s") % Node->LineNumber).str());
+                        throw error::RendorException(fmt::format("Variable has an invalid value; Line {}", Node->LineNumber));
                     }
                 }
                 else 
                 {
-                    throw error::RendorException((boost::format("Variable has no value; Line %s") % Node->LineNumber).str());
+                    throw error::RendorException(fmt::format("Variable has no value; Line {}", Node->LineNumber));
                 }
             }
             else 
             {
-                throw error::RendorException((boost::format("Invalid variable name; Line %s") % Node->LineNumber).str());
+                throw error::RendorException(fmt::format("Invalid variable name; Line {}", Node->LineNumber));
             }
             break;
         }

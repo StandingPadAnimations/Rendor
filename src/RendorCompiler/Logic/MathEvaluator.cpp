@@ -1,6 +1,6 @@
 #include "RendorCompiler/Math/MathEvaluator.hpp"
 
-static std::string EvalNums (std::string Num1, std::string Num2, std::string Op)
+static std::string EvalNums (const std::string& Num1, const std::string& Num2, std::string_view Op)
 {
     std::string Answer;
     long double N1 = std::stold(Num1);
@@ -38,7 +38,7 @@ std::string PostFixEval (std::string_view PostFixOperation)
     boost::char_separator<char> Delimeters(" ", "");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(PostFixOperation, Delimeters);
 
-    std::list<std::string> Stack;
+    std::vector<std::string> Stack;
 
     for(auto const& PartOfOperation : SeparatedOperation){
         if (

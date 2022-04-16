@@ -133,14 +133,17 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                             throw error::RendorException(fmt::format("{} is not a typehint; Line {}", value, LineNumber));
                         }
 
-                        // grab the identifier and type
-                        auto& [Identifier, Type] = FowardNode.Args.back();
-
-                        // if the identifer is a placeholder
-                        if (Identifier == "@placeholder")
+                        if (!FowardNode.Args.empty())
                         {
-                            Identifier = value;
-                            break;
+                            // grab the identifier and type
+                            auto& [Identifier, Type] = FowardNode.Args.back();
+
+                            // if the identifer is a placeholder
+                            if (Identifier == "@placeholder")
+                            {
+                                Identifier = value;
+                                break;
+                            }
                         }
                         FowardNode.Args.emplace_back(value, NodeType::Any); // Add argument to Node with type Any
                     }
@@ -369,6 +372,10 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
             case lt::RBRACE: // * } sign
             {
                 ScopeList.pop_back();
+                if (GetTypeOfNode() == NodeType::Body)
+                {
+                    ScopeList.pop_back();
+                }
                 break;
             }
 
