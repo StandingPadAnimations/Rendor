@@ -63,6 +63,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
         Parser RenParser;
+        ASTInspector RenASTInspector;
         std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         fmt::print(fg(fmt::color::green), "Tokenizing...\n");
@@ -75,7 +76,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
         for (const auto& Node : (*Parser::Script.GlobalBody))
         {
-            Parser::DeltaInspectAST(Node);
+            RenASTInspector.InspectAST(Node);
             Node->CodeGen();
         }
 
@@ -97,7 +98,7 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
             {
                 fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
             }
-            fmt::print(" ");
+            fmt::print("\n");
             for (auto const& command : RendorEngineCompiler::ByteCode)
             {
                 fmt::print(fg(fmt::color::green), "{}\n", command);

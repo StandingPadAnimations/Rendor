@@ -1,7 +1,7 @@
-#include "RendorCompiler/Parser/Parser.hpp"
+#include "RendorCompiler/ASTInspection/ASTInspector.hpp"
 #include <fmt/color.h>
 
-void Parser::DeltaInspectAST(const NodeObject& Node)
+void ASTInspector::InspectAST(const NodeObject& Node)
 {
     if (Variables.empty())
     {
@@ -31,7 +31,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
                     (AssignmentNode.Value->Type == NodeType::Arithmethic)   ||
                     (AssignmentNode.Value->Type == NodeType::FunctionCall))
                     {
-                        DeltaInspectAST(AssignmentNode.Value);
+                        InspectAST(AssignmentNode.Value);
                         (*CurrentVariables)[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
                     }
                     else 
@@ -120,7 +120,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             // Inspect the body
             for (const auto& NodeInNode : EdefNode.FunctionBody.ConnectedNodes) // actual body 
             {
-                DeltaInspectAST(NodeInNode);
+                InspectAST(NodeInNode);
             }
             // Destroy variable scope
             DestroyVariableScope();
@@ -198,7 +198,7 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             }
             for (const auto& NodeInNode : IfNode.IfElseBody.ConnectedNodes) // actual body 
             {
-                DeltaInspectAST(NodeInNode);
+                InspectAST(NodeInNode);
             }
             break;
         }
@@ -210,6 +210,21 @@ void Parser::DeltaInspectAST(const NodeObject& Node)
             if (!BodyNode.NameSpace.empty())
             {
                 NameSpaces.emplace_back(BodyNode.NameSpace);
+            }
+
+            for (const auto& NodeInNode : BodyNode.ConnectedNodes) // actual body 
+            {
+                InspectAST(NodeInNode);
+            }
+            break;
+        }
+
+        case NodeType::Export:
+        {
+            auto& ExportNode = static_cast<Export&>(*Node);
+            for (const auto& NodeInNode : ExportNode.ExportBody.ConnectedNodes) // actual body 
+            {
+                InspectAST(NodeInNode);
             }
             break;
         }

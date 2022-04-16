@@ -30,7 +30,7 @@ NodeType Parser::GetTypeOfNode()
     return Scope->back()->Type;
 }
 
-void Parser::AddNameSpace(const std::string& NameSpace)
+void Parser::AddParentNode(Body* ParentNode)
 {
-    NameSpaces.push_back(NameSpace);
+    ParentNodes.emplace_back(ParentNode);
 }

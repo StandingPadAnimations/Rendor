@@ -13,6 +13,7 @@
 #include "RendorCompiler/Parser/ASTGenerationFunctions.hpp"
 #include "RendorCompiler/Parser/TempID.hpp"
 #include "RendorCompiler/Nodes/Nodes.hpp"
+#include "RendorCompiler/ASTInspection/ASTInspector.hpp"
 
 #include "RendorEngine.hpp"
 #include "Exceptions.hpp"
@@ -28,7 +29,6 @@ class Parser
     public:
         inline static Main Script;
         static void ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
-        static void DeltaInspectAST(const NodeObject& Node);
     
     private:
 
@@ -49,14 +49,6 @@ class Parser
             {"bool",   NodeType::Bool},
         };
 
-        inline static const std::map<NodeType, std::string> ReverseTypeTable 
-        {
-            {NodeType::Int64,  "int64"},
-            {NodeType::Double, "double"},
-            {NodeType::String, "string"},
-            {NodeType::Bool,   "bool"},
-        };
-
         static void PopTempID();
         static void AddTempID(TempID ID);
         static void PopScope();
@@ -64,26 +56,7 @@ class Parser
         static void PushToScope(std::unique_ptr<Node> Node);
         static void ReplaceNode(std::unique_ptr<Node> Node);
         static NodeType GetTypeOfNode();
-        static void AddNameSpace(const std::string& NameSpace);
         static void AddParentNode(Body* ParentNode);
-
-        /* --------------------------- Bytecode generation -------------------------- */
-        static std::string ByteCodeGen(const NodeType& ClassType, const NodeObject& NodeClass);
-        static void TypeConstants(const NodeType& ClassType, const NodeObject& Node);
-
-        /* ----------------------------- AST inspection ----------------------------- */
-        inline static std::vector<std::string_view> NameSpaces;
-        static bool InvalidIdentifier(const char& CharactherToCheck);
-        
-        static std::string MangleName(const std::variant<std::vector<std::pair<std::string, NodeType>>*, std::vector<NodeObject>*> FunctionArguments, std::string& Name);
-
-        /* ---------------------------- Repeated actions ---------------------------- */
-        static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);
-        static void AddVariableScope();
-        static void DestroyVariableScope();
-        inline static std::vector<VariableMap> Variables;
-        inline static VariableMap* CurrentVariables;
-        inline static std::vector<FunctionCall*> FunctionCalls;
 };
 
 

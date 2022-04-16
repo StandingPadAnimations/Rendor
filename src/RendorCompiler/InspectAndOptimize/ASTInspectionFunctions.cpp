@@ -1,6 +1,6 @@
-#include "RendorCompiler/Parser/Parser.hpp"
+#include "RendorCompiler/ASTInspection/ASTInspector.hpp"
 
-void Parser::InspectTypesReferences(const NodeType& Type, const NodeObject& Node)
+void ASTInspector::InspectTypesReferences(const NodeType& Type, const NodeObject& Node)
 {
     switch (Type)
     {
@@ -20,12 +20,7 @@ void Parser::InspectTypesReferences(const NodeType& Type, const NodeObject& Node
     }
 }
 
-void Parser::AddParentNode(Body* ParentNode)
-{
-    ParentNodes.emplace_back(ParentNode);
-}
-
-bool Parser::InvalidIdentifier(const char& CharactherToCheck)
+bool ASTInspector::InvalidIdentifier(const char& CharactherToCheck)
 {
     switch (CharactherToCheck)
     {  
@@ -69,13 +64,13 @@ bool Parser::InvalidIdentifier(const char& CharactherToCheck)
     }
 }
 
-void Parser::AddVariableScope()
+void ASTInspector::AddVariableScope()
 {
     Variables.emplace_back(VariableMap());
     CurrentVariables = &Variables.back();
 }
 
-void Parser::DestroyVariableScope()
+void ASTInspector::DestroyVariableScope()
 {
     Variables.pop_back();
     CurrentVariables = &Variables.back();
