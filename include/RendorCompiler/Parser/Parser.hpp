@@ -3,9 +3,11 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 #include <memory>
 #include <map>
+#include <set>
 
 #include "RendorCompiler/Lexer/Lexer.hpp"
 #include "RendorCompiler/Math/Mathparsing.hpp"
@@ -33,12 +35,12 @@ class Parser
     private:
 
         /* ----------------------------- AST generation ----------------------------- */
-        inline static std::vector<std::vector<std::unique_ptr<Node>>*> ScopeList {&Script.Global.ConnectedNodes}; // Scopes
+        inline static std::vector<Body*> ScopeList {&Script.Global}; // Scopes
         inline static std::vector<Body*> ParentNodes;
         inline static std::vector<TempID> ParserTempIDList {TempID::None};
         inline static TempID ParserTempID = ParserTempIDList.back();
-        inline static std::vector<std::unique_ptr<Node>>* Scope = ScopeList.back();
-        inline static uint32_t LineNumber = 0;
+        inline static Body* Scope = ScopeList.back();
+        inline static uint32_t LineNumber = 1;
         inline static bool IsScript = false;
 
         inline static const std::map<std::string_view, NodeType> TypeTable 
@@ -52,7 +54,7 @@ class Parser
         static void PopTempID();
         static void AddTempID(TempID ID);
         static void PopScope();
-        static void AddScope(std::vector<std::unique_ptr<Node>>* Ptr);
+        static void AddScope(Body* Ptr);
         static void PushToScope(std::unique_ptr<Node> Node);
         static void ReplaceNode(std::unique_ptr<Node> Node);
         static NodeType GetTypeOfNode();

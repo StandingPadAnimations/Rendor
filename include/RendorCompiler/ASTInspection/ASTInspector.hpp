@@ -20,7 +20,8 @@ class ASTInspector
         inline static std::vector<std::string_view> NameSpaces;
         static bool InvalidIdentifier(const char& CharactherToCheck);
         
-        static std::string MangleName(const std::variant<std::vector<std::pair<std::string, NodeType>>*, std::vector<NodeObject>*> FunctionArguments, std::string& Name);
+        static std::string MangleName(const Body& FunctionArguments, std::string& Name);
+        static std::string MangleName(const std::vector<std::pair<std::string, NodeType>>& FunctionArguments, std::string& Name);
 
         /* ---------------------------- Repeated actions ---------------------------- */
         static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);

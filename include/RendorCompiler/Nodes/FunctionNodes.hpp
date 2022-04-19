@@ -3,11 +3,12 @@
 
 #include "RendorCompiler/Nodes/BaseNode.hpp"
 #include "RendorCompiler/Nodes/BodyNodes.hpp"
+#include <memory>
 
 struct FunctionCall : Node
 {
     std::string Function = "";
-    std::vector<NodeObject> Args;
+    Body Args;
     explicit FunctionCall(std::string Function, uint32_t LineNumber) : Node(LineNumber), Function(std::move(Function))
     {
         Type = NodeType::FunctionCall;
@@ -15,10 +16,7 @@ struct FunctionCall : Node
 
     void CodeGen() override
     {
-        for (auto const& Node : Args)
-        {
-            Node->CodeGen();
-        }
+        Args.CodeGen();
         NodeByteCodeGen.CallFunction(Function);
     }
 };
@@ -37,9 +35,13 @@ struct Edef : Node
     void CodeGen() override
     {
         NodeByteCodeGen.CreateFunc(Name);
-        for (size_t Arg = Args.size(); Arg > 0; --Arg) // Arguments 
+
+        if (!Args.empty())
         {
-            NodeByteCodeGen.CreateVariable(Args[Arg].first);
+            for (size_t Arg = Args.size() - 1; Arg > 0; --Arg) // Arguments 
+            {
+                NodeByteCodeGen.CreateVariable(Args[Arg].first);
+            }
         }
         FunctionBody.CodeGen();
         NodeByteCodeGen.CreateFuncEnd();

@@ -4,7 +4,7 @@ using namespace Lex;
 std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interprocess::mapped_region& MappedCode){
     std::vector<std::pair<Token, std::string>> Tokens;
     BufferID LexerBufferID = BufferID::None;
-    
+    Tokens.reserve(5000);
     for (auto Line : RendorMapping::crange(MappedCode))
     {
         /* -------------------------- Current Line of code -------------------------- */

@@ -2,5 +2,5 @@
 
 void RendorByteCodeGenerator::CreateVariable(const std::string& Name)
 {
-    ByteCode->emplace_back("ASSIGN" + Name);
+    ByteCode->emplace_back("ASSIGN " + Name);
 }

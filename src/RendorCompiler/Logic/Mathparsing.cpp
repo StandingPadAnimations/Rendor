@@ -1,128 +1,131 @@
 #include "RendorCompiler/Math/Mathparsing.hpp"
 
-// TODO: finish this lol
-std::string OperationToPostfix (std::string_view Operation){
-    std::vector<std::string_view> Stack;
-    std::map<std::string_view, int> OperatorPresedence {{"^", 3}, {"*", 2}, {"/", 2}, {"+", 1}, {"-", 1}}; // based on PEMDAS 
+std::string OperationToPostfix(std::string_view Operation){
+    std::vector<std::string> Stack;
+    Stack.reserve(10);
+    const std::map<std::string_view, int> OperatorPresedence {{"^", 3}, {"*", 2}, {"/", 2}, {"+", 1}, {"-", 1}}; // based on PEMDAS 
+
     std::string Output = "";
     bool LastTokenWasOperator = false;
-
     boost::char_separator<char> Delimeters("", "^*/+-()");
     boost::tokenizer<boost::char_separator<char>> SeparatedOperation(Operation, Delimeters);
 
-    for (auto const& PartOfOperation : SeparatedOperation){
-        uint8_t CurrentOp = OperatorPresedence[PartOfOperation];
-        uint8_t StackOp = 0;
-
-        if (Stack.size())
+    for (const auto& PartOfOperation : SeparatedOperation)
+    {
+        // if we are on an operator
+        if (OperatorPresedence.contains(PartOfOperation))
         {
-            StackOp = OperatorPresedence[Stack.back()];
-        }
-
-        if (
-        (PartOfOperation.find_first_of("^*/+-") != std::string::npos) &&
-        (PartOfOperation.find_first_of("1234567890.") == std::string::npos)) // Just in case a number and operator are together
-        {
-            if ( 
-            (Stack.empty()) ||
-            (Stack.back() == "(") ||
-            (CurrentOp > StackOp))
+            // if the stack is empty, let's move on
+            LastTokenWasOperator = true;
+            if 
+            ((Stack.empty()) ||
+            (Stack.back() == "("))
             {
-                Stack.emplace_back(PartOfOperation); // Places the operator in the stack if it has a high presedence then the previous
+                Stack.emplace_back(PartOfOperation);
+                continue; // Move on to the next operation
             }
 
-            else if (CurrentOp <= StackOp) // Remove operator on top of the stack, put it in output, and add new operator
-            { 
-                do
-                {
-                    Output += " " + std::string{Stack.back()};
-                    Stack.pop_back();
-                    if (Stack.empty())
-                    {
-                        break;
-                    }
-                } while (CurrentOp <= StackOp);
+            // Get the values of the operators for comparison
+            uint32_t CurrentOp = OperatorPresedence.at(PartOfOperation);;
+            uint32_t StackOp = OperatorPresedence.at(Stack.back());
+            if (CurrentOp > StackOp)
+            {
                 Stack.emplace_back(PartOfOperation);
             }
-            
             else
             {
-                throw error::RendorException("WTH error; Invalid binary operator");
-            }
-            LastTokenWasOperator = true;
-        } 
-
-        else if(
-        (PartOfOperation.find_first_of('(') != std::string::npos) &&
-        (PartOfOperation.find_first_of("1234567890.") == std::string::npos)) // when it encounters )
-        {
-            if(!LastTokenWasOperator){ // add a * to the stack
-                if (!Stack.empty())
+                // Start adding the operators
+                do
                 {
-                    if (
-                    (OperatorPresedence["*"] > OperatorPresedence[Stack.back()]) &&
-                    (!Output.empty()))
+                    Output += std::string{Stack.back()} + " ";
+                    Stack.pop_back();
+                    
+                    if (Stack.empty())
                     {
-                        Stack.emplace_back("*"); // Places the operator in the stack if it has a high presedence then the previous
+                        break; // Break if the stack is empty
+                    }
+                    StackOp = OperatorPresedence.at(Stack.back());
+                } while (StackOp >= CurrentOp);
+            }
+        }
+        else 
+        {
+            if (PartOfOperation == "(") // ()
+            {
+                // If we need to add a * token
+                if (!LastTokenWasOperator)
+                {
+                    // Repeat this code
+                    if (Stack.empty())
+                    {
+                        Stack.emplace_back("*");
+                        Stack.emplace_back(PartOfOperation);
+                        continue; // Move on to the next operation
                     }
 
-                    else if (OperatorPresedence["*"] <= OperatorPresedence[Stack.back()]) // Remove operator on top of the stack, put it in output, and add new operator
-                    { 
-                        Output += " " + std::string{Stack.back()};
-                        Stack.pop_back();
+                    // Get the values of the operators for comparison
+                    uint32_t CurrentOp = OperatorPresedence.at("*");;
+                    uint32_t StackOp = OperatorPresedence.at(Stack.back());
+                    if (CurrentOp > StackOp)
+                    {
                         Stack.emplace_back("*");
                     }
                     else
                     {
-                        // Skip if there's nothing in output
+                        // Start adding the operators
+                        do
+                        {
+                            Output += std::string{Stack.back()} + " ";
+                            Stack.pop_back();
+                            
+                            if (Stack.empty())
+                            {
+                                break; // Break if the stack is empty
+                            }
+                            StackOp = OperatorPresedence.at(Stack.back());
+                        } while (StackOp >= CurrentOp);
                     }
                 }
-                else
+                Stack.emplace_back(PartOfOperation);
+                LastTokenWasOperator = true;
+            }
+            else if (PartOfOperation == ")") // )
+            {
+                do 
                 {
-                    Stack.emplace_back("*"); 
-                }
-            }
-            Stack.emplace_back(PartOfOperation);
-        }
-
-        else if(
-        (PartOfOperation.find_first_of(')') != std::string::npos) &&
-        (PartOfOperation.find_first_of("1234567890.") == std::string::npos)) // when it encounters )
-        {
-            while (Stack.back() != "(") 
-            {
-                Output += " " + std::string{Stack.back()};
+                    if (Stack.empty())
+                    {
+                        break;
+                    }
+                    Output += std::string{Stack.back()} + " ";
+                    Stack.pop_back();
+                } while (Stack.back() != "(");
                 Stack.pop_back();
+                LastTokenWasOperator = false;
             }
-
-            if (!Stack.empty())
+            else // Numeric types
             {
-                Stack.pop_back(); 
+                // Add number to the output
+                Output += PartOfOperation + " ";
+                LastTokenWasOperator = false;
             }
-        }
-
-        else
-        {
-            if (Output.back() != ' ')
-            {
-                Output += " " + PartOfOperation;
-            }
-            else 
-            {
-                Output += PartOfOperation;
-            }
-            LastTokenWasOperator = false;
         }
     }
-    for (std::vector<std::string_view>::reverse_iterator Op = Stack.rbegin(); Op != Stack.rend(); ++Op) // Add any leftover operators
-    { 
-        if (Output.back() != ' ')
+
+    if (!Stack.empty())
+    {
+        for (std::vector<std::string>::reverse_iterator Op = Stack.rbegin(); Op != Stack.rend(); ++Op) // Add any leftover operators
         {
-            Output += " " + std::string{(*Op)};
-        }
-        else 
-        {
-            Output += (*Op);
+            if 
+            ((*Op == "(") ||
+            (*Op == ")"))
+            {
+                continue;
+            }
+            else
+            {
+                Output += (*Op) + " ";
+            }
         }
     }
     return Output;

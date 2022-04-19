@@ -66,7 +66,7 @@ int main (int argc, char *argv[])
         #endif
         
         std::string File = "._.";
-        std::vector<std::string> Arguments;
+        std::vector<std::string_view> Arguments;
 
         if (argc > 1) {
             Arguments.assign(argv, argv + argc);
@@ -75,8 +75,8 @@ int main (int argc, char *argv[])
                 File = Arguments[1];
             }
         }
-
-        RendorEngineCompiler::run(File, Arguments);
+        RendorEngineCompiler Compiler;
+        Compiler.run(File, Arguments);
         return EXIT_SUCCESS;
     }
     catch (const std::exception& exp)

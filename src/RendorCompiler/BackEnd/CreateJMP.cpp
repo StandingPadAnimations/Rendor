@@ -8,5 +8,5 @@ void RendorByteCodeGenerator::CreateJMP(int32_t JMPAmount)
 
 size_t RendorByteCodeGenerator::GetIndex()
 {
-    return ByteCode->size();
+    return ByteCode->size() - 1;
 }

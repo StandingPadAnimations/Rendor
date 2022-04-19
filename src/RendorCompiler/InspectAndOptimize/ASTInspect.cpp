@@ -63,15 +63,15 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             }
 
             // Mangle Name 
-            const std::string MangledName = MangleName(&FunctionCallNode.Args, FunctionCallNode.Function);
+            const std::string MangledName = MangleName(FunctionCallNode.Args, FunctionCallNode.Function);
 
             // Check if function exists with the types
             if (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName))
             {
-                size_t FunctionCallSize = FunctionCallNode.Args.size();
+                size_t FunctionCallSize = FunctionCallNode.Args.ConnectedNodes.size();
                 size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[MangledName];
 
-                if (FunctionCallSize < FunctionArgsSize)
+                if (FunctionCallSize < FunctionArgsSize) 
                 {
                     throw error::RendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
                     FunctionCallNode.Function, 
@@ -93,7 +93,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                 FunctionCallNode.LineNumber));
             }
 
-            for (auto const& Arg : FunctionCallNode.Args)
+            for (auto const& Arg : FunctionCallNode.Args.ConnectedNodes)
             {
                 InspectTypesReferences(Arg->Type, Arg);
             }
@@ -126,7 +126,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             DestroyVariableScope();
             
             // Mangle name
-            std::string EdefName_Mangled = MangleName(&EdefNode.Args, EdefNode.Name);
+            std::string EdefName_Mangled = MangleName(EdefNode.Args, EdefNode.Name);
 
             // Add function
             RendorEngineCompiler::EngineContext.FunctionTable[EdefName_Mangled] = EdefNode.Args.size();
@@ -134,7 +134,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             {
                 if (CalledFunction->Function == EdefName_Mangled)
                 {
-                    size_t FunctionCallSize = CalledFunction->Args.size();
+                    size_t FunctionCallSize = CalledFunction->Args.ConnectedNodes.size();
                     size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[CalledFunction->Function];
 
                     if (FunctionCallSize < FunctionArgsSize)
@@ -158,7 +158,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
         case NodeType::FowardEdef:
         {
             auto& FowardNode = static_cast<FowardEdef&>(*Node);
-            std::string FowardName_Mangled = MangleName(&FowardNode.Args, FowardNode.Name);
+            std::string FowardName_Mangled = MangleName(FowardNode.Args, FowardNode.Name);
             RendorEngineCompiler::EngineContext.FunctionTable[FowardName_Mangled] = FowardNode.Args.size();
             if (FowardNode.Extern)
             {
@@ -179,7 +179,6 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     {
                         // Check if condition 2 is valid if provided by the user
                         InspectTypesReferences(IfNode.Conditions->Condition2->Type, IfNode.Conditions->Condition2);
-                        break;
                     }
                     else
                     {

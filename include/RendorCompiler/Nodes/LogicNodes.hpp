@@ -28,9 +28,9 @@ struct Condition : Node
     }
     void CodeGen() override
     {
-        Operator->CodeGen();
         Condition1->CodeGen();
         Condition2->CodeGen();
+        Operator->CodeGen();
     }
 };
 

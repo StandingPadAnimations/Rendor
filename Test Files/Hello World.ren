@@ -1,5 +1,4 @@
 cimport "Rendor_IO"
-
 namespace std
 {
     extern echo()
@@ -10,16 +9,16 @@ namespace std
 edef main() 
 {
     arithmethic = 1(2+5)
-    echo("Hello")
-    echo("bar")
+    std->echo("Hello")
+    std->echo("bar")
 
     if (arithmethic > 10)
     {
-        echo("yee")
+        std->echo("yee")
     }
 }
 
 edef foo(bar)
 {
-    echo(bar)
+    std->echo(bar)
 }

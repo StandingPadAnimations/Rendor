@@ -10,6 +10,7 @@ struct Body : Node
     Body()
     {
         Type = NodeType::Body;
+        ConnectedNodes.reserve(100);
     }
     void CodeGen() override
     {
@@ -17,6 +18,11 @@ struct Body : Node
         {
             Node->CodeGen();
         }
+    }
+
+    bool operator!=(const Body& Comp)
+    {
+        return this->ConnectedNodes != Comp.ConnectedNodes;
     }
 };
 

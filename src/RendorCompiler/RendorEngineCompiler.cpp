@@ -1,9 +1,18 @@
 #include "RendorEngine.hpp"
 #include "RendorCompiler/Lexer/Lexer.hpp"
 #include "RendorCompiler/Parser/Parser.hpp"
+#include <fmt/color.h>
 
+// Overload of new for debugging
+#if DEBUGMODE
+void* operator new(size_t size)
+{
+    fmt::print("Allocating {} bytes\n", size);
+    return malloc(size);
+}
+#endif
 
-void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::string>& Arguments)
+void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::string_view>& Arguments)
 {
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 

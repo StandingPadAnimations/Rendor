@@ -1,6 +1,7 @@
 #ifndef RENDOR_ENGINE_HPP
 #define RENDOR_ENGINE_HPP
 
+#include <cstddef>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -37,7 +38,12 @@ struct RendorEngineCompiler
     inline static std::string OutputPath = "";
 
     /* ----------------------------------- Run ---------------------------------- */
-    static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
+    static void run(const std::string& FileInput, std::vector<std::string_view>& Arguments);
+
+    RendorEngineCompiler()
+    {
+        ByteCode.reserve(1000);
+    }
 };
 
 #endif // RENDOR_ENGINE_HPP
