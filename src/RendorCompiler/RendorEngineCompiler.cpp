@@ -75,8 +75,8 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     }
 
     {
-        boost::interprocess::file_mapping File(FileInput.c_str(), boost::interprocess::read_only);
-        boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
+        boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
+        boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;

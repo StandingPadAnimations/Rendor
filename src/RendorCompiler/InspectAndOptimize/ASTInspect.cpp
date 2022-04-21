@@ -1,5 +1,6 @@
 #include "RendorCompiler/ASTInspection/ASTInspector.hpp"
 #include <fmt/color.h>
+#include <string_view>
 
 void ASTInspector::InspectAST(const NodeObject& Node)
 {
@@ -36,17 +37,23 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     }
                     else 
                     {
-                        throw error::RendorException(fmt::format("Variable has an invalid value; Line {}", Node->LineNumber));
+                        throw error::CompilerRendorException(
+                            fmt::format("Variable has an invalid value; Line {}", Node->LineNumber),
+                            Node->LineNumber);
                     }
                 }
                 else 
                 {
-                    throw error::RendorException(fmt::format("Variable has no value; Line {}", Node->LineNumber));
+                    throw error::CompilerRendorException(
+                        fmt::format("Variable has no value; Line {}", Node->LineNumber),
+                        Node->LineNumber);
                 }
             }
             else 
             {
-                throw error::RendorException(fmt::format("Invalid variable name; Line {}", Node->LineNumber));
+                throw error::CompilerRendorException(
+                    fmt::format("Invalid variable name; Line {}", Node->LineNumber),
+                    Node->LineNumber);
             }
             break;
         }
@@ -59,29 +66,47 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             auto& FunctionCallNode = static_cast<FunctionCall&>(*Node);
             if (FunctionCallNode.Function.empty())
             {
-                throw error::RendorException(fmt::format("Invalid function name; Line {}", FunctionCallNode.LineNumber));
+                throw error::CompilerRendorException(
+                    fmt::format("Invalid function name; Line {}", Node->LineNumber),
+                    Node->LineNumber);
             }
 
             // Mangle Name 
-            const std::string MangledName = MangleName(FunctionCallNode.Args, FunctionCallNode.Function);
+            std::string MangledName = MangleName(FunctionCallNode.Args, FunctionCallNode.Function);
+            std::string_view MangledNameWithoutArgs{MangledName.substr(0, MangledName.find_first_of('('))};
 
             // Check if function exists with the types
-            if (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName))
+            if 
+            ((RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName)) ||
+            (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledNameWithoutArgs)))
             {
                 size_t FunctionCallSize = FunctionCallNode.Args.ConnectedNodes.size();
-                size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[MangledName];
+                size_t FunctionArgsSize;
+
+                if (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName))
+                {
+                    FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[MangledName];
+                }
+                else
+                {
+                    FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[std::string{MangledNameWithoutArgs}];
+                }
 
                 if (FunctionCallSize < FunctionArgsSize) 
                 {
-                    throw error::RendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
-                    FunctionCallNode.Function, 
-                    FunctionCallNode.LineNumber));
+                    throw error::CompilerRendorException(
+                        fmt::format("Missing Argument in function call for {}; Line {}", 
+                        FunctionCallNode.Function, 
+                        Node->LineNumber),
+                        Node->LineNumber);
                 }
                 else if (FunctionCallSize > FunctionArgsSize)
                 {
-                    throw error::RendorException(fmt::format("Too many arguments in function call for {}; Line {}", 
-                    FunctionCallNode.Function, 
-                    FunctionCallNode.LineNumber));
+                    throw error::CompilerRendorException(
+                        fmt::format("Too many arguments in function call for {}; Line {}", 
+                        FunctionCallNode.Function, 
+                        Node->LineNumber),
+                        Node->LineNumber);
                 }
             }
             else 
@@ -89,8 +114,8 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                 // To visit later
                 FunctionCalls.emplace_back(&FunctionCallNode);
                 error::LogWarning(fmt::format("Detected call to {} before declaration; Line {}", 
-                FunctionCallNode.Function, 
-                FunctionCallNode.LineNumber));
+                    FunctionCallNode.Function, 
+                    Node->LineNumber));
             }
 
             for (auto const& Arg : FunctionCallNode.Args.ConnectedNodes)
@@ -140,15 +165,17 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     if (FunctionCallSize < FunctionArgsSize)
                     {
                         
-                        throw error::RendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
-                        CalledFunction->Function, 
-                        CalledFunction->LineNumber));
+                        throw error::CompilerRendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
+                            CalledFunction->Function, 
+                            Node->LineNumber),
+                            Node->LineNumber);
                     }
                     else if (FunctionCallSize > FunctionArgsSize)
                     {
-                        throw error::RendorException(fmt::format("Too many arguments in function call for {}; Line {}", 
-                        CalledFunction->Function, 
-                        CalledFunction->LineNumber));
+                        throw error::CompilerRendorException(fmt::format("Too many arguments in function call for {}; Line {}", 
+                            CalledFunction->Function, 
+                            Node->LineNumber),
+                            Node->LineNumber);
                     }
                 }
             }
@@ -182,14 +209,17 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     }
                     else
                     {
-                        throw error::RendorException(fmt::format("If statement contains operator, expected an expression; Line {}", IfNode.LineNumber));
+                        throw error::CompilerRendorException(
+                            fmt::format("If statement contains operator, expected an expression; Line {}", 
+                            Node->LineNumber),
+                            Node->LineNumber);
                     }
                 }
                 else 
                 {
                     // Make it check if true
-                    IfNode.Conditions->Operator = std::make_unique<BiOp>("==", IfNode.LineNumber);
-                    IfNode.Conditions->Condition2 = std::make_unique<Bool>("true", IfNode.LineNumber);
+                    IfNode.Conditions->Operator = std::make_unique<BiOp>("==", Node->LineNumber);
+                    IfNode.Conditions->Condition2 = std::make_unique<Bool>("true", Node->LineNumber);
                 }
                 
                 // Check the validity of condition 1 as that is always provided by the user
@@ -224,6 +254,44 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             for (const auto& NodeInNode : ExportNode.ExportBody.ConnectedNodes) // actual body 
             {
                 InspectAST(NodeInNode);
+            }
+            break;
+        }
+
+        case NodeType::Import:
+        {
+            auto& ImportNode = static_cast<Import&>(*Node);
+            if (ImportNode.Name.empty())
+            {
+                throw error::CompilerRendorException(
+                    fmt::format("Missing Import; Line {}", 
+                    ImportNode.LineNumber), 
+                    ImportNode.LineNumber);
+            }
+
+            if (ImportNode.CImport)
+            {
+                if (!CImports.contains(ImportNode.Name))
+                {
+                    std::string Path;
+                    if (RendorSTDCPP.contains(ImportNode.Name))
+                    {
+                        Path = fmt::format("{}/{}.{}",CurrentPath, ImportNode.Name, C_Extension_Suffix);
+                    }
+                    else 
+                    {
+                        Path = ImportNode.Name + C_Extension_Suffix;
+                    }
+                    std::string FuncName = "Rendor_Module_" + ImportNode.Name;
+                    boost::dll::shared_library CImport(Path);
+                    if (!CImport.has(FuncName))
+                    {
+                        throw error::RendorException("Missing " + FuncName);
+                    }
+                    std::function<void(RendorState*)> InitFunc = CImport.get<void(RendorState*)>(FuncName);
+                    InitFunc(RendorEngineCompilerState.get());
+                    CImports.emplace(ImportNode.Name);
+                }
             }
             break;
         }

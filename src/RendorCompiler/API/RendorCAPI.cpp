@@ -1,17 +1,24 @@
-#include "RendorCompiler/Parser/Parser.hpp"
+#include "RendorCompiler/ASTInspection/ASTInspector.hpp"
+#include "RendorAPI/RendorAPI.hpp"
 
-void Parser::InitModule(RendorMethod *MethodList)
+// cppcheck-suppress constParameter
+bool ASTInspector::InitModule(RendorMethod* MethodList)
 {
-    bool IterateArray = false;
+    if (!MethodList)
+    {
+        return false;
+    }
+
     size_t Index = 0;
     do 
     {
         RendorMethod Method = MethodList[Index];
         if (Method.Name == NULL)
         {
-            IterateArray = false;
+            break;
         }
-
-        CppFunctions.emplace(Method.Name, Method.RendorFunc);
-    } while (IterateArray);
+        RendorEngineCompiler::EngineContext.FunctionTable.emplace(Method.Name, Method.ArgCount);
+        ++Index;
+    } while (true);
+    return true;
 }

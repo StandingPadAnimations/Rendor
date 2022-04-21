@@ -21,7 +21,34 @@ namespace error{
             }
     };
 
-    inline RendorException::RendorException(const std::string& message) : message_(message) {
+    inline RendorException::RendorException(const std::string& message) : message_(message) {}
+
+    // Compiler exceptions 
+    class CompilerRendorException: public std::exception {
+        private:
+            std::string message_;
+        public:
+            explicit CompilerRendorException(const std::string& message, const size_t LineNumber);
+            const char* what() const noexcept override {
+                return message_.c_str();
+            }
+    };
+
+    inline CompilerRendorException::CompilerRendorException(const std::string& message, const size_t LineNumber) : message_(message) 
+    {
+        size_t CurrentLine = 1;
+        for (const auto& Line : RendorMapping::crange(RendorEngineCompiler::RendorFileMemory))
+        {
+            if (CurrentLine < LineNumber)
+            {
+                ++CurrentLine;
+            }
+            else
+            {
+                message_ = fmt::format("{}:\n{}", message, Line);
+                break;
+            }
+        }
     }
 
     inline void LogWarning(std::string_view Warning)

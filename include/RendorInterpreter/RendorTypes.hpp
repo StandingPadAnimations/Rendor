@@ -40,7 +40,7 @@ enum class GCColor
 
 struct Type 
 {
-    virtual VariableType TypeOfVariable(){return VariableType::NullType;};
+    virtual VariableType TypeOfVariable() {return VariableType::NullType;};
     virtual bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) = 0;
 
     std::string m_Value;
@@ -57,7 +57,7 @@ struct Type
 
 struct NullType : Type
 {
-    VariableType TypeOfVariable(){return VariableType::NullType;}
+    VariableType TypeOfVariable() override {return VariableType::NullType;}
     
     std::string RetriveVariable()
     {
@@ -72,8 +72,8 @@ struct Int64 : Type
 {
     int64_t ConvertedValue;
     explicit Int64(std::string Value);
-    VariableType TypeOfVariable(){return VariableType::Int64;}
-    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator); 
+    VariableType TypeOfVariable() override {return VariableType::Int64;}
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) override; 
 };
 
 /* -------------------------------------------------------------------------- */
@@ -84,24 +84,24 @@ struct Double : Type
     double ConvertedValue;
     explicit Double(std::string Value);
 
-    VariableType TypeOfVariable(){return VariableType::Double;}
-    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
+    VariableType TypeOfVariable() override {return VariableType::Double;}
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) override;
 };
 
 struct String : Type
 {
-    explicit String(std::string Value) : Type(Value){}
+    explicit String(std::string& Value) : Type(Value){}
 
-    VariableType TypeOfVariable(){return VariableType::String;}
-    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
+    VariableType TypeOfVariable() override {return VariableType::String;}
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) override;
 };
 
 struct Bool : Type
 {
     bool ConvertedValue;
     explicit Bool(std::string Value);
-    VariableType TypeOfVariable(){return VariableType::Bool;}
-    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator);
+    VariableType TypeOfVariable() override {return VariableType::Bool;}
+    bool IfStatementMethod(Type* Const2, Operator ComparisonOperator)override;
 };
 
 #endif // RENDOR_TYPES_HPP

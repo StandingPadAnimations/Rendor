@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include "RendorAPI/RendorAPI.hpp"
 
+// sum is const evaluated
 void RENDOR_SUM_FUNCTION(RendorState* R)
 {
     int64_t IntArg = R->Rendor_GrabInt64FromStack();

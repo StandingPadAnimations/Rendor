@@ -10,6 +10,7 @@
 
 #include "RendorCompiler/BackEnd/ByteCodeContext.hpp"
 #include "RendorBoostFileMapper.hpp"
+#include "RendorBoostFileMapper.hpp"
 
 #define FMT_HEADER_ONLY 1
 #include <fmt/format.h>
@@ -36,6 +37,9 @@ struct RendorEngineCompiler
     inline static bool OptimizeByteCode = true;
     inline static std::vector<std::string> ByteCode;
     inline static std::string OutputPath = "";
+
+    inline static boost::interprocess::file_mapping File;
+    inline static boost::interprocess::mapped_region RendorFileMemory;
 
     /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string& FileInput, std::vector<std::string_view>& Arguments);

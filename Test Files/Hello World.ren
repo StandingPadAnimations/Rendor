@@ -1,16 +1,16 @@
 cimport "Rendor_IO"
-namespace std
-{
-    extern echo()
-    extern input(string)
-}
+// namespace std
+// {
+//     extern echo()
+//     extern input(string)
+// }
 
 ~forward foo(bar)
 edef main() 
 {
     arithmethic = 1(2+5)
-    std->echo("Hello")
-    std->echo("bar")
+    echo("Hello")
+    echo("bar")
 
     if (arithmethic > 10)
     {

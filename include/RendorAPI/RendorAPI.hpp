@@ -12,6 +12,7 @@
     #define EXTERNAL
 #endif
 
+
 EXTERNAL struct RendorState;
 enum TypeEnum
 {
@@ -35,12 +36,13 @@ EXTERNAL struct RendorState
     virtual const char* Rendor_GrabConstCharFromStack() = 0;
     virtual const char* Rendor_GrabConstFromStackAsConstChar() = 0;
     virtual TypeEnum Rendor_GrabObjTypeFromStack() = 0;
-    virtual int Rendor_GrabBoolFromStack() = 0;
+    virtual bool Rendor_GrabBoolFromStack() = 0;
     virtual void Rendor_DropInt64OnStack(int64_t Const) = 0;
     virtual void Rendor_DropDoubleOnStack(double Const) = 0;
     virtual void Rendor_DropConstCharOnStack(const char* Const) = 0;
     virtual void Rendor_DropBoolOnStack(int Const) = 0;
     virtual void Rendor_InitModule(RendorMethod *MethodList) = 0;
+    virtual bool Rendor_ConstEval() = 0;
 };
 
 
