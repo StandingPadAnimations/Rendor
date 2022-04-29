@@ -71,6 +71,13 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     Node->LineNumber);
             }
 
+            if (FunctionCallNode.Function == "main")
+            {
+                throw error::CompilerRendorException(
+                    fmt::format("Who the frick calls main?; Line {}", Node->LineNumber),
+                    Node->LineNumber);
+            }
+
             // Mangle Name 
             std::string MangledName = MangleName(FunctionCallNode.Args, FunctionCallNode.Function);
             std::string_view MangledNameWithoutArgs{MangledName.substr(0, MangledName.find_first_of('('))};
