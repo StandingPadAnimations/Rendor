@@ -3,6 +3,7 @@
 
 enum class NodeType
 {
+    Null,
     Body,
     Import,
     Export,

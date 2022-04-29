@@ -18,7 +18,11 @@ struct Main
 {
     Body Global;
     
-    //cppcheck-suppress unusedStructMember
     std::vector<NodeObject> *GlobalBody = &Global.ConnectedNodes;
+
+    void CompileByteCode(const std::string& FilePath)
+    {
+        GlobalBody->back()->NodeByteCodeGen.CompileByteCode(FilePath);
+    }
 };
 #endif // RENDOR_NODES_HPP

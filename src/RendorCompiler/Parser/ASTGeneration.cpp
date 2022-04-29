@@ -44,14 +44,9 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                 (ParserTempID != TempID::IfElseScope) &&
                 (ParserTempID != TempID::NameSpace))
                 {
-                    if (ParserTempIDList.size() == 2)
-                    {
-                        PopTempID();
-                    }
-                    else
-                    {
-                        AddTempID(TempID::None);
-                    }
+                    ParserTempIDList.clear();
+                    ParserTempIDList.emplace_back(TempID::None);
+                    ParserTempIDList.reserve(5);
                 }
 
                 ++LineNumber;
@@ -155,6 +150,18 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     /* -------------------------- Adding Condition Node ------------------------- */
                     auto& IfElseNode = dynamic_cast<IfElse&>(*Scope->ConnectedNodes.back());
                     AddTokenToConditions<IfElse, Reference>(IfElseNode, value, LineNumber);
+                }
+
+                else if (ParserTempID == TempID::NameSpaceCall)
+                {
+                    PopTempID();
+                    auto& FunctionCallNode = dynamic_cast<FunctionCall&>(*Scope->ConnectedNodes.back());
+                    if (FunctionCallNode.Function.back() == '>')
+                    {
+                        FunctionCallNode.Function += value; 
+                    }
+                    AddScope(&FunctionCallNode.Args);
+                    AddTempID(TempID::FunctionCall);
                 }
                 
                 /* ----------------------------- Add as variable ---------------------------- */
@@ -274,6 +281,7 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                 {
                     if (GetTypeOfNode() == NodeType::AssignVariable)
                     {
+                        PopTempID();
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->ConnectedNodes.back());
                         AddToArithmethicNode(AssignVariableNode, value, LineNumber);
                     }
@@ -659,6 +667,17 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->ConnectedNodes.back());
                         AddToArithmethicNode(AssignVariableNode, value, LineNumber);
                     }
+                }
+
+                else if (value == "->")
+                {
+                    if (GetTypeOfNode() == NodeType::Reference)
+                    {
+                        PopTempID();
+                        auto& ReferenceNode = static_cast<Reference&>(*Scope->ConnectedNodes.back());
+                        ReplaceNode(std::make_unique<FunctionCall>(ReferenceNode.Value + "->", LineNumber));
+                    }
+                    AddTempID(TempID::NameSpaceCall);
                 }
                 break;
             }

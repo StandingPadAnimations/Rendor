@@ -130,7 +130,14 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             auto& EdefNode = static_cast<Edef&>(*Node);
             if (EdefNode.Name.empty())
             {
-                throw error::RendorException(fmt::format("Invalid function name; Line {}", EdefNode.LineNumber));
+                throw error::CompilerRendorException(fmt::format("Invalid function name; Line {}", EdefNode.LineNumber),
+                    EdefNode.LineNumber);
+            }
+
+            if (!ReverseTypeTable.contains(EdefNode.ReturnType))
+            {
+                throw error::CompilerRendorException(fmt::format("Invalid type for function; Line {}", EdefNode.LineNumber),
+                    EdefNode.LineNumber);
             }
 
             // Add new variable scope
@@ -152,6 +159,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             
             // Mangle name
             std::string EdefName_Mangled = MangleName(EdefNode.Args, EdefNode.Name);
+            std::string_view MangledNameWithoutArgs{EdefName_Mangled.substr(0, EdefName_Mangled.find_first_of('('))};
 
             // Add function
             RendorEngineCompiler::EngineContext.FunctionTable[EdefName_Mangled] = EdefNode.Args.size();

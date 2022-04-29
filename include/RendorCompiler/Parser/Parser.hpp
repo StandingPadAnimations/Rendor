@@ -31,7 +31,11 @@ class Parser
     public:
         inline static Main Script;
         static void ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>& Tokens);
-    
+
+        Parser()
+        {
+            ParserTempIDList.reserve(5);
+        }
     private:
 
         /* ----------------------------- AST generation ----------------------------- */

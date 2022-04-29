@@ -25,6 +25,9 @@ struct Edef : Node
 {
     std::string Name = "";
     Body FunctionBody;
+
+    // Return type and arguments
+    NodeType ReturnType = NodeType::Any;
     std::vector<std::pair<std::string, NodeType>> Args;
 
     explicit Edef(std::string Name, uint32_t LineNumber) : Node(LineNumber), Name(std::move(Name))

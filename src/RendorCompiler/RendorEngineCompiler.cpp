@@ -74,6 +74,7 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
         }
     }
 
+    std::vector<std::pair<Lex::Token, std::string>> Tokens;
     {
         boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
         boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
@@ -82,7 +83,6 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
         Lex::Lexer RenLexer;
         Parser RenParser;
         ASTInspector RenASTInspector;
-        std::vector<std::pair<Lex::Token, std::string>> Tokens;
 
         fmt::print(fg(fmt::color::green), "Tokenizing...\n");
         Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
@@ -94,33 +94,29 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
         fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
         for (const auto& Node : (*Parser::Script.GlobalBody))
         {
-            RenASTInspector.InspectAST(Node);
-            Node->CodeGen();
+            if (Node)
+            {
+                RenASTInspector.InspectAST(Node);
+                Node->CodeGen();
+            }
         }
+    }
 
-        // Adds it to output Cren File
+    fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
+    std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+    Parser::Script.CompileByteCode(OutputPath + AbsPathCrenOutput);
+
+    if (DebugMode)
+    { 
+        fmt::print(fg(fmt::color::green), "----------------------------DEBUG MODE----------------------------\n");
+        for (auto const& [token, value] : Tokens)
         {
-            fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
-            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            std::ofstream CrenOutput(OutputPath + AbsPathCrenOutput);
-            for (auto const& Op : RendorEngineCompiler::ByteCode)
-            {
-                CrenOutput << Op << "\n";
-            }
+            fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
         }
-    
-        if (DebugMode)
-        { 
-            fmt::print(fg(fmt::color::green), "----------------------------DEBUG MODE----------------------------\n");
-            for (auto const& [token, value] : Tokens)
-            {
-                fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
-            }
-            fmt::print("\n");
-            for (auto const& command : RendorEngineCompiler::ByteCode)
-            {
-                fmt::print(fg(fmt::color::green), "{}\n", command);
-            }
+        fmt::print("\n");
+        for (auto const& command : RendorEngineCompiler::ByteCode)
+        {
+            fmt::print(fg(fmt::color::green), "{}\n", command);
         }
     }
 }

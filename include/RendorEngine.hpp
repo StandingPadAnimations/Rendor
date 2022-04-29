@@ -41,6 +41,10 @@ struct RendorEngineCompiler
     inline static boost::interprocess::file_mapping File;
     inline static boost::interprocess::mapped_region RendorFileMemory;
 
+    inline constexpr static uint32_t MajorVersion = 1;
+    inline constexpr static uint32_t MinorVersion = 2;
+    inline static uint32_t MethodCount = 0;
+
     /* ----------------------------------- Run ---------------------------------- */
     static void run(const std::string& FileInput, std::vector<std::string_view>& Arguments);
 

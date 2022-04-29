@@ -24,7 +24,7 @@
 #include "RendorInterpreter/CodeObjects.hpp"
 #include "RendorInterpreter/ByteCodeEnum.hpp"
 
-#include "RendorAPI/RendorModuleDef.h"
+#include "RendorAPI/RendorAPI.hpp"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"
@@ -34,11 +34,6 @@
 #include <boost/algorithm/string/finder.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/tokenizer.hpp>
-
-
-// Standard Library
-#include "RendorSTD/IO.hpp"
-#include "RendorSTD/Math.hpp"
 
 enum class ConstType
 {

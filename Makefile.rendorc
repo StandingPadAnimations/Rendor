@@ -5,7 +5,7 @@ BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorCompiler
-DIRS        := BackEnd InspectAndOptimize Lexer Logic Parser API
+DIRS        := BackEnd BackEnd/Compiler InspectAndOptimize Lexer Logic Parser API
 
 OBJDIR      := bin/RendorCompiler/ObjectFiles
 EXECUTABLE  := RendorCompiler/rendorc

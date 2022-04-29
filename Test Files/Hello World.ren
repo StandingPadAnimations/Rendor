@@ -8,11 +8,11 @@ cimport "Rendor_IO"
 ~forward foo(bar)
 edef main() 
 {
-    arithmethic = 1(2+5)
+    quax = 1(2+5)
     echo("Hello")
     echo("bar")
 
-    if (arithmethic > 10)
+    if (quax > 10)
     {
         std->echo("yee")
     }
