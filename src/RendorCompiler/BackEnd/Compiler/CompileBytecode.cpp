@@ -18,7 +18,7 @@ void RendorByteCodeGenerator::CompileByteCode(const std::string& FilePath)
             case ByteCodeEnum::CONST_OP:
             {
                 std::size_t CommaIndex = Args.find_first_of(',');
-                std::string Type  (Args.begin(), Args.begin() + CommaIndex);
+                std::string_view Type  (Args.begin(), Args.begin() + CommaIndex);
                 std::string Const (Args.begin() + (CommaIndex + 2), Args.end());
                 switch (TypeMapping.at(Type))
                 {
@@ -76,6 +76,11 @@ void RendorByteCodeGenerator::CompileByteCode(const std::string& FilePath)
             case ByteCodeEnum::FINALIZE_CALL:
             {
                 CompileFuncCall(std::string{Args});
+                break;
+            }
+            case ByteCodeEnum::OPERATOR:
+            {
+                CompileCompare(Args);
                 break;
             }
             default:

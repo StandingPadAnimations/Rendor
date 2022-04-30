@@ -71,6 +71,16 @@ class RendorByteCodeGenerator
         RendorContext* ByteCodeContext;
 
     private:
+        enum class Operator
+        {
+            EQUAL,
+            NOT_EQUAL,
+            GREATER_THAN,
+            LESS_THAN,
+            GREATER_OR_EQUAL,
+            LESS_OR_EQUAL
+        };
+
         /* --------------------------------- Output --------------------------------- */
         std::ofstream CrenOutput;
         const std::map<std::string_view, ByteCodeEnum, std::less<>> ByteCodeMapping
@@ -90,6 +100,16 @@ class RendorByteCodeGenerator
             {"IMPORT",          ByteCodeEnum::IMPORT},
         };
 
+        const std::map<std::string_view, Operator, std::less<>> OperatorMapping
+        {
+            {"EQUAL",               Operator::EQUAL},
+            {"NOT_EQUAL",           Operator::NOT_EQUAL},
+            {"GREATER_THAN",        Operator::GREATER_THAN},
+            {"GREATER_OR_EQUAL",    Operator::GREATER_OR_EQUAL},
+            {"LESS_THAN",           Operator::LESS_THAN},
+            {"LESS_OR_EQUAL",       Operator::LESS_OR_EQUAL},
+        };
+
         const std::map<std::string_view, ConstType, std::less<>> TypeMapping
         {
             {"INT64",           ConstType::INT64},
@@ -103,6 +123,7 @@ class RendorByteCodeGenerator
         /* --------------------------- repeated operations -------------------------- */
         void WriteRendorOp(const std::string& Operation);
         void WriteString(const std::string& String);
+
         /* --------------------------------- Header --------------------------------- */
         void CompileHeader();
 
@@ -117,6 +138,9 @@ class RendorByteCodeGenerator
         void CompileFunc(const std::string& Name);
         void CompileFuncCall(const std::string& Name);
         void CompileVar(const std::string& Name);
+
+        /* -------------------------------- Operators ------------------------------- */
+        void CompileCompare(std::string_view Op);
 };
 
 
