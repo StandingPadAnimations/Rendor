@@ -12,3 +12,9 @@ void RendorByteCodeGenerator::CompileFunc(const std::string& Name)
     WriteRendorOp("DX00");
     WriteString(Name);
 }
+
+void RendorByteCodeGenerator::CompileFuncCall(const std::string& Name)
+{
+    WriteRendorOp("FC00");
+    WriteString(Name);
+}

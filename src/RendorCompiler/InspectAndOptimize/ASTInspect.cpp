@@ -42,6 +42,10 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                             Node->LineNumber);
                     }
                 }
+                else if (AssignmentNode.IsArg)
+                {
+                    (*CurrentVariables)[AssignmentNode.VariableName] = AssignmentNode.Value->Type;
+                }
                 else 
                 {
                     throw error::CompilerRendorException(

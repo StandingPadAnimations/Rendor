@@ -25,3 +25,9 @@ void RendorByteCodeGenerator::CompileBool(boost::endian::little_int32_buf_at Boo
     WriteRendorOp("CX03");
     CrenOutput.write((char*)&BoolValue, sizeof(BoolValue));
 }
+
+void RendorByteCodeGenerator::CompileReference(const std::string& Reference)
+{
+    WriteRendorOp("CX04");
+    WriteString(Reference);
+}

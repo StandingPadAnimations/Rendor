@@ -9,8 +9,8 @@ cimport "Rendor_IO"
 edef main() 
 {
     quax = 1(2+5)
-    echo("Hello")
-    echo("bar")
+    echo("Hello") // test for namespaces
+    std->echo("bar")
 
     if (quax > 10)
     {

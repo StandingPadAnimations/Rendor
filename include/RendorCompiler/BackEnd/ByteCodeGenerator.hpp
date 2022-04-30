@@ -111,9 +111,11 @@ class RendorByteCodeGenerator
         void CompileDouble(boost::endian::little_float64_buf_t DoubleValue);
         void CompileString(const std::string& StringValue);
         void CompileBool(boost::endian::little_int32_buf_at BoolValue);
+        void CompileReference(const std::string& Reference);
 
         /* --------------------------- User defined things -------------------------- */
         void CompileFunc(const std::string& Name);
+        void CompileFuncCall(const std::string& Name);
         void CompileVar(const std::string& Name);
 };
 

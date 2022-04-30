@@ -38,13 +38,10 @@ struct Edef : Node
     void CodeGen() override
     {
         NodeByteCodeGen.CreateFunc(Name);
-
-        if (!Args.empty())
+        std::reverse(Args.begin(), Args.end()); // Reverse arguments
+        for (auto const& [Arg, Type] : Args) // Arguments 
         {
-            for (size_t Arg = Args.size() - 1; Arg > 0; --Arg) // Arguments 
-            {
-                NodeByteCodeGen.CreateVariable(Args[Arg].first);
-            }
+            NodeByteCodeGen.CreateVariable(Arg);
         }
         FunctionBody.CodeGen();
         NodeByteCodeGen.CreateFuncEnd();

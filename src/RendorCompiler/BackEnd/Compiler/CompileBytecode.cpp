@@ -45,6 +45,11 @@ void RendorByteCodeGenerator::CompileByteCode(const std::string& FilePath)
                         CompileBool(boost::endian::little_int32_buf_at{ConvertedValue});
                         break;
                     }
+                    case ConstType::REFERENCE:
+                    {
+                        CompileReference(Const);
+                        break;
+                    }
                     default:
                     {
                         break;
@@ -66,6 +71,11 @@ void RendorByteCodeGenerator::CompileByteCode(const std::string& FilePath)
             case ByteCodeEnum::ASSIGN:
             {
                 CompileVar(std::string{Args});
+                break;
+            }
+            case ByteCodeEnum::FINALIZE_CALL:
+            {
+                CompileFuncCall(std::string{Args});
                 break;
             }
             default:
