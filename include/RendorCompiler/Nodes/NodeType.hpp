@@ -3,7 +3,6 @@
 
 enum class NodeType
 {
-    Null,
     Body,
     Import,
     Export,
@@ -18,6 +17,7 @@ enum class NodeType
     Condition,
     BiOp,
 
+    Null,
     Any,
     Int64, 
     Double,

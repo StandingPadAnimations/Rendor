@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "RendorAPI/RendorAPI.hpp"
+#include "RendorAPI/RendorAPI.h"
 
 void RENDOR_ECHO_FUNCTION(RendorState* R)
 {

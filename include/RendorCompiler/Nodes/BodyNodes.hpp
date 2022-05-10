@@ -20,9 +20,24 @@ struct Body : Node
         }
     }
 
+    virtual void PushBack(NodeObject Obj)
+    {
+        ConnectedNodes.push_back(std::move(Obj));
+    }
+
     bool operator!=(const Body& Comp)
     {
         return this->ConnectedNodes != Comp.ConnectedNodes;
+    }
+};
+
+struct ArgBody : Body
+{
+    std::vector<NodeType> Types;
+    void PushBack(NodeObject Obj) override
+    {
+        Types.push_back(Obj->Type);
+        ConnectedNodes.push_back(std::move(Obj));
     }
 };
 

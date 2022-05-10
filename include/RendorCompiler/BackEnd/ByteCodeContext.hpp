@@ -2,14 +2,14 @@
 #define RENDOR_BYTECODE_CONTEXT_HPP
 #include <string>
 #include <vector>
-#include <map>
+#include <set>
 
 #include "RendorCompiler/Nodes/NodeType.hpp"
 #include "RendorCompiler/BackEnd/ByteCodeType.hpp"
 
 struct RendorContext
 {
-    std::map<std::string, size_t, std::less<>> FunctionTable;
+    std::set<std::string> FunctionTable;
 };
 
 #endif // RENDOR_BYTECODE_CONTEXT_HPP

@@ -1,4 +1,5 @@
 #include "RendorCompiler/ASTInspection/ASTInspector.hpp"
+#include "RendorCompiler/Nodes/Nodes.hpp"
 
 void ASTInspector::InspectTypesReferences(const NodeType& Type, const NodeObject& Node)
 {

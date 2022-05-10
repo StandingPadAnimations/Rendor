@@ -24,7 +24,7 @@
 #include "RendorInterpreter/CodeObjects.hpp"
 #include "RendorInterpreter/ByteCodeEnum.hpp"
 
-#include "RendorAPI/RendorAPI.hpp"
+#include "RendorAPI/RendorAPI.h"
 
 #include "Exceptions.hpp"
 #include "UnorderedMapLookUp.hpp"

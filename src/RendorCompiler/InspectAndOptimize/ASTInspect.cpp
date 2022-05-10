@@ -1,4 +1,5 @@
 #include "RendorCompiler/ASTInspection/ASTInspector.hpp"
+#include "RendorCompiler/Nodes/Nodes.hpp"
 #include <fmt/color.h>
 #include <string_view>
 
@@ -82,45 +83,62 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     Node->LineNumber);
             }
 
-            // Mangle Name 
-            std::string MangledName = MangleName(FunctionCallNode.Args, FunctionCallNode.Function);
-            std::string_view MangledNameWithoutArgs{MangledName.substr(0, MangledName.find_first_of('('))};
-
-            // Check if function exists with the types
-            if 
-            ((RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName)) ||
-            (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledNameWithoutArgs)))
+            // Sort the declarations vector
+            std::sort(Declarations.begin(), Declarations.end(), 
+            [](Declaration& Dec1, Declaration& Dec2)
             {
-                size_t FunctionCallSize = FunctionCallNode.Args.ConnectedNodes.size();
-                size_t FunctionArgsSize;
+                if (Dec1.OriginalName == Dec2.OriginalName) // if both names are the same
+                {
+                    return Dec1.ArgTypes.size() < Dec2.ArgTypes.size();
+                }
+                return Dec1.OriginalName < Dec2.OriginalName; // otherwise sort by the alphabet
+            });
+            
+            // Start searching if the function has been defined
+            if (RendorEngineCompiler::EngineContext.FunctionTable.contains(FunctionCallNode.Function))
+            {
+                bool OriginalNameFound = false;
+                
+                // go over the declarations
+                for (auto& FuncDeclaration : Declarations)
+                {
+                    // if the size or the name aren't equal
+                    if (FuncDeclaration.ArgTypes.size() < FunctionCallNode.Args.Types.size())
+                    {
+                        continue;
+                    }
 
-                if (RendorEngineCompiler::EngineContext.FunctionTable.contains(MangledName))
-                {
-                    FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[MangledName];
-                }
-                else
-                {
-                    FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[std::string{MangledNameWithoutArgs}];
-                }
+                    // if the original name is not what we're looking for, and we've already found the original name
+                    else if 
+                    ((FuncDeclaration.OriginalName != FunctionCallNode.Function) &&
+                    (OriginalNameFound))
+                    {
+                        // throw an exception if we reach here
+                        throw error::CompilerRendorException(
+                            fmt::format("Cannot find compatible declaration to function {}; Line {}", 
+                            FunctionCallNode.Function, 
+                            Node->LineNumber),
+                            Node->LineNumber);
+                    }
+                    else
+                    {
+                        OriginalNameFound = true; // Found the original name, so we mark it as true
 
-                if (FunctionCallSize < FunctionArgsSize) 
-                {
-                    throw error::CompilerRendorException(
-                        fmt::format("Missing Argument in function call for {}; Line {}", 
-                        FunctionCallNode.Function, 
-                        Node->LineNumber),
-                        Node->LineNumber);
+                        // if the name and vector size are the same, check if the types are equivelent
+                        if (FuncDeclaration.IsFunc(FunctionCallNode.ReturnValue, FunctionCallNode.Args.Types))
+                        {
+                            FunctionCallNode.Function = FuncDeclaration.MangledName;
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
                 }
-                else if (FunctionCallSize > FunctionArgsSize)
-                {
-                    throw error::CompilerRendorException(
-                        fmt::format("Too many arguments in function call for {}; Line {}", 
-                        FunctionCallNode.Function, 
-                        Node->LineNumber),
-                        Node->LineNumber);
-                }
+                
             }
-            else 
+            else
             {
                 // To visit later
                 FunctionCalls.emplace_back(&FunctionCallNode);
@@ -128,7 +146,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     FunctionCallNode.Function, 
                     Node->LineNumber));
             }
-
+            
             for (auto const& Arg : FunctionCallNode.Args.ConnectedNodes)
             {
                 InspectTypesReferences(Arg->Type, Arg);
@@ -151,10 +169,14 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                     EdefNode.LineNumber);
             }
 
+            if (EdefNode.ReturnType == NodeType::Any)
+            {
+                error::LogWarning(fmt::format("{} has a dynamic return type. This may cause issues with overloading", EdefNode.Name));
+            }
+
             // Add new variable scope
             AddVariableScope();
 
-            //cppcheck-suppress unassignedVariable
             for (const auto& [Var, Type] : EdefNode.Args)
             {
                 (*CurrentVariables)[Var] = Type;
@@ -169,21 +191,19 @@ void ASTInspector::InspectAST(const NodeObject& Node)
             DestroyVariableScope();
             
             // Mangle name
-            std::string EdefName_Mangled = MangleName(EdefNode.Args, EdefNode.Name);
-            std::string_view MangledNameWithoutArgs{EdefName_Mangled.substr(0, EdefName_Mangled.find_first_of('('))};
+            std::string EdefName_Mangled = MangleName(EdefNode.Args, EdefNode.Name, EdefNode.ReturnType);
 
             // Add function
-            RendorEngineCompiler::EngineContext.FunctionTable[EdefName_Mangled] = EdefNode.Args.size();
+            RendorEngineCompiler::EngineContext.FunctionTable.emplace(EdefNode.Name);
             for (auto const& CalledFunction : FunctionCalls)
             {
-                if (CalledFunction->Function == EdefName_Mangled)
+                if (CalledFunction->Function == EdefNode.Name)
                 {
                     size_t FunctionCallSize = CalledFunction->Args.ConnectedNodes.size();
-                    size_t FunctionArgsSize = RendorEngineCompiler::EngineContext.FunctionTable[CalledFunction->Function];
+                    size_t FunctionArgsSize = EdefNode.Args.size();
 
                     if (FunctionCallSize < FunctionArgsSize)
                     {
-                        
                         throw error::CompilerRendorException(fmt::format("Missing Argument in function call for {}; Line {}", 
                             CalledFunction->Function, 
                             Node->LineNumber),
@@ -196,6 +216,9 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                             Node->LineNumber),
                             Node->LineNumber);
                     }
+
+                    // Change name to mangled variant if valid
+                    CalledFunction->Function = EdefName_Mangled;
                 }
             }
             break;
@@ -203,13 +226,24 @@ void ASTInspector::InspectAST(const NodeObject& Node)
 
         case NodeType::FowardEdef:
         {
-            auto& FowardNode = static_cast<FowardEdef&>(*Node);
-            std::string FowardName_Mangled = MangleName(FowardNode.Args, FowardNode.Name);
-            RendorEngineCompiler::EngineContext.FunctionTable[FowardName_Mangled] = FowardNode.Args.size();
-            if (FowardNode.Extern)
+            auto& ForwardNode = static_cast<FowardEdef&>(*Node);
+
+            if (ForwardNode.ReturnType == NodeType::Any)
             {
-                FowardNode.MangledName = FowardName_Mangled;
+                error::LogWarning(fmt::format("{} has a dynamic return type. This may cause issues with overloading", ForwardNode.Name));
             }
+
+            // Create declaration
+            Declaration ForwardDeclaration(ForwardNode.Args);
+            ForwardDeclaration.OriginalName = ForwardNode.Name;
+            ForwardDeclaration.ReturnType   = ForwardNode.Type;
+            ForwardDeclaration.MangledName  = MangleName(ForwardNode.Args, ForwardNode.Name, ForwardNode.ReturnType);
+
+            // Add it to vector
+            Declarations.push_back(std::move(ForwardDeclaration));
+
+            // Add function to existing functions
+            RendorEngineCompiler::EngineContext.FunctionTable.emplace(ForwardNode.Name);
             break;
         }
 
@@ -308,7 +342,7 @@ void ASTInspector::InspectAST(const NodeObject& Node)
                         throw error::RendorException("Missing " + FuncName);
                     }
                     std::function<void(RendorState*)> InitFunc = CImport.get<void(RendorState*)>(FuncName);
-                    InitFunc(RendorEngineCompilerState.get());
+                    InitFunc(&RendorEngineCompilerState);
                     CImports.emplace(ImportNode.Name);
                 }
             }

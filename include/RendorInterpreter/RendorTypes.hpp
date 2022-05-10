@@ -48,7 +48,7 @@ struct Type
     std::vector<std::string_view> IncomingPointers;
     GCColor ColorOfObj = GCColor::WHITE;
 
-    explicit Type(const std::string& Value);
+    explicit Type(const std::string& Value) : m_Value(Value){}
     virtual ~Type(){};
 
     private:
@@ -91,6 +91,7 @@ struct Double : Type
 struct String : Type
 {
     explicit String(std::string& Value) : Type(Value){}
+    explicit String(const char* Value) : Type(Value){}
 
     VariableType TypeOfVariable() override {return VariableType::String;}
     bool IfStatementMethod(Type* Const2, Operator ComparisonOperator) override;

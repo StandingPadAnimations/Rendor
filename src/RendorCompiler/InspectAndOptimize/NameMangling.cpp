@@ -3,16 +3,16 @@
 #include <variant>
 
 // For edef and foward statements
-std::string ASTInspector::MangleName(const Body& FunctionArguments, std::string& Name)
+std::string ASTInspector::MangleName(const Body& FunctionArguments, std::string& Name, NodeType& ReturnType)
 {
     std::string MangledName;
     if (!NameSpaces.empty())
     {
-        MangledName = fmt::format("{}->{}(", fmt::join(NameSpaces, "->"), Name);
+        MangledName = fmt::format("{}_{}->{}(", ReverseTypeTable.at(ReturnType), fmt::join(NameSpaces, "->"), Name);
     }
     else 
     {
-        MangledName = fmt::format("{}(", Name);
+        MangledName = fmt::format("{}_{}(", ReverseTypeTable.at(ReturnType), Name);
     }
 
     for (const auto& Node : FunctionArguments.ConnectedNodes)
@@ -29,16 +29,16 @@ std::string ASTInspector::MangleName(const Body& FunctionArguments, std::string&
     return MangledName;
 }
 
-std::string ASTInspector::MangleName(const std::vector<std::pair<std::string, NodeType>>& FunctionArguments, std::string& Name)
+std::string ASTInspector::MangleName(const std::vector<std::pair<std::string, NodeType>>& FunctionArguments, std::string& Name, NodeType& ReturnType)
 {
     std::string MangledName;
     if (!NameSpaces.empty())
     {
-        MangledName = fmt::format("{}->{}(", fmt::join(NameSpaces, "->"), Name);
+        MangledName = fmt::format("{}_{}->{}(", ReverseTypeTable.at(ReturnType), fmt::join(NameSpaces, "->"), Name);
     }
     else 
     {
-        MangledName = fmt::format("{}(", Name);
+        MangledName = fmt::format("{}_{}(", ReverseTypeTable.at(ReturnType), Name);
     }
 
     // cppcheck-suppress unusedVariable

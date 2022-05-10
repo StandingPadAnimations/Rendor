@@ -1,17 +1,22 @@
 #ifndef AST_INSPECTOR_HPP
 #define AST_INSPECTOR_HPP
 
-#include <boost/dll/runtime_symbol_info.hpp>
 #include <filesystem>
 #include <vector>
 #include <memory>
 
-#include "RendorCompiler/Nodes/Nodes.hpp"
-#include "RendorAPI/RendorAPI.hpp"
+#include "RendorCompiler/Nodes/NodeType.hpp"
+#include "RendorCompiler/Nodes/BaseNode.hpp"
+#include "RendorCompiler/Nodes/BodyNodes.hpp"
+#include "RendorCompiler/Nodes/FunctionNodes.hpp"
+#include "RendorCompiler/ASTInspection/RendorFunctionDeclaration.hpp"
+#include "RendorAPI/RendorAPI.h"
+#include "RendorAPI/FunctionTable.hpp"
 
 #define BOOST_DLL_USE_STD_FS 1
 #include <boost/dll.hpp>
 #include <boost/predef.h>
+#include <boost/dll/runtime_symbol_info.hpp>
 
 #define FALLTHROUGH [[fallthrough]]
 typedef std::map<std::string_view, NodeType> VariableMap;
@@ -22,16 +27,14 @@ class ASTInspector
 {
     public:
         static void InspectAST(const NodeObject& Node);
-        static bool InitModule(RendorMethod* MethodList);
         ASTInspector();
 
     private:
         /* ----------------------------- AST inspection ----------------------------- */
         inline static std::vector<std::string_view> NameSpaces;
         static bool InvalidIdentifier(const char& CharactherToCheck);
-        static std::string MangleName(const Body& FunctionArguments, std::string& Name);
-        static std::string MangleName(const std::vector<std::pair<std::string, NodeType>>& FunctionArguments, std::string& Name);
-        inline static std::unique_ptr<RendorState> RendorEngineCompilerState;
+        static std::string MangleName(const Body& FunctionArguments, std::string& Name, NodeType& ReturnType);
+        static std::string MangleName(const std::vector<std::pair<std::string, NodeType>>& FunctionArguments, std::string& Name, NodeType& ReturnType);
 
         /* ---------------------------- Repeated actions ---------------------------- */
         static void InspectTypesReferences(const NodeType& Type, const NodeObject& Node);
@@ -39,10 +42,15 @@ class ASTInspector
         static void DestroyVariableScope();
         inline static std::vector<VariableMap> Variables;
         inline static VariableMap* CurrentVariables;
-        inline static std::vector<FunctionCall*> FunctionCalls;
         inline static std::set<std::string, std::less<>> CImports;
 
-        /* --------------------------------- C++ CPI -------------------------------- */
+        /* -------------------------------- Functions ------------------------------- */
+        inline static std::vector<Declaration> Declarations;
+        inline static std::vector<FunctionCall*> FunctionCalls;
+
+        /* --------------------------------- C++ API -------------------------------- */
+        inline static FunctionTable CFunctionTable;
+        inline static RendorState RendorEngineCompilerState;
         inline static std::string CurrentPath;
         #if BOOST_OS_WINDOWS
             inline static std::string C_Extension_Suffix = "dll";

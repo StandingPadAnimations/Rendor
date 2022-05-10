@@ -8,7 +8,9 @@
 struct FunctionCall : Node
 {
     std::string Function = "";
-    Body Args;
+    ArgBody Args;
+    NodeType ReturnValue = NodeType::Null;
+
     explicit FunctionCall(std::string Function, uint32_t LineNumber) : Node(LineNumber), Function(std::move(Function))
     {
         Type = NodeType::FunctionCall;
@@ -52,6 +54,7 @@ struct FowardEdef : Node
 {
     std::string Name = "";
     std::string MangledName = "";
+    NodeType ReturnType = NodeType::Any;
 
     bool Extern = false;
     std::vector<std::pair<std::string, NodeType>> Args;

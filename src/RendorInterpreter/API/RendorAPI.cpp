@@ -1,4 +1,6 @@
 #include "RendorInterpreter/Interpreter.hpp"
+#include "RendorCompiler/ASTInspection/ASTInspector.hpp"
+#include "RendorAPI/RendorAPI.h"
 
 
 /* -------------------------------------------------------------------------- */
@@ -70,25 +72,4 @@ void Interpreter::DropBoolOnStack(bool Const)
 {
     TypeObject_U Object = std::make_unique<Bool>(std::to_string(Const));
     RendorStack.emplace(Object.get(), std::move(Object));
-}
-
-
-/* -------------------------------------------------------------------------- */
-/*                              Module functions                              */
-/* -------------------------------------------------------------------------- */
-
-void Interpreter::InitModule(RendorMethod *MethodList)
-{
-    bool IterateArray = false;
-    size_t Index = 0;
-    do 
-    {
-        RendorMethod Method = MethodList[Index];
-        if (Method.Name == NULL)
-        {
-            IterateArray = false;
-        }
-
-        CppFunctions.emplace(Method.Name, Method.RendorFunc);
-    } while (IterateArray);
 }

@@ -1,6 +1,6 @@
 #include <cstddef>
 #include <stdint.h>
-#include "RendorAPI/RendorAPI.hpp"
+#include "RendorAPI/RendorAPI.h"
 
 // sum is const evaluated
 void RENDOR_SUM_FUNCTION(RendorState* R)

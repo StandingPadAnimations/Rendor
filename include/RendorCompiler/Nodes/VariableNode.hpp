@@ -8,6 +8,7 @@ struct AssignVariable : Node
     std::string VariableName = "";
     NodeObject Value{nullptr};
     bool IsArg = false;
+    NodeType ValueType = NodeType::Any;
 
     AssignVariable() = default;
 

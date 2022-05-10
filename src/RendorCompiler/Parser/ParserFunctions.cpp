@@ -18,7 +18,7 @@ void Parser::AddScope(Body* Ptr)
 }
 void Parser::PushToScope(std::unique_ptr<Node> Node)
 {
-    Scope->ConnectedNodes.push_back(std::move(Node));
+    Scope->PushBack(std::move(Node));
 }
 void Parser::ReplaceNode(std::unique_ptr<Node> Node)
 {

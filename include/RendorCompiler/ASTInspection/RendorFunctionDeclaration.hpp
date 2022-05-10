@@ -1,39 +1,49 @@
 #ifndef RENDOR_FUNCTION_DECLARATION_HPP
 #define RENDOR_FUNCTION_DECLARATION_HPP
 
+#include <algorithm>
 #define FALLTHROUGH [[fallthrough]]
-#include <array>
 #include <vector>
 #include <string_view>
 #include <string>
-#include <map>
 
 #include "RendorCompiler/Nodes/NodeType.hpp"
 
-struct DeclarationStorage
+struct Declaration
 {
-    std::vector<std::vector<NodeType>*> Declarations;
-};
+    std::size_t LastTypedArg = 0;
+    std::vector<NodeType> ArgTypes;
+    NodeType ReturnType = NodeType::Any;
+    std::string MangledName = "";
+    std::string_view OriginalName = "";
 
-class FunctionDeclaration
-{
-    public:
-        std::vector<NodeType>* GetFunction(const NodeType ReturnType, const std::vector<NodeType>& Types);
-        void AddFunction(const NodeType ReturnType, std::vector<NodeType>& Types);
-
-    private:
-        const std::map<NodeType, size_t, std::less<>> TypeIndexTable 
+    explicit Declaration(std::vector<NodeType>& Args) : ArgTypes(Args)
+    {
+        ArgTypes.reserve(5);
+        for (std::size_t i = 0; i < ArgTypes.size(); ++i)
         {
-            {NodeType::Any,    0},
-            {NodeType::Int64,  1},
-            {NodeType::Double, 2},
-            {NodeType::String, 3},
-            {NodeType::Bool,   4},
-        };
+            if (ArgTypes[i] == NodeType::Any)
+            {
+                LastTypedArg = i - 1;
+            }
+        }
+    }
 
-        // slots for each type and compatible arguments.
-        // anything with an any argument is added to the end
-        std::array<DeclarationStorage, 5> FunctionDeclarations;
+    explicit Declaration(std::vector<std::pair<std::string, NodeType>>& Args)
+    {
+        ArgTypes.reserve(5);
+        for (std::size_t i = 0; i < Args.size(); ++i)
+        {
+            auto& [Name, Type] = Args[i];
+            ArgTypes.push_back(Type);
+            if (Type == NodeType::Any)
+            {
+                LastTypedArg = i - 1;
+            }
+        }
+    }
+
+    bool IsFunc(NodeType& ReturnValue, std::vector<NodeType>& ArgsValue);
 };
 
 

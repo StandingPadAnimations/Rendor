@@ -65,7 +65,8 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     {
                         /* ------------------------ Create FunctionCall Node ------------------------ */
                         auto& AssignVariableNode = static_cast<AssignVariable&>(*Scope->ConnectedNodes.back());
-                        throw error::RendorException(fmt::format("Syntax Error: {} found during the definition of {}; Line {}", value, AssignVariableNode.VariableName, LineNumber));
+                        AssignVariableNode.Value = std::make_unique<FunctionCall>(value, LineNumber);
+                        AssignVariableNode.Value->Type =  AssignVariableNode.ValueType;
                     }
                 }
 
