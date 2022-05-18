@@ -6,5 +6,7 @@
 /bin/RendorCompiler/ObjectFiles/*.o
 /bin/RendorInterpreter/ObjectFiles/*.o
 
+compile_flags.txt
+
 .gitconfig
 Makefile
