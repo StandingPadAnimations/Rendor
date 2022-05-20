@@ -4,7 +4,9 @@
 /bin/RendorInterpreter/rendorvm.exe
 
 /bin/**/*.o
+/Lib/**/*.o
 /bin/**/*.dll
+/Lib/**/*.a
 
 .gitconfig
 Makefile

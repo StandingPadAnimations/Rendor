@@ -1,0 +1,10 @@
+CXX         := g++
+CXX_FLAGS   := -std=c++20 -Iinclude -lstdc++fs -static -static-libgcc -static-libstdc++ -ggdb
+
+all:
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) src/binary_io/binary_io.cpp -c -o Lib/binary_io.o
+	ar -rc Lib/libbinary_io.a Lib/binary_io.o
+
+clean:
+	-rm Lib/*.o
+	-rm Lib/*.a
