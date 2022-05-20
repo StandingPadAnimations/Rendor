@@ -1,13 +1,48 @@
-ByteCode key for Rendor:
-    Load {
-        0 : Global
-        1 : Main 
-    }
-    Body
-    Load_Scope {ScopeName} 
-    Keyword {Keyword, Args[]}
-    If {Conditions[]}
-    Bop {Op, Arg1, Arg2}
-    Assign {Type, name, value}
-    Edef {Name, Args[]}
-    Call {Function, Args[]}
+Cren File Format:
+Little Endian
+
+struct CrenHeader
+{
+    std::uint8_t magic_number = 199;
+    std::uint8_t major_version = 1;
+    std::uint8_t minor_version = 0;
+    std::uint32_t main_pos;
+    std::uint32_t export_pos;
+    std::uint32_t GFT_pos;
+    std::uint32_t GVT_pos;
+    std::uint32_t pool_pos;
+    std::uint32_t str_pool;
+    std::uint32_t entry;
+    std::string identifier = "CHAI";
+};
+
+.import
+u32 path_size, path
+
+.export
+u32 string_size, func
+...
+
+.GFT
+u32 string_size, func, u32 offset from export_pos
+...
+
+.GVT
+u32 string_size, var
+...
+
+.pool
+u8 type, const
+...
+
+.str_pool
+u8 type, u32 size, string
+...
+
+.main
+bytecode
+
+entry
+...
+
+

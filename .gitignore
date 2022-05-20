@@ -3,10 +3,11 @@
 /bin/RendorCompiler/rendorc.exe
 /bin/RendorInterpreter/rendorvm.exe
 
-/bin/RendorCompiler/ObjectFiles/*.o
-/bin/RendorInterpreter/ObjectFiles/*.o
-
-compile_flags.txt
+/bin/**/*.o
+/bin/**/*.dll
 
 .gitconfig
 Makefile
+.clangd
+.clang-tidy
+compile_flags.txt

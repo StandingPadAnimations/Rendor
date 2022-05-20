@@ -1,27 +1,30 @@
 #include "RendorEngine.hpp"
-#include "RendorCompiler/Lexer.hpp"
-#include "RendorCompiler/Parser.hpp"
-#include "cpp-terminal/base.hpp"
+#include "RendorCompiler/Lexer/Lexer.hpp"
+#include "RendorCompiler/Parser/Parser.hpp"
+#include <fmt/color.h>
 
-using Term::color;
-using Term::fg;
-using Term::bg;
-using Term::style;
+// Overload of new for debugging
+#if DEBUGMODE
+void* operator new(size_t size)
+{
+    fmt::print("Allocating {} bytes\n", size);
+    return malloc(size);
+}
+#endif
 
-void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::string>& Arguments)
+void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::string_view>& Arguments)
 {
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
-    bfs::path AbsPath(FileInput);
+    fs::path AbsPath(FileInput);
     std::string AbsPathExt = AbsPath.extension().string();
-    std::string AbsPathParentDir = AbsPath.parent_path().string();
     std::ios_base::sync_with_stdio(false);
+    OutputPath = AbsPath.parent_path().string();
 
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
     {
-        std::string ErrorMessage = (boost::format("%s%sFatal Error; %sMissing Rendor File input") % color(fg::red) % color(style::bold) % color(fg::reset)).str();
-        throw error::RendorException(ErrorMessage);
+        throw error::RendorException("Fatal Error; Missing Rendor File input");
     } 
 
 
@@ -32,6 +35,15 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         (std::find(Arguments.begin(), Arguments.end(), "-debug") != Arguments.end()))
         {
             DebugMode = true;
+        }
+
+        if
+        ((std::find(Arguments.begin(), Arguments.end(), "-o") != Arguments.end()) ||
+        (std::find(Arguments.begin(), Arguments.end(), "-output") != Arguments.end()))
+        {
+            auto Arg = std::find(Arguments.begin(), Arguments.end(), "-o");
+            ++Arg;
+            OutputPath = *Arg;
         }
 
         if
@@ -58,52 +70,53 @@ void RendorEngineCompiler::run (const std::string& FileInput, std::vector<std::s
         ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
         (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))
         {
-            std::cout << color(fg::red) << "C++ transpiling not supported in this version" << color(style::reset) << std::endl;
+            fmt::print(fg(fmt::color::red), "C++ transpiling not supported in this version\n");
         }
     }
 
-    std::vector<std::string> ByteCode;
+    std::vector<std::pair<Lex::Token, std::string>> Tokens;
     {
-        boost::interprocess::file_mapping File(FileInput.c_str(), boost::interprocess::read_only);
-        boost::interprocess::mapped_region RendorFileMemory(File, boost::interprocess::read_only);
+        boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
+        boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
         Parser RenParser;
-        std::vector<std::pair<Lex::Token, std::string>> Tokens;
+        ASTInspector RenASTInspector;
 
-        std::cout << color(fg::green) << "Tokenizing..." << std::endl;
+        fmt::print(fg(fmt::color::green), "Tokenizing...\n");
         Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
 
         // Parses
-        std::cout << color(fg::green) << "Generating AST tree..." << std::endl;
-        ByteCode = RenParser.ASTGeneration(Tokens); 
+        fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
+        RenParser.ASTGeneration(Tokens); 
 
-        // Adds it to output Cren File
-        if (ByteCode.size() > 0)
+        fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
+        for (const auto& Node : (*Parser::Script.GlobalBody))
         {
-            std::cout << color(fg::green) << "Outputing bytecode..." << std::endl;
-            std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-            std::ofstream CrenOutput(AbsPathParentDir + AbsPathCrenOutput);
-            for (auto const& Op : ByteCode)
+            if (Node)
             {
-                CrenOutput << Op << "\n";
+                RenASTInspector.InspectAST(Node);
+                Node->CodeGen();
             }
         }
-    
-        if (DebugMode)
-        { 
-            std::cout << color(fg::green) << "----------------------------DEBUG MODE----------------------------" << std::endl;
-            for (auto const& [token, value] : Tokens)
-            {
-                std::cout << color(fg::green) << "Token: " << static_cast<std::underlying_type<Lex::Token>::type>(token) << " " << value << std::endl;
-            }
-            std::cout << " " << std::endl;
-            for (auto const& command : ByteCode)
-            {
-                std::cout << color(fg::green) << command << std::endl;
-            }
+    }
+
+    fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
+    std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+    Parser::Script.CompileByteCode(OutputPath + AbsPathCrenOutput);
+
+    if (DebugMode)
+    { 
+        fmt::print(fg(fmt::color::green), "----------------------------DEBUG MODE----------------------------\n");
+        for (auto const& [token, value] : Tokens)
+        {
+            fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
         }
-        std::cout << color(fg::reset) << std::endl;
+        fmt::print("\n");
+        for (auto const& command : RendorEngineCompiler::ByteCode)
+        {
+            fmt::print(fg(fmt::color::green), "{}\n", command);
+        }
     }
 }

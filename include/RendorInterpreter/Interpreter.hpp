@@ -4,26 +4,31 @@
 #include <vector>
 #include <array>
 #include <memory>
+#include <map>
 
 #include "RendorInterpreter/Objects/Constant.hpp"
 #include "RendorInterpreter/Objects/Stackframe.hpp"
+#include "RendorInterpreter/Objects/GFT_GVT.hpp"
 #include "RendorAPI/RendorAPI.h"
+#include "CrenParsing/Header.hpp"
 
 #include "Definitions.hpp"
 #include "UnorderedMapLookUp.hpp"
 #include "Exceptions.hpp"
 
+#include <binary_io/binary_io.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
 
 class Interpreter
 {
     public:
-        Interpreter()
+        explicit Interpreter(binary_io::file_istream& Input)
         {
             Stack[0] = StackFrame();
             CurrentStackFrame = &Stack[0];
+            File = &Input;
         };
-        void ExecuteByteCode(const boost::iostreams::mapped_file& File);
+        void ExecuteByteCode();
 
         /* ------------------------------ API functions ----------------------------- */
         int64_t GrabInt64FromStack();
@@ -44,6 +49,14 @@ class Interpreter
     private:
         std::array<StackFrame, 100> Stack;
         StackFrame* CurrentStackFrame = nullptr;
+        
+        binary_io::file_istream* File;
+        CrenHeader header;
+
+        GlobalFunctionTable Functions;
+        GlobalVariableTable GlobalVariables;
+
+        bool PrepareInterpreter();
 };
 
 #endif // RENDOR_INTERPRETER_HPP

@@ -1,21 +1,18 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -pedantic -Werror -static -static-libgcc -static-libstdc++ 
+CXX_FLAGS   := -std=c++20 -lstdc++fs -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ \
+ 				-DBOOST_DLL_USE_STD_FS -DFMT_HEADER_ONLY -ggdb
 
 BIN         := bin
-OBJDIR      := bin/RendorCompiler/ObjectFiles
-SRC         := src/RendorCompiler
-SRCTERM     := src/cpp-terminal
-INCLUDE     := include
-LIBRARIES   := g++
+INCLUDE     := -Iinclude
 
+SRC         := src/RendorCompiler
+DIRS        := BackEnd/IR BackEnd/Compiler InspectAndOptimize Lexer Logic Parser API
+
+OBJDIR      := bin/RendorCompiler/ObjectFiles
 EXECUTABLE  := RendorCompiler/rendorc
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) 
-SOURCETERM  := $(wildcard $(SRCTERM)/*.cpp)
-OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES)) $(patsubst $(SRCTERM)/%.cpp,$(OBJDIR)/%.o,$(SOURCETERM))
-
-BOOSTFILE   := boost_filesystem-mt
-BOOSTSYS    := boost_system-mt
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
+OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -25,13 +22,11 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -o $@ -l$(BOOSTFILE) -l$(BOOSTSYS)
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
-
-$(OBJDIR)/%.o: $(SRCTERM)/%.cpp 
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) $^ -c -o $@ 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
 clean:
+	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o
