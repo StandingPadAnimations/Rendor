@@ -10,6 +10,11 @@ struct ConstPool
     {
         return &Pool[index];
     }
+
+    void insert(Constant Value)
+    {
+        Pool.push_back(std::move(Value));
+    }
 };
 
 #endif // RENDOR_CONST_POOL_HPP

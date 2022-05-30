@@ -5,6 +5,9 @@
 #include <variant>
 #include <vector>
 #include <cstdint>
+#include <memory>
+#include <algorithm>
+#include <iterator>
 
 #include "RendorInterpreter/Objects/Constant.hpp"
 #include "Definitions.hpp"
@@ -14,21 +17,19 @@ struct StackFrame
 {
     StackFrame* LastStackFrame = nullptr;
     std::vector<std::variant<Constant, Constant*>> Registers;
-    std::uint32_t ip = 0;
 
+    Constant  ConditionRegister = Constant{true};
+    Constant* RetRegister       = nullptr;
+    
     StackFrame() = default;
     explicit StackFrame(std::size_t size)
     {
         Registers.reserve(size);
+        std::fill_n(std::back_inserter(Registers), size, nullptr);
     }
-
+    
     Constant* operator[](std::size_t index)
     {
-        if (Registers.size() < index)
-        {
-            throw error::RendorException("Segmentation Fault: Missing Register");
-        }
-        
         switch (Registers[index].index())
         {
             case 0:
@@ -43,14 +44,14 @@ struct StackFrame
         return nullptr;
     }
 
-    void push_back(Constant Object)
+    void insert(std::size_t index, Constant Object)
     {
-        Registers.push_back(std::move(Object));
+        Registers[index] = std::move(Object);
     }
 
-    void push_back(Constant* Object)
+    void insert(std::size_t index, Constant* Object)
     {
-        Registers.push_back(std::move(Object));
+        Registers[index] = std::move(Object);
     }
 };
 

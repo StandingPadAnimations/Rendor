@@ -1,5 +1,3 @@
-#include <bit>
-
 #include "RendorInterpreter/Interpreter.hpp"
 
 #include <boost/range/detail/common.hpp>
@@ -7,8 +5,15 @@
 
 void Interpreter::ExecuteByteCode()
 {
-    ByteCodeEnum ByteCodeOp;
-    const auto Header = [](binary_io::any_istream a_stream) {
-		
-    };
+    for (const auto& Operation : CurrentModule->Main.FunctionOperations)
+    {
+        switch (Operation.Operation)
+        {
+            
+            default:
+            {
+                throw error::RendorException("Unsupported instruction!");
+            }
+        }
+    }
 }

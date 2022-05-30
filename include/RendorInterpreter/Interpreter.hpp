@@ -9,6 +9,7 @@
 #include "RendorInterpreter/Objects/Constant.hpp"
 #include "RendorInterpreter/Objects/Stackframe.hpp"
 #include "RendorInterpreter/Objects/GFT_GVT.hpp"
+#include "RendorInterpreter/Objects/Modules.hpp"
 #include "RendorAPI/RendorAPI.h"
 #include "CrenParsing/Header.hpp"
 
@@ -24,7 +25,7 @@ class Interpreter
     public:
         explicit Interpreter(binary_io::file_istream& Input)
         {
-            Stack[0] = StackFrame();
+            Stack[0] = StackFrame(100);
             CurrentStackFrame = &Stack[0];
             File = &Input;
         };
@@ -51,12 +52,20 @@ class Interpreter
         StackFrame* CurrentStackFrame = nullptr;
         
         binary_io::file_istream* File;
+        Module* CurrentModule = nullptr;
         CrenHeader header;
 
+        std::vector<Module> Modules;
         GlobalFunctionTable Functions;
         GlobalVariableTable GlobalVariables;
 
         bool PrepareInterpreter();
+        void AddModule();
+        void CreateConstPool();
+        void CreateStrConstPool();
+        void ImportModules(){}; // ! UNSUPPORTED RIGHT NOW
+        void CreateGVT();
+        void ReadFunctions();
 };
 
 #endif // RENDOR_INTERPRETER_HPP

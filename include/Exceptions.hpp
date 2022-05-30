@@ -5,9 +5,10 @@
 #include <string>
 #include <string_view>
 
-#include "cpp-terminal/base.hpp"
 #include "RendorEngine.hpp"
 
+#include "fmt/core.h"
+#include "fmt/color.h"
 namespace error{
     // Exception for Rendor in general
     class RendorException: public std::exception {
@@ -15,7 +16,8 @@ namespace error{
             std::string message_;
         public:
             explicit RendorException(const std::string& message);
-            const char* what() const noexcept override {
+            const char* what() const noexcept override 
+            {
                 return message_.c_str();
             }
     };
@@ -25,18 +27,10 @@ namespace error{
 
     inline void LogWarning(std::string_view Warning)
     {
-        switch (RendorEngineCompiler::WarningsToErrors)
-        {
-            case true:
-            {
-                throw error::RendorException(std::string{Warning});
-            }
-            default:
-            {
-                std::cout << Term::color(Term::fg::bright_magenta) << Warning << std::endl;
-                break;
-            }
-        }
+        RendorEngineCompiler::WarningsToErrors ? 
+        throw error::RendorException(std::string{Warning}) :
+        fmt::print(fmt::fg(fmt::color::magenta), Warning);
+        ;
     }
 }
 

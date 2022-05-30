@@ -10,7 +10,8 @@
 
 struct Constant
 {
-    RendorVariant Const = 0;
+    RendorVariant Const = false;
+    RendorMathVariant Num = 0;
 
     void operator=(RendorVariant value)
     {
@@ -20,84 +21,37 @@ struct Constant
     /* ----------------------------------- add ---------------------------------- */
     void operator+(RendorMathVariant Val)
     {
-        switch (Const.index())
-        {
-            case 0:
-            {
-                auto ConstConverted = std::get_if<RendorInt>(&Const);
-                Const = std::visit([&](RendorInt RegVal, auto ActualVal)
+        Num = std::visit([&](auto RegVal, auto ActualVal)
                 {
-                    return RendorVariant(RegVal + ActualVal);
-                }, ConstConverted, Val);
-                break;
-            }
-            case 1:
-            {
-                auto ConstConverted = std::get_if<RendorDouble>(&Const);
-                Const = (*ConstConverted) - Int;
-                break;
-            }
-        }
+                    return RendorMathVariant{RegVal + ActualVal};
+                }, Num, Val);
     }
 
     /* ----------------------------------- sub ---------------------------------- */
-    void operator-(RendorMathVariant Int)
+    void operator-(RendorMathVariant Val)
     {
-        switch (Const.index())
-        {
-            case 0:
-            {
-                auto ConstConverted = std::get_if<RendorInt>(&Const);
-                Const = (*ConstConverted) - Int;
-                break;
-            }
-            case 1:
-            {
-                auto ConstConverted = std::get_if<RendorDouble>(&Const);
-                Const = (*ConstConverted) - Int;
-                break;
-            }
-        }
+        Num = std::visit([&](auto RegVal, auto ActualVal)
+                {
+                    return RendorMathVariant{RegVal - ActualVal};
+                }, Num, Val);
     }
 
     /* ----------------------------------- mul ---------------------------------- */
-    void operator*(RendorMathVariant Int)
+    void operator*(RendorMathVariant Val)
     {
-        switch (Const.index())
-        {
-            case 0:
-            {
-                auto ConstConverted = std::get_if<RendorInt>(&Const);
-                Const = (*ConstConverted) * Int;
-                break;
-            }
-            case 1:
-            {
-                auto ConstConverted = std::get_if<RendorDouble>(&Const);
-                Const = (*ConstConverted) * Int;
-                break;
-            }
-        }
+        Num = std::visit([&](auto RegVal, auto ActualVal)
+                {
+                    return RendorMathVariant{RegVal * ActualVal};
+                }, Num, Val);
     }
     
     /* ----------------------------------- div ---------------------------------- */
-    void operator/(RendorMathVariant Int)
+    void operator/(RendorMathVariant Val)
     {
-        switch (Const.index())
-        {
-            case 0:
-            {
-                auto ConstConverted = std::get_if<RendorInt>(&Const);
-                Const = (*ConstConverted) / Int;
-                break;
-            }
-            case 1:
-            {
-                auto ConstConverted = std::get_if<RendorDouble>(&Const);
-                Const = (*ConstConverted) / Int;
-                break;
-            }
-        }
+        Num = std::visit([&](auto RegVal, auto ActualVal)
+                {
+                    return RendorMathVariant{RegVal / ActualVal};
+                }, Num, Val);
     }
 };
 

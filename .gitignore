@@ -3,10 +3,10 @@
 /bin/RendorCompiler/rendorc.exe
 /bin/RendorInterpreter/rendorvm.exe
 
-/bin/**/*.o
-/Lib/**/*.o
-/bin/**/*.dll
-/Lib/**/*.a
+/**/**/*.o
+/**/**/*.a
+/**/**/*.dll
+/**/**/*.exe
 
 .gitconfig
 Makefile

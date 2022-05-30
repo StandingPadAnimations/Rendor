@@ -6,38 +6,38 @@ struct CrenHeader
     std::uint8_t magic_number = 199;
     std::uint8_t major_version = 1;
     std::uint8_t minor_version = 0;
-    std::uint32_t main_pos;
-    std::uint32_t export_pos;
-    std::uint32_t GFT_pos;
-    std::uint32_t GVT_pos;
-    std::uint32_t pool_pos;
-    std::uint32_t str_pool;
     std::uint32_t entry;
     std::string identifier = "CHAI";
 };
 
-.import
-u32 path_size, path
-
-.export
-u32 string_size, func
-...
-
-.GFT
-u32 string_size, func, u32 offset from export_pos
-...
-
-.GVT
-u32 string_size, var
-...
 
 .pool
+u32 const_amount
 u8 type, const
 ...
 
 .str_pool
-u8 type, u32 size, string
+u16 index, u32 size, string
 ...
+
+.GVT
+u32 variable amount
+g_mov, reg1, reg2, reg-ref
+g_mov_n, reg1, reg2, NULL8
+mod_export, reg1, NULL32, func-o-var, size, string
+...
+
+.GFT
+u32 function amount
+u32 reg, offset from main
+gft_define, reg, size, string
+...
+
+.import
+u8 type, u32 path_size, path
+...
+
+functions...
 
 .main
 bytecode
@@ -45,4 +45,7 @@ bytecode
 entry
 ...
 
+.export
+u32 string_size, func
+...
 
