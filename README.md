@@ -3,6 +3,8 @@
 
 GitHub for the Rendor programming language
 
+Rendor Discord Server: https://discord.gg/S95Jp8SAqT
+
 Rendor is the successor to the EnderKnight programming language. It aims to fix certain bugs and add:
 * Actual functions with arguments and return statements -> Arguments: Done, Return: WIP
 * Updating variables -> Done
