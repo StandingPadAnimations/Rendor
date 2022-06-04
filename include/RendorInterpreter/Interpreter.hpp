@@ -26,10 +26,10 @@ class Interpreter
         explicit Interpreter(binary_io::file_istream& Input)
         {
             Stack[0] = StackFrame(100);
-            CurrentStackFrame = &Stack[0];
+            sp = &Stack[0];
             File = &Input;
         };
-        void ExecuteByteCode();
+        void ExecuteByteCode(const Function& Func);
 
         /* ------------------------------ API functions ----------------------------- */
         int64_t GrabInt64FromStack();
@@ -49,7 +49,8 @@ class Interpreter
 
     private:
         std::array<StackFrame, 100> Stack;
-        StackFrame* CurrentStackFrame = nullptr;
+        StackFrame* sp = nullptr;
+        std::size_t sp_int = 0;
         
         binary_io::file_istream* File;
         Module* CurrentModule = nullptr;
@@ -60,12 +61,46 @@ class Interpreter
         GlobalVariableTable GlobalVariables;
 
         bool PrepareInterpreter();
-        void AddModule();
         void CreateConstPool();
         void CreateStrConstPool();
         void ImportModules(){}; // ! UNSUPPORTED RIGHT NOW
         void CreateGVT();
         void ReadFunctions();
+
+        /* ---------------------------- Helper functions ---------------------------- */
+        void AddModule()
+        {
+            Modules.push_back(Module{});
+            CurrentModule = &Modules.back();
+            CurrentModule->Pool = ConstPool{};
+            CurrentModule->GlobalVars = StackFrame{};
+        }
+
+        void SetRegisters(Registers** Ptr, std::uint8_t Type)
+        {
+            switch (Type)
+            {
+                case 1:
+                {
+                    *Ptr = &CurrentModule->GlobalVars.Registers;
+                    break;
+                }
+                case 2:
+                {
+                    *Ptr = &Stack[sp_int - 1].Registers;
+                    break;
+                }
+                case 3:
+                {
+                    *Ptr = &sp->Registers;
+                    break;
+                }
+                default:
+                {
+                    throw RENDOR_SEG_FAULT;
+                }
+            }
+        }
 };
 
 #endif // RENDOR_INTERPRETER_HPP

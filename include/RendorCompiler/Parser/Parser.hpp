@@ -49,7 +49,7 @@ class Parser
 
         inline static const std::map<std::string_view, NodeType> TypeTable 
         {
-            {"int64",  NodeType::Int64},
+            {"i64",  NodeType::Int64},
             {"double", NodeType::Double},
             {"string", NodeType::String},
             {"bool",   NodeType::Bool},

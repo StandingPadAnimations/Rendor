@@ -9,6 +9,8 @@
 
 #include "fmt/core.h"
 #include "fmt/color.h"
+
+#define RENDOR_SEG_FAULT error::RendorException("Segmentation Fault")
 namespace error{
     // Exception for Rendor in general
     class RendorException: public std::exception {

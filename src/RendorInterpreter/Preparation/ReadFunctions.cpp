@@ -39,7 +39,8 @@ void Interpreter::ReadFunctions()
                     File->read(
                         FullOp.RetReg,
                         FullOp.FunctionReg,
-                        FullOp.Ret_or_not
+                        FullOp.Ret_or_not,
+                        FullOp.Ret_type
                     );
                     break;
                 }

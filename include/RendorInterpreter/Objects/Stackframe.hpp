@@ -16,32 +16,18 @@
 struct StackFrame 
 {
     StackFrame* LastStackFrame = nullptr;
-    std::vector<std::variant<Constant, Constant*>> Registers;
+    std::vector<Constant> Registers;
 
-    Constant  ConditionRegister = Constant{true};
-    Constant* RetRegister       = nullptr;
-    
     StackFrame() = default;
     explicit StackFrame(std::size_t size)
     {
         Registers.reserve(size);
-        std::fill_n(std::back_inserter(Registers), size, nullptr);
+        std::fill_n(std::back_inserter(Registers), size, Constant{});
     }
     
-    Constant* operator[](std::size_t index)
+    Constant& operator[](std::size_t index)
     {
-        switch (Registers[index].index())
-        {
-            case 0:
-            {
-                return std::get_if<Constant>(&Registers[index]);
-            }
-            case 1:
-            {
-                return *std::get_if<Constant*>(&Registers[index]);
-            }
-        }
-        return nullptr;
+        return Registers[index];
     }
 
     void insert(std::size_t index, Constant Object)

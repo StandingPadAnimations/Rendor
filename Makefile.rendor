@@ -5,7 +5,7 @@ BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorInterpreter
-DIRS        := Preperation Internal
+DIRS        := Preperation
 
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
 EXECUTABLE  := RendorInterpreter/rendorvm

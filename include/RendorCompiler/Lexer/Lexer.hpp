@@ -60,7 +60,7 @@ namespace Lex{
             // Keywords to check for 
             std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern", "export"};
             std::vector<std::string_view> Attributes {"~module_destroy"};
-            std::vector<std::string_view> Types {"int64", "double", "string", "bool"};
+            std::vector<std::string_view> Types {"i64", "double", "string", "bool"};
 
             // Operators to check for 
             std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
@@ -69,6 +69,7 @@ namespace Lex{
                                                                         {{">"}, '='},
                                                                         {{"<"}, '='},
                                                                         {{"!"}, '='},
+                                                                        {{":"}, ':'},
                                                                         {{"-"}, '>'}};
 
             std::map<std::string_view, char, std::less<>> UnOpTokens   {{{"+"}, '+'},

@@ -670,13 +670,13 @@ void Parser::ASTGeneration(const std::vector<std::pair<Lex::Token, std::string>>
                     }
                 }
 
-                else if (value == "->")
+                else if (value == "::")
                 {
                     if (GetTypeOfNode() == NodeType::Reference)
                     {
                         PopTempID();
                         auto& ReferenceNode = static_cast<Reference&>(*Scope->ConnectedNodes.back());
-                        ReplaceNode(std::make_unique<FunctionCall>(ReferenceNode.Value + "->", LineNumber));
+                        ReplaceNode(std::make_unique<FunctionCall>(ReferenceNode.Value + "::", LineNumber));
                     }
                     AddTempID(TempID::NameSpaceCall);
                 }

@@ -1,6 +1,7 @@
 #ifndef RENDOR_MODULES_HPP
 #define RENDOR_MODULES_HPP
 
+#include <variant>
 #include <vector>
 
 #include "RendorInterpreter/Objects/Stackframe.hpp"
@@ -11,7 +12,7 @@ struct Module
 {
     StackFrame GlobalVars;
     ConstPool Pool;
-    std::vector<Function> Functions;
+    std::vector<std::variant<Function, Function*>> Functions;
     Function Main;
 };
 
