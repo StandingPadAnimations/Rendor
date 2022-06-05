@@ -33,11 +33,15 @@ void Interpreter::CreateConstPool()
                 Pool->insert(Constant{Value, ConstType::CONST_NUM});
                 break;
             }
-            case Type::DOUBLE: // ! WILL NOT WORK FOR NOW
+            case Type::DOUBLE:
             {
-                // double Value = 0.0;
-                // File->read(std::endian::little, Value);
-                // Pool->insert(Constant{Value, ConstType::CONST_NUM});
+                // ? We have to cast because binary_io doesn't support floating point numbers directly
+                int64_t int_Val;
+                File->read(std::endian::little, int_Val);
+
+                // cast to double
+                double Value = std::bit_cast<double>(int_Val);
+                Pool->insert(Constant{Value, ConstType::CONST_NUM});
                 break;
             }
             case Type::BOOl:

@@ -1,6 +1,11 @@
 #ifndef RENDOR_ENGINE_HPP
 #define RENDOR_ENGINE_HPP
 
+// This is here to insure doubles are 64 bits
+#if __DBL_DIG__ != 15
+#error "Requires IEEE 754 floating point!"
+#endif
+
 #include <iostream>
 #include <fstream>
 #include <string>
