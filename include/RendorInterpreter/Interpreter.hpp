@@ -1,10 +1,12 @@
 #ifndef RENDOR_INTERPRETER_HPP
 #define RENDOR_INTERPRETER_HPP
 
+#include <fmt/core.h>
 #include <vector>
 #include <array>
 #include <memory>
 #include <map>
+#include <stack>
 
 #include "RendorInterpreter/Objects/Constant.hpp"
 #include "RendorInterpreter/Objects/Stackframe.hpp"
@@ -25,9 +27,8 @@ class Interpreter
     public:
         explicit Interpreter(binary_io::file_istream& Input)
         {
-            Stack[0] = StackFrame(100);
-            sp = &Stack[0];
             File = &Input;
+            ConstStack.reserve(10);
         };
 
         bool PrepareInterpreter();
@@ -51,7 +52,13 @@ class Interpreter
         void PopStack();
 
         void InitModule(RendorMethod *MethodList);
-        void ThrowStackTrace();
+        void ThrowStackTrace()
+        {
+            for (const auto& err : Stacktrace)
+            {
+                fmt::print("{}\n", err);
+            }
+        }
 
     private:
         std::array<StackFrame, 100> Stack;
@@ -67,6 +74,7 @@ class Interpreter
         GlobalVariableTable GlobalVariables;
 
         std::vector<std::string> Stacktrace;
+        std::vector<Constant> ConstStack;
 
         void CreateConstPool();
         void CreateStrConstPool();
@@ -106,6 +114,11 @@ class Interpreter
                 case 3:
                 {
                     *Ptr = &sp->Registers;
+                    break;
+                }
+                case 4:
+                {
+                    *Ptr = &ConstStack;
                     break;
                 }
                 default:

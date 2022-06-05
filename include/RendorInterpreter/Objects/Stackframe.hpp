@@ -25,7 +25,7 @@ struct StackFrame
         Registers.reserve(size + 2);
         for (std::size_t i = 0; i < size; ++i)
         {
-            Registers[i] = Constant{RendorConst{false}, ConstType::NONE};
+            Registers[i] = std::move(Constant{RendorConst{false}, ConstType::NONE});
         }
     }
     

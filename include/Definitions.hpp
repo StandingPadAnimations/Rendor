@@ -11,11 +11,12 @@
 struct Constant;
 struct Function;
 
-using RendorInt = std::int64_t;
-using RendorDouble = double;
-using RendorConst = std::variant<std::string, bool>;
+using RendorInt       = std::int64_t;
+using RendorDouble    = double;
+using RendorConst     = std::variant<std::string, bool>;
+using RendorVec       = std::vector<Constant>;
 using RendorReference = std::variant<Constant*, Function*>;
-using RendorNum = std::variant<RendorInt, RendorDouble>;
+using RendorNum       = std::variant<RendorInt, RendorDouble>;
 
 /*
     * REFERENCE
@@ -26,6 +27,7 @@ using RendorNum = std::variant<RendorInt, RendorDouble>;
     *   1 - Global
     *   2 - Last Stack Frame
     *   3 - Local
+    *   4 - Top of the stack
     * }
     * ret - u8: determines if there is a return value:
     * {
@@ -53,11 +55,17 @@ enum class ByteCodeEnum : std::uint8_t
     call,           //* return reg, reg for function, ret-o-not, reg-ref, NULL8
     ret,            //* reg with return value, NULL16, NULL16, ret-o-not, reg-ref, mov-cpy
 
-    /* -------------------------------- Variables ------------------------------- */
+    /* -------------------------- Register instructions ------------------------- */
     mov,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
     mov_n,          //* reg1, NULL16, NULL16, reg-ref,  NULL8,    NULL8
     cpy,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
     ref,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
+
+    /* --------------------------- Stack instructions --------------------------- */
+    stk_mov,        //* reg, reg-ref
+    stk_mov_n,      //* NULL-9-BYTE
+    stk_cpy,        //* reg, reg-ref
+    stk_pop,        //* NULL-9-BYTE
 
     /* ---------------------------------- jump ---------------------------------- */
     jmp,            //* jump-val, forward-o-back
@@ -69,8 +77,8 @@ enum class ByteCodeEnum : std::uint8_t
     div,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
     pow,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
 
-    icr,            //* reg1, NULL16, NULL16, reg-ref1, NULL8, NULL8
-    dcr,            //* reg1, NULL16, NULL16, reg-ref1, NULL8, NULL8
+    icr,            //* reg1, reg-ref1
+    dcr,            //* reg1, reg-ref1
 
     /* -------------------------- Conditional Operators ------------------------- */
     eq,             //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
@@ -89,6 +97,7 @@ enum class ConstType
     CONST_BOOL,
     CONST_REF,
     CONST_FUNC_REF,
+    CONST_VEC,
 };
 
 // Code from Rythm#6156 with slight changes 

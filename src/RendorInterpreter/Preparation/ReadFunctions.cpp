@@ -62,20 +62,20 @@ void Interpreter::ReadFunctions()
                 case ByteCodeEnum::jmp:
                 {
                     File->read(
-                        FullOp.JMP_amount,
-                        FullOp.JMP_amount
+                        FullOp.Reg_64,
+                        FullOp.Reg_64_type_8
                     );
                     break;
                 }
                 default:
                 {
                     File->read(
-                        FullOp.Reg1,
-                        FullOp.Reg2,
-                        FullOp.Reg3,
-                        FullOp.Reg1_type,
-                        FullOp.Reg2_type,
-                        FullOp.Reg3_type
+                        FullOp.Reg1_16,
+                        FullOp.Reg2_16,
+                        FullOp.Reg3_16,
+                        FullOp.Reg1_type_8,
+                        FullOp.Reg2_type_8,
+                        FullOp.Reg3_type_8
                     );
                     break;
                 }

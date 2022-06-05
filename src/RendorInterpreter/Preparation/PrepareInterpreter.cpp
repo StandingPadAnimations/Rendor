@@ -31,12 +31,12 @@ bool Interpreter::PrepareInterpreter()
 
     if (header.magic_number != 199)
     {
-        Stacktrace.emplace_back("Invalid file!");
+        Stacktrace.emplace_back("Invalid file! Wrong Magic Number!");
         return false;
     }
     if (header.identifier == "CHAI")
     {
-        Stacktrace.emplace_back("Invalid file!");
+        Stacktrace.emplace_back("Invalid file! Wrong Identifier!");
         return false;
     }
 

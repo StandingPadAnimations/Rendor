@@ -8,7 +8,7 @@ void RendorEngineInterpreter::run(const std::string File)
 
     if (!Instance.PrepareInterpreter())
     {
-
+        Instance.ThrowStackTrace();
     }
     Instance.ExecuteMain();
 }

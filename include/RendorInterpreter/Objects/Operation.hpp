@@ -9,16 +9,16 @@ struct Operation
     ByteCodeEnum Operation;
 
     /* ------------------------ For typical instructions ------------------------ */
-    std::uint16_t Reg1 = 0;
-    std::uint16_t Reg2 = 0;
-    std::uint16_t Reg3 = 0;
-    std::uint8_t  Reg1_type = 0;
-    std::uint8_t  Reg2_type = 0;
-    std::uint8_t  Reg3_type = 0;
+    std::uint16_t Reg1_16     = 0;
+    std::uint16_t Reg2_16     = 0;
+    std::uint16_t Reg3_16     = 0;
+    std::uint8_t  Reg1_type_8 = 0;
+    std::uint8_t  Reg2_type_8 = 0;
+    std::uint8_t  Reg3_type_8 = 0;
 
     /* ----------------------------------- JMP ---------------------------------- */
-    std::uint64_t JMP_amount = 0;
-    std::uint8_t  For_o_back = 0;
+    std::uint64_t Reg_64 = 0;
+    std::uint8_t  Reg_64_type_8 = 0;
 
     /* ----------------------------- Function Calls ----------------------------- */
     std::uint16_t RetReg = 0;
