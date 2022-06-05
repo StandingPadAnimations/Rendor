@@ -2,20 +2,20 @@
 #define CONST_NODES_HPP
 
 #include "RendorCompiler/Nodes/BaseNode.hpp"
+#include <boost/lexical_cast.hpp>
 
 struct Int : Node
 {
     std::string Value = "";
-    
     Int(std::string ValueInput, uint32_t LineNumber) : Node(LineNumber), Value(std::move(ValueInput))
     {
         Type = NodeType::Int64;
-        ConstType = ByteCodeType::INT64;
+        ConstType = IR_Type::INT;
     }
 
     void CodeGen() override
     {
-        NodeByteCodeGen.CreateConst(ConstType, Value);
+        
     }
 };
 

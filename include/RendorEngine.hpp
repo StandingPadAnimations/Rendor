@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "RendorCompiler/BackEnd/IR/IRContext.hpp"
 #include "RendorBoostFileMapper.hpp"
 
 // Boost libraries and macros
@@ -34,6 +35,7 @@ struct RendorEngineCompiler
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;
+    inline static IR_Context Context;
     static void run(const std::string& FileInput, std::vector<std::string>& Arguments);
 };
 

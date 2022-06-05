@@ -5,34 +5,23 @@
 #include <vector>
 #include <memory>
 
-#include "RendorCompiler/BackEnd/ByteCodeGenerator.hpp"
+#include "RendorCompiler/BackEnd/IR/IRContext.hpp"
 #include "RendorCompiler/Nodes/NodeType.hpp"
 #include "RendorEngine.hpp"
 
 struct Node
 {
     NodeType Type;
-    ByteCodeType ConstType;
+    IR_Type ConstType;
     uint32_t LineNumber = 0;
-    RendorByteCodeGenerator NodeByteCodeGen;
 
     #if DEBUG_NODES
     std::string ID;
     inline static size_t ID_Num = 0;
     #endif
-    
-    //cppcheck-suppress uninitMemberVar
-    explicit Node() : NodeByteCodeGen(&RendorEngineCompiler::EngineContext, &RendorEngineCompiler::ByteCode)
-    {
-        #if DEBUG_NODES
-        ++ID_Num;
-        ID = fmt::format("RENDOR_NODE {}", ID_Num);
-        #endif
-    }
-    //cppcheck-suppress uninitMemberVar
-    explicit Node(uint32_t LineNumber) : 
-    LineNumber(LineNumber), 
-    NodeByteCodeGen(&RendorEngineCompiler::EngineContext, &RendorEngineCompiler::ByteCode)
+
+    Node() = default;
+    explicit Node(uint32_t LineNumber) : LineNumber(LineNumber)
     {
         #if DEBUG_NODES
         ++ID_Num;
