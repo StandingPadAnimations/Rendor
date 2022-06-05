@@ -29,6 +29,6 @@ void Interpreter::CreateStrConstPool()
         (*File) >> index;
         (*File) >> size;
         read_string(String, size);
-        Pool->Pool[index] = Constant{String};
+        Pool->Pool[index] = Constant{String, ConstType::CONST_STR};
     }
 }

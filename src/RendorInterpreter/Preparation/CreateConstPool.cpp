@@ -30,26 +30,26 @@ void Interpreter::CreateConstPool()
             {
                 std::int64_t Value = 0;
                 (*File) >> Value;
-                Pool->insert(Constant{Value});
+                Pool->insert(Constant{Value, ConstType::CONST_NUM});
                 break;
             }
-            case Type::DOUBLE:
+            case Type::DOUBLE: // ! WILL NOT WORK FOR NOW
             {
-                double Value = 0.0;
-                File->read(std::endian::little, Value);
-                Pool->insert(Constant{Value});
+                // double Value = 0.0;
+                // File->read(std::endian::little, Value);
+                // Pool->insert(Constant{Value, ConstType::CONST_NUM});
                 break;
             }
             case Type::BOOl:
             {
                 std::uint8_t Value = 0;
                 (*File) >> Value;
-                Value == true ? Pool->insert(Constant{true}) : Pool->insert(Constant{false});
+                Value == true ? Pool->insert(Constant{RendorConst{false}, ConstType::CONST_BOOL}) : Pool->insert(Constant{RendorConst{false}, ConstType::CONST_BOOL});
                 break;
             }
             case Type::VOID:
             {
-                Pool->insert(Constant{});
+                Pool->insert(Constant{RendorConst{false}, ConstType::NONE});
                 break;
             }
             default:

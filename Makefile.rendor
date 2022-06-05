@@ -1,16 +1,15 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ -Llib -lbinary_io
+CXX_FLAGS   := -std=c++20 -Wall -Wextra -Werror -Wfatal-errors -static -static-libgcc -static-libstdc++
 
 BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorInterpreter
-DIRS        := Preperation
 
 OBJDIR      := bin/RendorInterpreter/ObjectFiles
 EXECUTABLE  := RendorInterpreter/rendorvm
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(wildcard $(SRC)/**/*.cpp)
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
 
 all: $(BIN)/$(EXECUTABLE)
@@ -21,11 +20,15 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
-	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -Llib -lbinary_io
+	@echo 
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
+$(OBJDIR)/**/%.o: $(SRC)/**/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
+
 clean:
-	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o
+	-rm $(OBJDIR)/**/*.o

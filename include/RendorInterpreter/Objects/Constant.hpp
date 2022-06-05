@@ -19,10 +19,9 @@ struct Constant
     RendorReference   Ref{};
     ConstType         Type{};
     
+    Constant();
     Constant(Constant&&) = default;
     Constant &operator=(Constant&&) = default;
-    Constant(const Constant&) = delete;
-    Constant&operator=(const Constant&) = delete;
     explicit Constant(const RendorConst& value, const ConstType& valueType)     : Const(value), Type(valueType) {}
     explicit Constant(const RendorNum& value, const ConstType& valueType)       : Num(value),   Type(valueType){}
     explicit Constant(const RendorReference& value, const ConstType& valueType) : Ref(value),   Type(valueType){}

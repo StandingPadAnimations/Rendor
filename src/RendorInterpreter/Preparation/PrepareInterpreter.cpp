@@ -8,7 +8,11 @@
 
 bool Interpreter::PrepareInterpreter()
 {
-    File->seek_absolute(0);
+    if (!File->is_open())
+    {
+        Stacktrace.emplace_back("File is not opened/does not exist!");
+        return false;
+    }
 
     const auto read_string = [&](std::string& a_dst, std::size_t a_len) 
     {
@@ -17,6 +21,7 @@ bool Interpreter::PrepareInterpreter()
     };
     
     /* --------------------------------- Header --------------------------------- */
+    File->seek_absolute(0);
     File->read(std::endian::little, 
                 header.magic_number,
                 header.major_version,
@@ -26,17 +31,19 @@ bool Interpreter::PrepareInterpreter()
 
     if (header.magic_number != 199)
     {
+        Stacktrace.emplace_back("Invalid file!");
         return false;
     }
     if (header.identifier == "CHAI")
     {
+        Stacktrace.emplace_back("Invalid file!");
         return false;
     }
 
     AddModule();
     CreateConstPool();
     CreateStrConstPool();
-    ImportModules(); //! DOES NOTHING YET
+    ImportModules(); // ! DOES NOTHING YET
     CreateGVT();
     ReadFunctions();
     return true;

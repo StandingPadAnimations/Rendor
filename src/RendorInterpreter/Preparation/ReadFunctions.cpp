@@ -1,16 +1,31 @@
 #include "RendorInterpreter/Interpreter.hpp"
 
+
+template<typename ...Base>
+struct FunctionVisit : Base...
+{
+    using Base::operator()...;
+};
+
+template<typename ...T> FunctionVisit(T...) -> FunctionVisit<T...>;
+
 void Interpreter::ReadFunctions()
 {
     for (std::size_t Func = 0; Func < header.function_count; ++Func)
     {
         FunctionHeader HeaderForFunction;
         std::vector<Operation>* Operations;
+        const auto visitor = FunctionVisit 
+        {
+            [&](Function  Func) -> void {Operations = &Func.FunctionOperations;},
+            [&](Function* Func) -> void {Operations = &Func->FunctionOperations;},
+        };
+
+
         File->read(
             HeaderForFunction.FunctionRegister,
             HeaderForFunction.ChunkCount
         );
-
         if (HeaderForFunction.FunctionRegister == 0)
         {
             CurrentModule->Main = Function{};
@@ -19,7 +34,7 @@ void Interpreter::ReadFunctions()
         else 
         {
             CurrentModule->Functions.push_back(Function{});
-            Operations = &CurrentModule->Functions.back().FunctionOperations;
+            std::visit(visitor, CurrentModule->Functions.back());
         }
 
         for (std::size_t chunk = 0; chunk < HeaderForFunction.ChunkCount; ++chunk)

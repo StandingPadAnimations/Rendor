@@ -13,7 +13,7 @@ struct Function;
 
 using RendorInt = std::int64_t;
 using RendorDouble = double;
-using RendorConst = std::variant<std::string, bool, std::vector<Constant>>;
+using RendorConst = std::variant<std::string, bool>;
 using RendorReference = std::variant<Constant*, Function*>;
 using RendorNum = std::variant<RendorInt, RendorDouble>;
 
@@ -37,6 +37,11 @@ using RendorNum = std::variant<RendorInt, RendorDouble>;
     *   0 - function
     *   1 - variable
     * }
+    * mov-cpy - u8: move or copy the value
+    * {
+    *   0 - mov
+    *   1 - cpy
+    * }
 */
 enum class ByteCodeEnum : std::uint8_t
 {
@@ -45,7 +50,8 @@ enum class ByteCodeEnum : std::uint8_t
     free,           //* NULL16, NULL16, NULL16, NULL8, NULL8, NULL8
 
     /* -------------------------------- Functions ------------------------------- */
-    call,           //* return reg, reg for function, ret, reg-ref, NULL8
+    call,           //* return reg, reg for function, ret-o-not, reg-ref, NULL8
+    ret,            //* reg with return value, NULL16, NULL16, ret-o-not, reg-ref, mov-cpy
 
     /* -------------------------------- Variables ------------------------------- */
     mov,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
@@ -63,8 +69,8 @@ enum class ByteCodeEnum : std::uint8_t
     div,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
     pow,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
 
-    icr,            //* reg1, reg2, reg3, reg-ref1, NULL8, NULL8
-    dcr,            
+    icr,            //* reg1, NULL16, NULL16, reg-ref1, NULL8, NULL8
+    dcr,            //* reg1, NULL16, NULL16, reg-ref1, NULL8, NULL8
 
     /* -------------------------- Conditional Operators ------------------------- */
     eq,             //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
@@ -88,8 +94,8 @@ enum class ConstType
 // Code from Rythm#6156 with slight changes 
 inline RendorInt Rythm_RendorPow(RendorInt& x, RendorInt& y){
     RendorInt ret = 1;
-    for(; x; x >>= 1){
-        if(x & 1)
+    for(; y; y >>= 1){
+        if(y & 1)
         {
             ret *= x;
         } 

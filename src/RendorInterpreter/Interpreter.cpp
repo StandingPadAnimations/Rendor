@@ -16,6 +16,7 @@ void Interpreter::ExecuteByteCode(const Function& Func)
             {
                 ++sp_int;
                 Stack[sp_int] = StackFrame{Opera->Reg1};
+                Stack[sp_int].LastStackFrame = sp;
                 sp = &Stack[sp_int];
                 break;
             }
@@ -25,9 +26,11 @@ void Interpreter::ExecuteByteCode(const Function& Func)
                 sp = &Stack[sp_int];
                 break;
             }
-            case ByteCodeEnum::call: // ! Fix this
+            case ByteCodeEnum::call:
             {
                 auto FuncReg = CurrentModule->Functions[Opera->FunctionReg];
+                SetRegisters(&DstRegisters, Opera->Ret_type); auto& DstReg = (*DstRegisters)[Opera->RetReg];
+                sp->Ret = &DstReg;
                 switch (FuncReg.index())
                 {
                     case 0:
@@ -44,6 +47,25 @@ void Interpreter::ExecuteByteCode(const Function& Func)
                     }
                 }
                 break;
+            }
+            case ByteCodeEnum::ret:
+            {
+                if (Opera->Reg1_type == 0) // no return value
+                {
+                    return;
+                }
+
+                // If we return a value
+                SetRegisters(&DstRegisters, Opera->Reg2_type); auto& DstReg = (*DstRegisters)[Opera->Reg1]; // Get the register to return
+                if (Opera->Reg3_type == 0)
+                {
+                    *sp->Ret = std::move(DstReg);
+                }
+                else 
+                {
+                    *sp->Ret = DstReg.clone();
+                }
+                return; // Return from function
             }
             case ByteCodeEnum::mov:
             {
@@ -146,6 +168,7 @@ void Interpreter::ExecuteByteCode(const Function& Func)
                 SetRegisters(&Op2Registers, Opera->Reg3_type); auto& Op2Reg = (*DstRegisters)[Opera->Reg3];
 
                 DstReg = Op1Reg.pow(Op2Reg);
+                break;
             }
             case ByteCodeEnum::eq:
             {

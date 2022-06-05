@@ -1,5 +1,5 @@
 CXX         := g++
-CXX_FLAGS   := -std=c++20 -lstdc++fs -Wall -Wextra -Werror -static -static-libgcc -static-libstdc++ \
+CXX_FLAGS   := -std=c++20 -lstdc++fs -Wall -Wextra -Werror -Wfatal-errors -static -static-libgcc -static-libstdc++ \
    				-DBOOST_DLL_USE_STD_FS -DFMT_HEADER_ONLY -Llib -lbinary_io -ggdb
 
 BIN         := bin

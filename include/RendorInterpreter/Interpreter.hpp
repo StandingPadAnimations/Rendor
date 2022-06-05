@@ -29,7 +29,12 @@ class Interpreter
             sp = &Stack[0];
             File = &Input;
         };
-        void ExecuteByteCode(const Function& Func);
+
+        bool PrepareInterpreter();
+        void ExecuteMain()
+        {
+            ExecuteByteCode(CurrentModule->Main);
+        }
 
         /* ------------------------------ API functions ----------------------------- */
         int64_t GrabInt64FromStack();
@@ -46,6 +51,7 @@ class Interpreter
         void PopStack();
 
         void InitModule(RendorMethod *MethodList);
+        void ThrowStackTrace();
 
     private:
         std::array<StackFrame, 100> Stack;
@@ -60,12 +66,14 @@ class Interpreter
         GlobalFunctionTable Functions;
         GlobalVariableTable GlobalVariables;
 
-        bool PrepareInterpreter();
+        std::vector<std::string> Stacktrace;
+
         void CreateConstPool();
         void CreateStrConstPool();
         void ImportModules(){}; // ! UNSUPPORTED RIGHT NOW
         void CreateGVT();
         void ReadFunctions();
+        void ExecuteByteCode(const Function& Func);
 
         /* ---------------------------- Helper functions ---------------------------- */
         void AddModule()
@@ -80,6 +88,11 @@ class Interpreter
         {
             switch (Type)
             {
+                case 0:
+                {
+                    *Ptr = &CurrentModule->Pool.Pool;
+                    break;
+                }
                 case 1:
                 {
                     *Ptr = &CurrentModule->GlobalVars.Registers;
@@ -87,7 +100,7 @@ class Interpreter
                 }
                 case 2:
                 {
-                    *Ptr = &Stack[sp_int - 1].Registers;
+                    *Ptr = &sp->LastStackFrame->Registers;
                     break;
                 }
                 case 3:
