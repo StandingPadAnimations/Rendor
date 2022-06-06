@@ -9,40 +9,72 @@
 #include "RendorCompiler/BackEnd/IR/IR_Obj.hpp"
 
 using IR_Object = std::unique_ptr<IR::Obj>;
-using IR_Const = std::unique_ptr<IR::data::RendorConst>;
+using IR_vec    = std::vector<IR_Object>;
+using IR_Const  = std::unique_ptr<IR::data::RendorConst>;
+using IR_ptr    = IR::Obj*;
+using NameToReg = std::map<std::string, IR_ptr, std::less<>>;
+using Scope     = std::pair<NameToReg, IR::reg_mod::Frame*>;
 struct IR_Context
 {
-    std::map<std::string, std::uint16_t, std::less<>> Global_var_to_reg;
-    std::vector<std::map<std::string, std::uint16_t, std::less<>>> Var_to_Reg;
-    std::map<std::string, std::uint16_t, std::less<>> Func_to_Reg;
+    NameToReg             Global_var_to_reg;
+    std::vector<Scope>    Var_to_Reg;
+    NameToReg             Func_to_Reg;
     std::vector<IR_Const> ConstPool;
-    std::vector<IR_Object> IR;
+    IR_vec  IR;
 };
 
 namespace gen
 {
+    /*
+    *   Vec: represents the current scope
+    *   Dst: The destination register
+    */
     namespace data
     {
-        IR_Object CreateInt(std::int64_t val);
-        IR_Object CreateDouble(double val);
-        IR_Object CreateString(std::string val);
-        IR_Object CreateBool(bool val);
-        std::size_t AddtoPool(IR_Object Object);
+        IR_ptr CreateInt(std::int64_t val);
+        IR_ptr CreateDouble(double val);
+        IR_ptr CreateString(std::string val);
+        IR_ptr CreateBool(bool val);
+        IR_ptr CreateArray();
     }
     namespace var
     {
-        IR_Object MovVar(std::string Dst, std::size_t Src);
-        IR_Object CpyVar(std::string Dst, std::size_t Src);
-        IR_Object refVar(std::string Dst, std::size_t Src);
+        IR_ptr Name_to_Ptr(std::string_view Name);  // ! Returns nullptr if the name doesn't exist
+        IR_ptr Add_var    (std::string Name);       // ! Use this if you want to add a new variable
+        void   MovVar(IR_ptr Dst, IR_ptr Src, IR_vec* Vec = nullptr);
+        void   CpyVar(IR_ptr Dst, IR_ptr Src, IR_vec* Vec = nullptr);
+        void   refVar(IR_ptr Dst, IR_ptr Src, IR_vec* Vec = nullptr);
     }
     namespace func 
     {
-        IR_Object DefineFunc(std::string Name);
+        IR_ptr Name_to_Ptr(std::string_view Name);  // ! Returns nullptr if the name doesn't exist
+        IR_ptr DefineFunc(std::string Name);        // ! Use this if you want to add a new function
+        void   CallFunction(IR_ptr Func, std::vector<IR_ptr> Args, IR_ptr Ret = nullptr);
     }
     namespace mem 
     {
-        IR_Object Alloc(std::size_t Size);
-        IR_Object Free();
+        IR_ptr CreateTempRegister(); // ! Use this to create a temporary register
+        void   Alloc(IR_vec* Vec = nullptr);
+        void   Free (IR_vec* Vec = nullptr);
+    }
+    namespace math 
+    {
+        void   Add(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Sub(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Mul(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Div(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Pow(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Icr(IR_ptr Dst, IR_vec* Vec = nullptr);
+        void   Dcr(IR_ptr Dst, IR_vec* Vec = nullptr);
+    }
+    namespace logic 
+    {
+        void   Eq     (IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Not_Eq (IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Gr     (IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Less   (IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Gr_Eq  (IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
+        void   Less_Eq(IR_ptr Dst, IR_ptr Val1, IR_ptr Val2, IR_vec* Vec = nullptr);
     }
 }
 #endif // IR_CONTEXT_HPP

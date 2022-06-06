@@ -11,49 +11,23 @@
 
 namespace IR
 {
-    struct Obj  
-    {
-        IR_def Op;
-    };
+    struct Obj {IR_def Op;};
 
     namespace reg_mod 
     {
-        struct Mov : Obj 
-        {
-            Register Regs;
-        };
-        struct Mov_n : Obj 
-        {
-            Register Regs;
-        };
-        struct Cpy : Obj 
-        {
-            Register Regs;
-        };
-        struct Ref : Obj 
-        {
-            Register Regs;
-        };
+        struct Frame : Obj {std::size_t Size;};
+        struct Mov   : Obj {Register Regs;};
+        struct Mov_n : Obj {Register Regs;};
+        struct Cpy   : Obj {Register Regs;};
+        struct Ref   : Obj {Register Regs;};
     }
 
     namespace stk_mod 
     {
-        struct Mov : Obj 
-        {
-            Reg64 Regs;
-        };
-        struct Mov_n : Obj 
-        {
-            Reg64 Regs;
-        };
-        struct Cpy : Obj 
-        {
-            Reg64 Regs;
-        };
-        struct Ref : Obj 
-        {
-            Reg64 Regs;
-        };
+        struct Mov   : Obj {Reg64 Regs;};
+        struct Mov_n : Obj {Reg64 Regs;};
+        struct Cpy   : Obj {Reg64 Regs;};
+        struct Ref   : Obj {Reg64 Regs;};
     }
 
     namespace var
@@ -82,51 +56,26 @@ namespace IR
     
     namespace math
     {
-        struct Operation : Obj  
-        {
-            Register Regs;
-        };
-        struct Increment : Obj 
-        {
-            Reg64 Regs;
-        };
-        struct Decrement : Obj 
-        {
-            Reg64 Regs;
-        };
+        struct Operation : Obj {Register Regs;};
+        struct Increment : Obj {Reg64 Regs;};
+        struct Decrement : Obj {Reg64 Regs;};
     }
 
     namespace data 
     {
-        struct RendorConst : Obj {};
-        struct RendorInt : RendorConst
-        {
-            std::int64_t Val;
-        };
-        struct RendorDouble : RendorConst
-        {
-            double Val;
-        };
-        struct RendorString : RendorConst
-        {
-            std::string Val;
-        };
-        struct RendorBool : RendorConst
-        {
-            bool Val;
-        };
-        struct RendorNone : RendorConst
-        {
-
-        };
+        struct RendorConst  : Obj         {std::size_t Loc;};
+        struct RendorInt    : RendorConst {std::int64_t Val;};
+        struct RendorDouble : RendorConst {double Val;};
+        struct RendorString : RendorConst {std::string Val;};
+        struct RendorBool   : RendorConst {bool Val;};
+        struct RendorArray  : RendorConst {std::vector<RendorConst> Val;};
+        struct RendorRef    : RendorConst {Obj* Val;};
+        struct RendorNone   : RendorConst {};
     }
 
     namespace logic 
     {
-        struct RendorLogic : Obj 
-        {
-            Register Reg;
-        };
+        struct RendorLogic : Obj {Register Reg;};
     }
 }
 #endif // IR_OBJ_HPP

@@ -6,13 +6,13 @@ BIN         := bin
 INCLUDE     := -Iinclude
 
 SRC         := src/RendorCompiler
-DIRS        := BackEnd/IR BackEnd/Compiler InspectAndOptimize Lexer Logic Parser API
 
 OBJDIR      := bin/RendorCompiler/ObjectFiles
 EXECUTABLE  := RendorCompiler/rendorc
 
-SOURCES     := $(wildcard $(SRC)/*.cpp) $(foreach Directory, $(DIRS), $(wildcard $(SRC)/$(Directory)/*.cpp))
+SOURCES     := $(wildcard $(SRC)/*.cpp) $(wildcard $(SRC)/**/*.cpp)
 OBJECTS     := $(patsubst $(SRC)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+BOOSTSYS    := boost_system-mt
 
 all: $(BIN)/$(EXECUTABLE)
 
@@ -22,11 +22,15 @@ run: clean all
 
 $(BIN)/$(EXECUTABLE): $(OBJECTS)
 	@echo 
-	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -o $@ -l$(BOOSTSYS) -Llib -lbinary_io
+	@echo 
 
 $(OBJDIR)/%.o: $(SRC)/%.cpp 
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
 
+$(OBJDIR)/**/%.o: $(SRC)/**/%.cpp 
+	$(CXX) $(CXX_FLAGS) $(INCLUDE) $^ -c -o $@ 
+
 clean:
-	for dir in $(DIRS); do rm $(OBJDIR)/$$dir/*.o; done
 	-rm $(OBJDIR)/*.o
+	-rm $(OBJDIR)/**/*.o

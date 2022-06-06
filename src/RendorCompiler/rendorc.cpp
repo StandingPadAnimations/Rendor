@@ -1,6 +1,4 @@
 /*
-
-
 بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
 ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ
 ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
@@ -56,6 +54,9 @@ While the extension isn't required, it does make the code more readable in my op
 #include <iostream>
 
 #include "RendorEngine.hpp"
+
+#include <fmt/core.h>
+#include <fmt/color.h>
 
 int main (int argc, char *argv[])
 {

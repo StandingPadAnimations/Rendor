@@ -1,6 +1,8 @@
-#include "RendorEngine.hpp"
+#include <filesystem>
+
 #include "RendorCompiler/Lexer/Lexer.hpp"
-#include "RendorCompiler/Parser/Parser.hpp"
+#include "RendorEngine.hpp"
+
 #include <fmt/color.h>
 
 // Overload of new for debugging
@@ -19,7 +21,7 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     fs::path AbsPath(FileInput);
     std::string AbsPathExt = AbsPath.extension().string();
     std::ios_base::sync_with_stdio(false);
-    OutputPath = AbsPath.parent_path().string();
+    std::string OutputPath = AbsPath.parent_path().string();
 
     // * Checks for seeing if the file is compatible with the interpreter
     if (AbsPathExt != ".ren")
@@ -81,30 +83,28 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
 
         // Tokenizes the AllCode string
         Lex::Lexer RenLexer;
-        Parser RenParser;
-        ASTInspector RenASTInspector;
 
         fmt::print(fg(fmt::color::green), "Tokenizing...\n");
         Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
 
-        // Parses
-        fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
-        RenParser.ASTGeneration(Tokens); 
+    //     // Parses
+    //     fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
+    //     RenParser.ASTGeneration(Tokens); 
 
-        fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
-        for (const auto& Node : (*Parser::Script.GlobalBody))
-        {
-            if (Node)
-            {
-                RenASTInspector.InspectAST(Node);
-                Node->CodeGen();
-            }
-        }
+    //     fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
+    //     for (const auto& Node : (*Parser::Script.GlobalBody))
+    //     {
+    //         if (Node)
+    //         {
+    //             RenASTInspector.InspectAST(Node);
+    //             Node->CodeGen();
+    //         }
+    //     }
     }
 
-    fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
-    std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
-    Parser::Script.CompileByteCode(OutputPath + AbsPathCrenOutput);
+    // fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
+    // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
+    // Parser::Script.CompileByteCode(OutputPath + AbsPathCrenOutput);
 
     if (DebugMode)
     { 
@@ -113,10 +113,10 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
         {
             fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
         }
-        fmt::print("\n");
-        for (auto const& command : RendorEngineCompiler::ByteCode)
-        {
-            fmt::print(fg(fmt::color::green), "{}\n", command);
-        }
+        // fmt::print("\n");
+        // for (auto const& command : RendorEngineCompiler::ByteCode)
+        // {
+        //     fmt::print(fg(fmt::color::green), "{}\n", command);
+        // }
     }
 }
