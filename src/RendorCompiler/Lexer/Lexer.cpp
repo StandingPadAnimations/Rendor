@@ -110,7 +110,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
 
                 /* ------------------------- Tokenization of buffer ------------------------- */
                 if 
-                ((Buffer.find_first_not_of(" \n\r;,(){}=^*/+-><") == std::string::npos) &&
+                ((Buffer.find_first_not_of(" \n\r;,(){}=^*/+-><:") == std::string::npos) &&
                 (LexerBufferID != BufferID::Comment))
                 {
                     
@@ -275,6 +275,12 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                         break;
                     }
 
+                    case ':':
+                    {
+                        Tokens.emplace_back(Token::COLON, ":");
+                        break;
+                    }
+
                     case '=':
                     {
                         Tokens.emplace_back(Token::EQUAL, "=");
@@ -391,6 +397,7 @@ bool Lexer::LexerCharCheck(char Char)
     return
     (Char   == ' ')   ||
     (Char   == ';')   ||
+    (Char   == ':')   ||
     (Char   == ',')   ||
     (Char   == '(')   ||
     (Char   == ')')   ||

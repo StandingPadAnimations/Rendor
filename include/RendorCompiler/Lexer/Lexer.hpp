@@ -40,6 +40,7 @@ namespace Lex{
         NEWLINE, 
         COMMA,
         SEMICOLON,
+        COLON,
         BIOP,
         UnOp,
 
@@ -58,22 +59,22 @@ namespace Lex{
             
         private:
             // Keywords to check for 
-            std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern", "export"};
-            std::vector<std::string_view> Attributes {"~module_destroy"};
-            std::vector<std::string_view> Types {"i64", "double", "string", "bool", "void"};
+            const std::vector<std::string_view> Keywords {"while", "if", "return", "edef", "else", "~forward", "cimport", "namespace", "extern", "export", "let"};
+            const std::vector<std::string_view> Attributes {"~module_destroy"};
+            const std::vector<std::string_view> Types {"i64", "double", "string", "bool", "void"};
 
             // Operators to check for 
-            std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
+            const std::array<std::string_view, 4> Operators {"and", "or", "not", "is"};
 
-            std::map<std::string_view, char, std::less<>> BiOpTokens   {{{"="}, '='},
-                                                                        {{">"}, '='},
-                                                                        {{"<"}, '='},
-                                                                        {{"!"}, '='},
-                                                                        {{":"}, ':'},
-                                                                        {{"-"}, '>'}};
+            const std::map<std::string_view, char, std::less<>> BiOpTokens {{{"="}, '='},
+                                                                            {{">"}, '='},
+                                                                            {{"<"}, '='},
+                                                                            {{"!"}, '='},
+                                                                            {{":"}, ':'},
+                                                                            {{"-"}, '>'}};
 
-            std::map<std::string_view, char, std::less<>> UnOpTokens   {{{"+"}, '+'},
-                                                                        {{"-"}, '-'}};
+            const std::map<std::string_view, char, std::less<>> UnOpTokens {{{"+"}, '+'},
+                                                                            {{"-"}, '-'}};
 
             enum class BufferID 
             {
