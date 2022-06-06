@@ -2,5 +2,6 @@ cimport "io"
 
 edef main() -> void
 {
-    std::echo("Hello World")
+    let foo: string = "Hello World"
+    std::echo(foo)
 }

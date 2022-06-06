@@ -119,7 +119,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     {
                         // Check if it's compatible with the current characther 
                         std::string BufferAsString{Buffer};
-                        if (BiOpTokens[BufferAsString] == Code[Char])
+                        if (BiOpTokens.at(BufferAsString) == Code[Char])
                         {
                             //cppcheck-suppress unassignedVariable
                             auto& [Token, value] = Tokens.back();
@@ -140,7 +140,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     {
                         // Check if it's compatible with the current characther 
                         std::string BufferAsString{Buffer};
-                        if (UnOpTokens[BufferAsString] == Code[Char])
+                        if (UnOpTokens.at(BufferAsString) == Code[Char])
                         {
                             //cppcheck-suppress unassignedVariable
                             auto& [Token, value] = Tokens.back();

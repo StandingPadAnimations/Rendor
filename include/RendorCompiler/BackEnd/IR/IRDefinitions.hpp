@@ -36,6 +36,7 @@ enum class IR_Type
     BOOL,
     REFERENCE,
     VOID,
+    RET,
 };
 
 #endif // IR_DEFINITIONS_HPP

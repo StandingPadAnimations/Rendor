@@ -1,13 +1,14 @@
 #ifndef RENDOR_BASE_NODE_HPP
 #define RENDOR_BASE_NODE_HPP
-
+#include "RendorCompiler/BackEnd/IR/IRDefinitions.hpp"
+#include <fmt/core.h>
 namespace nodes
 {
     enum class NodeType
     {
         BASE_NODE,
         BODY,
-        
+
         VARIABLE_ASSIGNMENT,
         VARIABLE_REFERENCE,
 
@@ -20,6 +21,8 @@ namespace nodes
         DOUBLE,
         STRING,
         BOOL,
+        VOID,
+        CALL_RET,
 
         BIOP,
     };
@@ -27,8 +30,10 @@ namespace nodes
     struct Node 
     {
         NodeType Type = NodeType::BASE_NODE;
-
-        explicit Node(NodeType input_Type) : Type(input_Type) {}
+        Node() = default;
+        inline static std::size_t Depth = 0;
+        explicit Node(NodeType input_Type) : Type(input_Type){}
+        virtual void PrintAST() = 0;
     };
 }
 

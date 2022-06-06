@@ -1,6 +1,7 @@
 #include <filesystem>
 
 #include "RendorCompiler/Lexer/Lexer.hpp"
+#include "RendorCompiler/Parser/Parser.hpp"
 #include "RendorEngine.hpp"
 
 #include <fmt/color.h>
@@ -77,19 +78,19 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     }
 
     std::vector<std::pair<Lex::Token, std::string>> Tokens;
-    {
-        boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
-        boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
+    boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
+    boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
 
-        // Tokenizes the AllCode string
-        Lex::Lexer RenLexer;
+    // Tokenizes the AllCode string
+    Lex::Lexer RenLexer;
 
-        fmt::print(fg(fmt::color::green), "Tokenizing...\n");
-        Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
+    fmt::print(fg(fmt::color::green), "Tokenizing...\n");
+    Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
+    RendorParser Parser{&Tokens};
 
-    //     // Parses
-    //     fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
-    //     RenParser.ASTGeneration(Tokens); 
+    // Parses
+    fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
+    Parser.PrimaryParse();
 
     //     fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");
     //     for (const auto& Node : (*Parser::Script.GlobalBody))
@@ -100,7 +101,7 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     //             Node->CodeGen();
     //         }
     //     }
-    }
+    
 
     // fmt::print(fg(fmt::color::green), "Outputing bytecode...........\n");
     // std::string AbsPathCrenOutput = "/" + AbsPath.filename().replace_extension(".Cren").string();
@@ -108,15 +109,12 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
 
     if (DebugMode)
     { 
-        fmt::print(fg(fmt::color::green), "----------------------------DEBUG MODE----------------------------\n");
+        fmt::print(fg(fmt::color::green), "----------------------------TOKENS----------------------------\n");
         for (auto const& [token, value] : Tokens)
         {
             fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
         }
-        // fmt::print("\n");
-        // for (auto const& command : RendorEngineCompiler::ByteCode)
-        // {
-        //     fmt::print(fg(fmt::color::green), "{}\n", command);
-        // }
+        fmt::print(fg(fmt::color::green), "----------------------------AST----------------------------\n");
+        Parser.Main.PrintTree();
     }
 }
