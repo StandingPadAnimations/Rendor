@@ -34,7 +34,8 @@ enum class IR_Type
     DOUBLE,
     STRING,
     BOOL,
-    REFERENCE
+    REFERENCE,
+    VOID,
 };
 
 #endif // IR_DEFINITIONS_HPP

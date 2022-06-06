@@ -1,6 +1,6 @@
 cimport "io"
 
-edef main()
+edef main() -> void
 {
     std::echo("Hello World")
 }
