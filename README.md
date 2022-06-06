@@ -14,10 +14,9 @@ Rendor is the successor to the EnderKnight programming language. It aims to fix 
 * Better if statements
 * Operators such as or, and, and modulo(%)
 * Bytecode -> WIP
-* Better lexer
+* Better lexer -> Done
 * Better parser
 * C++20 features(in the interpreter and compiler)
-* C++ transpiling -> perhaps possible
 * Incrementing and decrementing -> WIP
 
 Officially this is called the Rendor Engine, named after the term render engine(since autocorrect always corrects Rendor to render)
