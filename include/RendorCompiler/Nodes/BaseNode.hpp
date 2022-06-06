@@ -34,6 +34,11 @@ namespace nodes
         inline static std::size_t Depth = 0;
         explicit Node(NodeType input_Type) : Type(input_Type){}
         virtual void PrintAST() = 0;
+        void PrintDepth(std::size_t offset = 0)
+        {
+            for (std::size_t i = 0; i < Depth+offset; ++i)
+                fmt::print("----");
+        }
     };
 }
 

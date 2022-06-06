@@ -26,14 +26,12 @@ namespace nodes
 
             for (const auto& Arg : Args)
             {
-                for (std::size_t i = 0; i < Depth; ++i)
-                    fmt::print("----");
+                PrintDepth();
                 Arg->PrintAST();
             }
             if (!Args.empty())
             {
-                for (std::size_t i = 0; i < Depth+1; ++i)
-                    fmt::print("----");
+                PrintDepth(1);
             }
             fmt::print(")\n");
             FunctionBody.PrintAST();
@@ -53,14 +51,12 @@ namespace nodes
                 if (!Args.empty())
                     fmt::print("\n");
 
-                for (std::size_t i = 0; i < Depth+1; ++i)
-                    fmt::print("----");
+                PrintDepth(1);
                 Arg->PrintAST();
             }
             if (!Args.empty())
             {
-                for (std::size_t i = 0; i < Depth; ++i)
-                    fmt::print("----");
+                PrintDepth();
             }
             fmt::print(")\n");
         }

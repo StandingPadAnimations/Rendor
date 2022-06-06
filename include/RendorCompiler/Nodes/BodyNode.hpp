@@ -17,8 +17,7 @@ namespace nodes
             ++Depth;
             for (const auto& Node : Nodes)
             {
-                for (std::size_t i = 0; i < Depth; ++i)
-                    fmt::print("----");
+                PrintDepth();
                 Node->PrintAST();
             }
             --Depth;
