@@ -83,7 +83,7 @@ void RendorParser::ParseIdentifer()
         }
         default:
         {
-            error::CompilerRendorException(fmt::format("Err: Unexpected {} token; Line {}", CurrentValue, CurrentLine), CurrentLine);
+            throw error::CompilerRendorException(fmt::format("Err: Unexpected {} token; Line {}", CurrentValue, CurrentLine), CurrentLine);
         }
     }
 }
