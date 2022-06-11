@@ -68,7 +68,7 @@ class RendorParser
                 {
                     ++CurrentLine;
                 }
-            } while (CurrentToken != LexTok::NEWLINE);
+            } while (CurrentToken == LexTok::NEWLINE);
         };
 
         void AddToMain(std::unique_ptr<nodes::Node> Node)
