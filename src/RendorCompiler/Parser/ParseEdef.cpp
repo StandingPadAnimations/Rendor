@@ -1,9 +1,8 @@
 #include "RendorCompiler/Parser/Parser.hpp"
 
 
-void RendorParser::ParseEdef()
+void RendorParser::ParseEdef(const std::string& Identifier)
 {
-    std::string_view Identifier = CurrentValue;
     auto Node = std::make_unique<nodes::FunctionDefinition>();
     Node->Name = std::string{Identifier};
     
@@ -40,13 +39,13 @@ void RendorParser::ParseEdef()
     GetNextTok();
     if (CurrentToken != LexTok::BIOP)
     {
-        throw error::CompilerRendorException(fmt::format("Err: Expected binary operator, got {}; Line {}", 
+        throw error::CompilerRendorException(fmt::format("Err: Expected -> operator, got {}; Line {}", 
             CurrentValue, CurrentLine), 
             CurrentLine);
     }
     if (CurrentValue != "->")
     {
-        throw error::CompilerRendorException(fmt::format("Err: Expected arrow operator, got {}; Line {}", 
+        throw error::CompilerRendorException(fmt::format("Err: Expected -> operator, got {}; Line {}", 
             CurrentValue, CurrentLine), 
             CurrentLine);
     }
@@ -61,10 +60,6 @@ void RendorParser::ParseEdef()
 
     /* ---------------------------------- Body ---------------------------------- */
     GetNextTok();
-    if (CurrentToken == LexTok::NEWLINE)
-    {
-        GetNextTok();
-    }
     if (CurrentToken != LexTok::LBRACE)
     {
         throw error::CompilerRendorException(fmt::format("Err: Expected {{, got {}; Line {}", 
@@ -75,4 +70,5 @@ void RendorParser::ParseEdef()
     PrimaryParse();
     RemoveScope();
     AddToMain(std::move(Node));
+    GetNextTok();
 }

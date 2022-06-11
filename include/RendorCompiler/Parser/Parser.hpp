@@ -28,6 +28,8 @@ class RendorParser
         std::vector<std::vector<std::unique_ptr<nodes::Node>>*> ScopeList;
         std::vector<std::unique_ptr<nodes::Node>>* Scope;
 
+        std::map<std::string, IR_Type, std::less<>> Variables;
+
         /* ---------------------------------- Types --------------------------------- */
         const std::map<std::string_view, IR_Type, std::less<>> Str_to_Type 
         {
@@ -38,6 +40,15 @@ class RendorParser
             {"bool",   IR_Type::BOOL},
         };
 
+        const std::map<IR_Type, std::string_view, std::less<>> Type_to_Str 
+        {
+            {IR_Type::VOID,   "void"},
+            {IR_Type::INT,    "i64"},
+            {IR_Type::DOUBLE, "double"},
+            {IR_Type::STRING, "string"},
+            {IR_Type::BOOL,   "bool"},
+        };
+
         /* -------------------------- Token and value pair -------------------------- */
         LexTok CurrentToken{};
         std::string_view CurrentValue{};
@@ -45,8 +56,19 @@ class RendorParser
         /* -------------------------------- Functions ------------------------------- */
         void GetNextTok()
         {
-            std::tie(CurrentToken, CurrentValue) = *it;
-            ++it;
+            do
+            {
+                if (it == Tokens->end())
+                {
+                    return;
+                }
+                std::tie(CurrentToken, CurrentValue) = *it;
+                ++it;
+                if (CurrentToken == LexTok::NEWLINE)
+                {
+                    ++CurrentLine;
+                }
+            } while (CurrentToken != LexTok::NEWLINE);
         };
 
         void AddToMain(std::unique_ptr<nodes::Node> Node)
@@ -66,8 +88,8 @@ class RendorParser
             ScopeList.pop_back();
         }
 
-        void ParseIdentifer();
-        void ParseEdef();
+        void ParseIdentifer(const std::string& Identifier);
+        void ParseEdef(const std::string& Identifier);
         ConstPtr ParseConstant();
 };
 

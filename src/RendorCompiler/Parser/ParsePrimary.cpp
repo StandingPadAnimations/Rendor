@@ -6,23 +6,21 @@ void RendorParser::PrimaryParse()
     {
         switch (CurrentToken)
         {
-            case LexTok::NEWLINE:
+            case LexTok::RBRACE:
             {
-                ++CurrentLine;
-                GetNextTok();
-                break;
+                return;
             }
             case LexTok::KEYWORD:
             {
                 if (CurrentValue == "let")
                 {
                     GetNextTok();
-                    ParseIdentifer();
+                    ParseIdentifer(std::string{CurrentValue});
                 }
                 else if (CurrentValue == "edef")
                 {
                     GetNextTok();
-                    ParseEdef();
+                    ParseEdef(std::string{CurrentValue});
                 }
                 else 
                 {
@@ -32,7 +30,7 @@ void RendorParser::PrimaryParse()
             }
             case LexTok::IDENTIFIER:
             {
-                ParseIdentifer();
+                ParseIdentifer(std::string{CurrentValue});
                 break;
             }
             default:

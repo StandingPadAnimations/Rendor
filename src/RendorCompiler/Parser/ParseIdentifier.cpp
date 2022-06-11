@@ -1,9 +1,10 @@
 #include "RendorCompiler/Parser/Parser.hpp"
+#include <fmt/color.h>
+#include <fmt/core.h>
 #include <memory>
 
-void RendorParser::ParseIdentifer()
+void RendorParser::ParseIdentifer(const std::string& Identifier)
 {
-    std::string Identifier = std::string{CurrentValue};
     GetNextTok();
     switch (CurrentToken)
     {
@@ -50,6 +51,8 @@ void RendorParser::ParseIdentifer()
                     CurrentLine);
             }
             Node->Val = std::move(Val);
+
+            Variables[Node->Name] = Node->ConstType; // add to vector for mangling
             AddToMain(std::move(Node));
             break;
         }
@@ -75,11 +78,32 @@ void RendorParser::ParseIdentifer()
                             CurrentValue, CurrentLine), 
                             CurrentLine);
                     }
+
+                    if (Arg->Type == nodes::NodeType::VARIABLE_REFERENCE)
+                    {
+                        auto& Arg_r = static_cast<nodes::Reference&>(*Arg);
+                        auto Arg_r_Type = Variables[Arg_r.Val];
+                        Node->Name = fmt::format("{}{}_", Node->Name, Type_to_Str.at(Arg_r_Type));
+                    }
+                    else
+                    {
+                        Node->Name = fmt::format("{}{}_", Node->Name, Type_to_Str.at(Arg->Type_ir));
+                    }
                     Node->Args.push_back(std::move(Arg));
                 }
             } while (true);
             AddToMain(std::move(Node));
             break;
+        }
+        case LexTok::BIOP:
+        {
+            if (CurrentValue == "::")
+            {
+                GetNextTok();
+                ParseIdentifer(fmt::format("{}::{}_", Identifier, CurrentValue));
+                break;
+            }
+            FALLTHROUGH;
         }
         default:
         {
