@@ -92,6 +92,10 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     continue;
                 }
                 
+                if (EndIndex < StartIndex)
+                {
+                    EndIndex = StartIndex + 1;
+                }
                 std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
 
                 if (Buffer.size() > 1)
