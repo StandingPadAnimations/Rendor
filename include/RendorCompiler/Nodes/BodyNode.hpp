@@ -22,6 +22,13 @@ namespace nodes
             }
             --Depth;
         }
+        void CodeGen() final 
+        {
+            for (const auto& Node : Nodes)
+            {
+                Node->CodeGen();
+            }
+        }
     };
 
     struct ScriptBody : Node
@@ -36,6 +43,13 @@ namespace nodes
                 Node->PrintAST();
             }
             --Depth;
+        }
+        void CodeGen() final 
+        {
+            for (const auto& Node : Nodes)
+            {
+                Node->CodeGen();
+            }
         }
     };
 }

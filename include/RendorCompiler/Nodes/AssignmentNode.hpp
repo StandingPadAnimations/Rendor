@@ -14,6 +14,13 @@ namespace nodes
         void PrintAST() final 
         {
             fmt::print("Assignment: {} of type {}\n", Name, ConstType);
+            PrintDepth(1);
+            Val->PrintAST();
+        }
+
+        void CodeGen() final
+        {
+            
         }
     };
 }

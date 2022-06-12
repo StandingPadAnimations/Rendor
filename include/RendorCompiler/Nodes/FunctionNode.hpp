@@ -36,29 +36,9 @@ namespace nodes
             fmt::print(")\n");
             FunctionBody.PrintAST();
         }
-    };
-
-    struct FunctionCall : Node 
-    {
-        std::string Name{};
-        std::vector<std::unique_ptr<Constant>> Args;
-        FunctionCall() : Node(NodeType::FUNCTION_CALL){}
-        void PrintAST() final 
+        void CodeGen()
         {
-            fmt::print("Function Call: {} (", Name);
-            for (const auto& Arg : Args)
-            {
-                if (!Args.empty())
-                    fmt::print("\n");
-
-                PrintDepth(1);
-                Arg->PrintAST();
-            }
-            if (!Args.empty())
-            {
-                PrintDepth();
-            }
-            fmt::print(")\n");
+            
         }
     };
 }

@@ -1,6 +1,7 @@
 #ifndef RENDOR_BASE_NODE_HPP
 #define RENDOR_BASE_NODE_HPP
-#include "RendorCompiler/BackEnd/IR/IRDefinitions.hpp"
+#include "RendorCompiler/BackEnd/IR/IRContext.hpp"
+#include "RendorEngine.hpp"
 #include <fmt/core.h>
 namespace nodes
 {
@@ -33,6 +34,7 @@ namespace nodes
         Node() = default;
         inline static std::size_t Depth = 0;
         explicit Node(NodeType input_Type) : Type(input_Type){}
+        virtual void CodeGen() = 0;
         virtual void PrintAST() = 0;
         void PrintDepth(std::size_t offset = 0)
         {

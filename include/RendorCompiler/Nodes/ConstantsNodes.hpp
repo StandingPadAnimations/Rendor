@@ -1,5 +1,6 @@
 #ifndef RENDOR_CONSTANTS_NODES_HPP
 #define RENDOR_CONSTANTS_NODES_HPP
+#include <algorithm>
 #include <string>
 #include <cstdint>
 #include <memory>
@@ -13,7 +14,8 @@ namespace nodes
         Constant() = default;
         IR_Type Type_ir{};
         explicit Constant(NodeType input_Type, IR_Type input_Type_ir) : Node(input_Type), Type_ir(input_Type_ir){}
-        void PrintAST(){};
+        virtual void CodeGen() override {}
+        void PrintAST() override {};
     };
     struct Int : Constant
     {
@@ -68,14 +70,32 @@ namespace nodes
             fmt::print("Reference: {}\n", Val);
         }
     };
-    struct FunctionCall_Ret : Constant
+    struct FunctionCall : Constant 
     {
-        std::unique_ptr<FunctionCall> Call;
-        FunctionCall_Ret() : Constant(NodeType::CALL_RET, IR_Type::RET){} 
+        std::string Name{};
+        std::vector<std::unique_ptr<Constant>> Args;
+        FunctionCall() : Constant(NodeType::FUNCTION_CALL, IR_Type::RET){}
         void PrintAST() final 
         {
-            fmt::print("FunctionCall_Ret\n");
+            fmt::print("Function Call: {} (", Name);
+            for (const auto& Arg : Args)
+            {
+                if (!Args.empty())
+                    fmt::print("\n");
+
+                PrintDepth(1);
+                Arg->PrintAST();
+            }
+            if (!Args.empty())
+            {
+                PrintDepth();
+            }
+            fmt::print(")\n");
         }
+        void CodeGen() override
+        {
+            
+        };
     };
 }
 
