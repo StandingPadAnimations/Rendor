@@ -17,7 +17,7 @@ namespace nodes
         ImportType Type{};
         void PrintAST()
         {
-            fmt::print("Importing {} of type {}", Import, Type);
+            fmt::print("Importing {} of type {}\n", Import, Type);
         }
     };
 }
