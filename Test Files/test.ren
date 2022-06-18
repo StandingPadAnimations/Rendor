@@ -1,4 +1,4 @@
-cimport "io"
+import "io"
 
 edef main() -> void
 {

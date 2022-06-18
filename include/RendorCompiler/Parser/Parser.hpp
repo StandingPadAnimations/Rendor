@@ -90,6 +90,7 @@ class RendorParser
 
         void ParseIdentifer(const std::string& Identifier);
         void ParseEdef(const std::string& Identifier);
+        void ParseImport(const std::string& Identifier);
         ConstPtr ParseConstant();
 };
 

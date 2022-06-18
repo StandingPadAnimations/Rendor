@@ -12,19 +12,18 @@ void RendorParser::PrimaryParse()
             }
             case LexTok::KEYWORD:
             {
+                GetNextTok();
                 if (CurrentValue == "let")
                 {
-                    GetNextTok();
                     ParseIdentifer(std::string{CurrentValue});
                 }
                 else if (CurrentValue == "edef")
                 {
-                    GetNextTok();
                     ParseEdef(std::string{CurrentValue});
                 }
-                else 
+                else if (CurrentValue == "import")
                 {
-                    GetNextTok();
+                    ParseImport(std::string{CurrentValue});
                 }
                 break;
             }
