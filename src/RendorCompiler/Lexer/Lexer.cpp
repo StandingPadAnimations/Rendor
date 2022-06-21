@@ -122,7 +122,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     if (BiOpTokens.contains(Buffer))
                     {
                         // Check if it's compatible with the current characther 
-                        std::string BufferAsString{Buffer};
+                        const std::string BufferAsString{Buffer};
                         if (BiOpTokens.at(BufferAsString) == Code[Char])
                         {
                             //cppcheck-suppress unassignedVariable
@@ -143,7 +143,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     else if (UnOpTokens.contains(Buffer))
                     {
                         // Check if it's compatible with the current characther 
-                        std::string BufferAsString{Buffer};
+                        const std::string BufferAsString{Buffer};
                         if (UnOpTokens.at(BufferAsString) == Code[Char])
                         {
                             //cppcheck-suppress unassignedVariable
@@ -370,7 +370,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     if (Code[Char] == CharToCheck)
                     {
                         StartIndex = Code.find_first_not_of(CharToCheck, StartIndex); // To avoid tokenizing the ", ', or ` that starts a string
-                        std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
+                        const std::string_view Buffer(Code.begin() + StartIndex, Code.begin() + (EndIndex));
                         
                         if (StartIndex >= EndIndex) // The only way this can happen is when a "" occurs
                         {

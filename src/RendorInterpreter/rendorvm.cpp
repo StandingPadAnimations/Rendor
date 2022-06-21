@@ -61,12 +61,8 @@ int main (int argc, char *argv[])
         #if DEBUGMODE
         std::cin.get();
         #endif
-        std::vector<std::string> Arguments;
-        if (argc > 1) 
-        {
-            Arguments.assign(argv, argv + argc);
-        } 
-        else
+        const std::vector<std::string> Arguments(argv + 1, argv + argc);
+        if (Arguments.empty())
         {
             throw error::RendorException("Need a file input");
         }

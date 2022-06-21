@@ -1,6 +1,8 @@
 #ifndef RENDOR_INTERPRETER_HPP
 #define RENDOR_INTERPRETER_HPP
 
+#define RENDOR_CALL_STACK_LIMIT 100
+
 #include <fmt/core.h>
 #include <vector>
 #include <array>
@@ -10,7 +12,6 @@
 
 #include "RendorInterpreter/Objects/Constant.hpp"
 #include "RendorInterpreter/Objects/Stackframe.hpp"
-#include "RendorInterpreter/Objects/GFT_GVT.hpp"
 #include "RendorInterpreter/Objects/Modules.hpp"
 #include "RendorAPI/RendorAPI.h"
 #include "CrenParsing/Header.hpp"
@@ -28,13 +29,12 @@ class Interpreter
         explicit Interpreter(binary_io::file_istream& Input)
         {
             File = &Input;
-            ConstStack.reserve(10);
         };
 
         bool PrepareInterpreter();
         void ExecuteMain()
         {
-            ExecuteByteCode(CurrentModule->Main);
+            ExecuteByteCode(CurrentModule->Program);
         }
 
         /* ------------------------------ API functions ----------------------------- */
@@ -61,7 +61,7 @@ class Interpreter
         }
 
     private:
-        std::array<StackFrame, 100> Stack;
+        std::array<StackFrame, RENDOR_CALL_STACK_LIMIT> Stack;
         StackFrame* sp = nullptr;
         std::size_t sp_int = 0;
         
@@ -70,18 +70,14 @@ class Interpreter
         CrenHeader header;
 
         std::vector<Module> Modules;
-        GlobalFunctionTable Functions;
-        GlobalVariableTable GlobalVariables;
 
         std::vector<std::string> Stacktrace;
-        std::vector<Constant> ConstStack;
 
         void CreateConstPool();
         void CreateStrConstPool();
         void ImportModules(){}; // ! UNSUPPORTED RIGHT NOW
-        void CreateGVT();
         void ReadFunctions();
-        void ExecuteByteCode(const Function& Func);
+        void ExecuteByteCode(const std::vector<Operation>& Func);
 
         /* ---------------------------- Helper functions ---------------------------- */
         void AddModule()
@@ -114,11 +110,6 @@ class Interpreter
                 case 3:
                 {
                     *Ptr = &sp->Registers;
-                    break;
-                }
-                case 4:
-                {
-                    *Ptr = &ConstStack;
                     break;
                 }
                 default:

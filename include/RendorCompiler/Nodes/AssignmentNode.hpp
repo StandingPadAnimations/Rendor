@@ -8,7 +8,7 @@ namespace nodes
     {
         std::string Name{};
         std::unique_ptr<Constant> Val;
-        IR_Type ConstType{};
+        RendorIR::IR_Type ConstType{};
         Assignment() : Node(NodeType::VARIABLE_ASSIGNMENT){}
 
         void PrintAST() final 

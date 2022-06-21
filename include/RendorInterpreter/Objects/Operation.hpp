@@ -19,12 +19,6 @@ struct Operation
     /* ----------------------------------- JMP ---------------------------------- */
     std::uint64_t Reg_64 = 0;
     std::uint8_t  Reg_64_type_8 = 0;
-
-    /* ----------------------------- Function Calls ----------------------------- */
-    std::uint16_t RetReg = 0;
-    std::uint32_t FunctionReg = 0;
-    std::uint8_t  Ret_or_not = 0;
-    std::uint8_t  Ret_type = 0;
 };
 
 #endif // RENDOR_OPERATION_HPP

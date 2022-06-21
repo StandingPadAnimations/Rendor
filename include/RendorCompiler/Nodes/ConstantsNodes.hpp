@@ -12,15 +12,15 @@ namespace nodes
     struct Constant : Node 
     {
         Constant() = default;
-        IR_Type Type_ir{};
-        explicit Constant(NodeType input_Type, IR_Type input_Type_ir) : Node(input_Type), Type_ir(input_Type_ir){}
+        RendorIR::IR_Type Type_ir{};
+        explicit Constant(NodeType input_Type, RendorIR::IR_Type input_Type_ir) : Node(input_Type), Type_ir(input_Type_ir){}
         virtual void CodeGen() override {}
         void PrintAST() override {};
     };
     struct Int : Constant
     {
         std::int64_t Val{};
-        Int() : Constant(NodeType::INT, IR_Type::INT){}
+        Int() : Constant(NodeType::INT, RendorIR::IR_Type::INT){}
         void PrintAST() final 
         {
             fmt::print("Int: {}\n", Val);
@@ -29,7 +29,7 @@ namespace nodes
     struct Double : Constant 
     {
         double Val{};
-        Double() : Constant(NodeType::DOUBLE, IR_Type::DOUBLE){}
+        Double() : Constant(NodeType::DOUBLE, RendorIR::IR_Type::DOUBLE){}
         void PrintAST() final 
         {
             fmt::print("Double: {}\n", Val);
@@ -38,7 +38,7 @@ namespace nodes
     struct String : Constant
     {
         std::string Val{};
-        String() : Constant(NodeType::STRING, IR_Type::STRING){}
+        String() : Constant(NodeType::STRING, RendorIR::IR_Type::STRING){}
         void PrintAST() final 
         {
             fmt::print("String: {}\n", Val);
@@ -47,7 +47,7 @@ namespace nodes
     struct Bool : Constant 
     {
         bool Val{};
-        Bool() : Constant(NodeType::BOOL, IR_Type::BOOL){}
+        Bool() : Constant(NodeType::BOOL, RendorIR::IR_Type::BOOL){}
         void PrintAST() final 
         {
             fmt::print("Bool: {}\n", Val);
@@ -55,7 +55,7 @@ namespace nodes
     };
     struct Void : Constant
     {
-        Void() : Constant(NodeType::VOID, IR_Type::VOID){}
+        Void() : Constant(NodeType::VOID, RendorIR::IR_Type::VOID){}
         void PrintAST() final 
         {
             fmt::print("VOID\n");
@@ -64,7 +64,7 @@ namespace nodes
     struct Reference : Constant
     {
         std::string Val{};
-        Reference() : Constant(NodeType::VARIABLE_REFERENCE, IR_Type::REFERENCE){}
+        Reference() : Constant(NodeType::VARIABLE_REFERENCE, RendorIR::IR_Type::REFERENCE){}
         void PrintAST() final 
         {
             fmt::print("Reference: {}\n", Val);
@@ -74,7 +74,7 @@ namespace nodes
     {
         std::string Name{};
         std::vector<std::unique_ptr<Constant>> Args;
-        FunctionCall() : Constant(NodeType::FUNCTION_CALL, IR_Type::RET){}
+        FunctionCall() : Constant(NodeType::FUNCTION_CALL, RendorIR::IR_Type::RET){}
         void PrintAST() final 
         {
             fmt::print("Function Call: {} (", Name);

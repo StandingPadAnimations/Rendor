@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "RendorCompiler/Nodes/BaseNode.hpp"
-
 namespace nodes 
 {
     struct Body : Node 

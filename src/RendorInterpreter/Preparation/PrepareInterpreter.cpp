@@ -26,7 +26,7 @@ bool Interpreter::PrepareInterpreter()
                 header.magic_number,
                 header.major_version,
                 header.minor_version,
-                header.function_count);
+                header.op_count);
     read_string(header.identifier, 5);
 
     if (header.magic_number != 199)
@@ -44,7 +44,6 @@ bool Interpreter::PrepareInterpreter()
     CreateConstPool();
     CreateStrConstPool();
     ImportModules(); // ! DOES NOTHING YET
-    CreateGVT();
     ReadFunctions();
     return true;
 }

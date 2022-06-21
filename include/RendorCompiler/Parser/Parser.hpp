@@ -28,25 +28,25 @@ class RendorParser
         std::vector<std::vector<std::unique_ptr<nodes::Node>>*> ScopeList;
         std::vector<std::unique_ptr<nodes::Node>>* Scope;
 
-        std::map<std::string, IR_Type, std::less<>> Variables;
+        std::map<std::string, RendorIR::IR_Type, std::less<>> Variables;
 
         /* ---------------------------------- Types --------------------------------- */
-        const std::map<std::string_view, IR_Type, std::less<>> Str_to_Type 
+        const std::map<std::string_view, RendorIR::IR_Type, std::less<>> Str_to_Type 
         {
-            {"void",   IR_Type::VOID},
-            {"i64",    IR_Type::INT},
-            {"double", IR_Type::DOUBLE},
-            {"string", IR_Type::STRING},
-            {"bool",   IR_Type::BOOL},
+            {"void",   RendorIR::IR_Type::VOID},
+            {"i64",    RendorIR::IR_Type::INT},
+            {"double", RendorIR::IR_Type::DOUBLE},
+            {"string", RendorIR::IR_Type::STRING},
+            {"bool",   RendorIR::IR_Type::BOOL},
         };
 
-        const std::map<IR_Type, std::string_view, std::less<>> Type_to_Str 
+        const std::map<RendorIR::IR_Type, std::string_view, std::less<>> Type_to_Str 
         {
-            {IR_Type::VOID,   "void"},
-            {IR_Type::INT,    "i64"},
-            {IR_Type::DOUBLE, "double"},
-            {IR_Type::STRING, "string"},
-            {IR_Type::BOOL,   "bool"},
+            {RendorIR::IR_Type::VOID,   "void"},
+            {RendorIR::IR_Type::INT,    "i64"},
+            {RendorIR::IR_Type::DOUBLE, "double"},
+            {RendorIR::IR_Type::STRING, "string"},
+            {RendorIR::IR_Type::BOOL,   "bool"},
         };
 
         /* -------------------------- Token and value pair -------------------------- */

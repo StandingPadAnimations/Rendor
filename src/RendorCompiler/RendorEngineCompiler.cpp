@@ -6,6 +6,8 @@
 
 #include <fmt/color.h>
 
+namespace fs = std::filesystem;
+
 // Overload of new for debugging
 #if DEBUGMODE
 void* operator new(size_t size)
@@ -19,8 +21,8 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
 {
     // * Boost variables for checking some stuff
     // ? Personally I think there may be a way to use less variables 
-    fs::path AbsPath(FileInput);
-    std::string AbsPathExt = AbsPath.extension().string();
+    const fs::path AbsPath(FileInput);
+    const std::string AbsPathExt = AbsPath.extension().string();
     std::ios_base::sync_with_stdio(false);
     std::string OutputPath = AbsPath.parent_path().string();
 
@@ -78,8 +80,8 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     }
 
     std::vector<std::pair<Lex::Token, std::string>> Tokens;
-    boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
-    boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
+    const boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
+    const boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
 
     // Tokenizes the AllCode string
     Lex::Lexer RenLexer;
@@ -110,7 +112,7 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
     if (DebugMode)
     { 
         fmt::print(fg(fmt::color::green), "----------------------------TOKENS----------------------------\n");
-        for (auto const& [token, value] : Tokens)
+        for (const auto& [token, value] : Tokens)
         {
             fmt::print(fg(fmt::color::green), "Token: {} {}\n", static_cast<std::underlying_type<Lex::Token>::type>(token), value);
         }

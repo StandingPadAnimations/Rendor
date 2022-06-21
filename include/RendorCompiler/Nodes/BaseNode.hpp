@@ -31,11 +31,15 @@ namespace nodes
     struct Node 
     {
         NodeType Type = NodeType::BASE_NODE;
+        inline static auto& Context_IR =  RendorEngineCompiler::Context_IR;
+        
         Node() = default;
-        inline static std::size_t Depth = 0;
         explicit Node(NodeType input_Type) : Type(input_Type){}
-        virtual void CodeGen() = 0;
+
+        virtual void CodeGen() {};
         virtual void PrintAST() = 0;
+
+        inline static std::size_t Depth = 0;
         void PrintDepth(std::size_t offset = 0)
         {
             for (std::size_t i = 0; i < Depth+offset; ++i)

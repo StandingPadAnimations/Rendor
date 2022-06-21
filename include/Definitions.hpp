@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "Exceptions.hpp"
+
 struct Constant;
 struct Function;
 
@@ -15,34 +17,26 @@ using RendorInt       = std::int64_t;
 using RendorDouble    = double;
 using RendorConst     = std::variant<std::string, bool>;
 using RendorVec       = std::vector<Constant>;
-using RendorReference = std::variant<Constant*, Function*>;
+using RendorReference = Constant*;
 using RendorNum       = std::variant<RendorInt, RendorDouble>;
 
+#define RENDOR_SEG_FAULT error::RendorException("Segmentation Fault")
 /*
     * REFERENCE
     * reg - u16: register
-    * reg ref - u8: determines the type of the second register
+    * reg-ref - u8: determines the type of the second register
     * {
     *   0 - Const Pool
     *   1 - Global
     *   2 - Last Stack Frame
     *   3 - Local
-    *   4 - Top of the stack
     * }
-    * ret - u8: determines if there is a return value:
+    * Loc-of-Index - u8: determines the location of an index
     * {
-    *   0 - No return value
-    *   1 - Return Value
-    * }  
-    * func-o-var - u8: for resolving and exporting names
-    * {
-    *   0 - function
-    *   1 - variable
-    * }
-    * mov-cpy - u8: move or copy the value
-    * {
-    *   0 - mov
-    *   1 - cpy
+    *   0 - Const Pool
+    *   1 - Global
+    *   2 - Last Stack Frame
+    *   3 - Local
     * }
 */
 enum class ByteCodeEnum : std::uint8_t
@@ -51,25 +45,19 @@ enum class ByteCodeEnum : std::uint8_t
     alloc,          //* Size,   NULL16, NULL16, NULL8, NULL8, NULL8
     free,           //* NULL16, NULL16, NULL16, NULL8, NULL8, NULL8
 
-    /* -------------------------------- Functions ------------------------------- */
-    call,           //* return reg, reg for function, ret-o-not, reg-ref, NULL8
-    ret,            //* reg with return value, NULL16, NULL16, ret-o-not, reg-ref, mov-cpy
-
     /* -------------------------- Register instructions ------------------------- */
     mov,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
     mov_n,          //* reg1, NULL16, NULL16, reg-ref,  NULL8,    NULL8
     cpy,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
     ref,            //* reg1, reg2,   NULL16, reg-ref1, reg-ref2, NULL8
 
-    /* --------------------------- Stack instructions --------------------------- */
-    stk_mov,        //* reg, reg-ref
-    stk_mov_n,      //* NULL-9-BYTE
-    stk_cpy,        //* reg, reg-ref
-    stk_pop,        //* NULL-9-BYTE
+    /* --------------------------- Array instructions --------------------------- */
+    movElm,         //* reg1, reg2, index, reg-ref1, reg-ref2, Loc-of-Index
+    cpyElm,         //* reg1, reg2, index, reg-ref1, reg-ref2, Loc-of-Index
+    refElm,         //* reg1, reg2, index, reg-ref1, reg-ref2, Loc-of-Index
 
     /* ---------------------------------- jump ---------------------------------- */
-    jmp,            //* jump-val, forward-o-back
-
+    jmp,            //* index, NULL8
     /* ---------------------------------- Math ---------------------------------- */
     add,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
     sub,            //* reg1, reg2, reg3, reg-ref1, reg-ref2, reg-ref3
@@ -96,7 +84,6 @@ enum class ConstType
     CONST_STR,
     CONST_BOOL,
     CONST_REF,
-    CONST_FUNC_REF,
     CONST_VEC,
 };
 

@@ -124,13 +124,7 @@ struct Constant
         ((lhs.Type == ConstType::CONST_REF) &&
         (rhs.Type  == ConstType::CONST_REF))
         {
-            return *std::get_if<Constant*>(&lhs.Ref) == *std::get_if<Constant*>(&lhs.Ref);
-        }
-        else if 
-        ((lhs.Type == ConstType::CONST_FUNC_REF) &&
-        (rhs.Type  == ConstType::CONST_FUNC_REF))
-        {
-            return *std::get_if<Function*>(&lhs.Ref) == *std::get_if<Function*>(&lhs.Ref);
+            return *lhs.Ref == *rhs.Ref;
         }
         else if 
         ((lhs.Type == ConstType::CONST_STR) &&
@@ -164,13 +158,7 @@ struct Constant
         ((lhs.Type == ConstType::CONST_REF) &&
         (rhs.Type  == ConstType::CONST_REF))
         {
-            return *std::get_if<Constant*>(&lhs.Ref) != *std::get_if<Constant*>(&lhs.Ref);
-        }
-        else if 
-        ((lhs.Type == ConstType::CONST_FUNC_REF) &&
-        (rhs.Type  == ConstType::CONST_FUNC_REF))
-        {
-            return *std::get_if<Function*>(&lhs.Ref) != *std::get_if<Function*>(&lhs.Ref);
+            return *lhs.Ref != *rhs.Ref;
         }
         else if 
         ((lhs.Type == ConstType::CONST_STR) &&

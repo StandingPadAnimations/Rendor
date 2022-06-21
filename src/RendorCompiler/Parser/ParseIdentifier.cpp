@@ -24,7 +24,7 @@ void RendorParser::ParseIdentifer(const std::string& Identifier)
 
             // Store the type
             Node->ConstType = Str_to_Type.at(CurrentValue);
-            std::string_view Type_as_str = CurrentValue;
+            const std::string_view Type_as_str = CurrentValue;
 
             GetNextTok();
 
@@ -71,7 +71,7 @@ void RendorParser::ParseIdentifer(const std::string& Identifier)
                 }
                 else 
                 {
-                    ConstPtr Arg = ParseConstant();
+                    const ConstPtr Arg = ParseConstant();
                     if (!Arg)
                     {
                         throw error::CompilerRendorException(fmt::format("Err: Expected an argument, got {}; Line {}", 
@@ -81,8 +81,8 @@ void RendorParser::ParseIdentifer(const std::string& Identifier)
 
                     if (Arg->Type == nodes::NodeType::VARIABLE_REFERENCE)
                     {
-                        auto& Arg_r = static_cast<nodes::Reference&>(*Arg);
-                        auto Arg_r_Type = Variables[Arg_r.Val];
+                        const auto& Arg_r = static_cast<nodes::Reference&>(*Arg);
+                        const auto Arg_r_Type = Variables[Arg_r.Val];
                         Node->Name = fmt::format("{}{}_", Node->Name, Type_to_Str.at(Arg_r_Type));
                     }
                     else

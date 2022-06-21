@@ -1,42 +1,47 @@
 #ifndef IR_DEFINITIONS_HPP
 #define IR_DEFINITIONS_HPP
 
-enum class IR_def 
+namespace RendorIR
 {
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    POW,
-    ICR,
-    DCR,
+    inline namespace v1_0_0
+    {
+        enum class IR_def 
+        {
+            ADD,
+            SUB,
+            MUL,
+            DIV,
+            POW,
+            ICR,
+            DCR,
 
-    MOV,
-    MOV_N,
-    CPY,
-    REF,
+            ASSIGN,
 
-    STK_MOV,
-    STK_MOV_N,
-    STK_CPY,
+            EQ,
+            NOT_EQ,
+            GR,
+            LESS,
+            GR_EQ,
+            LESS_EQ,
+        };
 
-    EQ,
-    NOT_EQ,
-    GR,
-    LESS,
-    GR_EQ,
-    LESS_EQ,
-};
+        enum class IR_Type 
+        {
+            INT,
+            DOUBLE,
+            STRING,
+            BOOL,
+            REFERENCE,
+            VOID,
+            RET,
+        };
 
-enum class IR_Type 
-{
-    INT,
-    DOUBLE,
-    STRING,
-    BOOL,
-    REFERENCE,
-    VOID,
-    RET,
-};
-
+        enum class ManipulationType 
+        {
+            REF,
+            MOV,
+            CPY
+        };
+    }
+}
 #endif // IR_DEFINITIONS_HPP

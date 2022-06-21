@@ -8,16 +8,15 @@
 #include <vector>
 #include <filesystem>
 
-#include "RendorBoostFileMapper.hpp"
+#include "RendorCompiler/BackEnd/IR/IRContext.hpp"
 #include "RendorAPI/FunctionTable.hpp"
+#include "RendorBoostFileMapper.hpp"
 
 #define FMT_HEADER_ONLY 1
 #include <fmt/format.h>
 #include <fmt/color.h>
 
 #include <boost/algorithm/string/trim.hpp>
-
-namespace fs = std::filesystem;
 
 #define RENDOR_VERSION 0
 
@@ -30,7 +29,7 @@ struct RendorEngineInterpreter
 struct RendorEngineCompiler
 {
     /* ---------------------------------- Flags --------------------------------- */
-    inline static FunctionTable Context;
+    inline static RendorIR::IR_Context Context_IR;
     inline static bool WarningsToErrors = false;
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;

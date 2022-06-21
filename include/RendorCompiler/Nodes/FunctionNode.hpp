@@ -16,7 +16,7 @@ namespace nodes
 
         Body FunctionBody{};
         std::vector<std::unique_ptr<Constant>> Args;
-        IR_Type RetType{};
+        RendorIR::IR_Type RetType{};
 
         void PrintAST() final 
         {

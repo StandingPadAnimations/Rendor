@@ -10,6 +10,5 @@
 
 .gitconfig
 Makefile
-.clangd
 .clang-tidy
 compile_flags.txt
