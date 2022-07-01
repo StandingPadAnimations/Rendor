@@ -26,7 +26,7 @@ enum TypeEnum
 EXTERNAL struct RendorMethod
 {
     const char* Name;
-    size_t ArgCount;
+    uint32_t ArgCount;
     void (*RendorFunc)(RendorState*);
 };
 

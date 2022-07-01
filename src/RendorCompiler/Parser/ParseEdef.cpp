@@ -24,7 +24,7 @@ void RendorParser::ParseEdef(const std::string& Identifier)
         }
         else 
         {
-            ConstPtr Arg = ParseConstant();
+            const ConstPtr Arg = ParseConstant();
             if (!Arg)
             {
                 throw error::CompilerRendorException(fmt::format("Err: Expected an argument, got {}; Line {}", 

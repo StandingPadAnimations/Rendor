@@ -24,17 +24,17 @@ struct Constant
     Constant &operator=(Constant&&) = default;
     Constant(const Constant&) = delete;
     Constant&operator=(const Constant&) = delete;
-    explicit Constant(const RendorConst& value, const ConstType& valueType)     : Const(value), Type(valueType) {}
-    explicit Constant(const RendorNum& value, const ConstType& valueType)       : Num(value),   Type(valueType){}
-    explicit Constant(const RendorReference& value, const ConstType& valueType) : Ref(value),   Type(valueType){}
-    explicit Constant(const RendorConst& constVal, const RendorNum& numVal, const RendorReference& refVal, const ConstType& typeVal) : 
-    Const(constVal), 
-    Num(numVal), 
-    Ref(refVal), 
-    Type(typeVal) {}
+    explicit Constant(const RendorConst& t_Const, const ConstType& t_Type) noexcept     : Const(t_Const), Type(t_Type){}
+    explicit Constant(const RendorNum& t_Num, const ConstType& t_Type) noexcept       : Num(t_Num),   Type(t_Type){}
+    explicit Constant(const RendorReference& t_Ref, const ConstType& t_Type) noexcept : Ref(t_Ref),   Type(t_Type){}
+    explicit Constant(const RendorConst& t_Const, const RendorNum& t_Num, const RendorReference& t_Ref, const ConstType& t_Type) noexcept : 
+    Const(t_Const), 
+    Num(t_Num), 
+    Ref(t_Ref), 
+    Type(t_Type){}
 
     /* ------------------------------ Clone method ------------------------------ */
-    Constant clone()
+    Constant clone() const noexcept
     {
         return Constant{Const, Num, Ref, Type};
     }
@@ -46,7 +46,8 @@ struct Constant
         Ret.Type = ConstType::CONST_NUM;
         Ret.Num = std::visit([&](auto lhs_val, auto rhs_val)
                 {
-                    return RendorNum{lhs_val + rhs_val};
+                    using ResultType = decltype(lhs_val + rhs_val);
+                    return RendorNum{static_cast<ResultType>(lhs_val) + static_cast<ResultType>(rhs_val)};
                 }, lhs.Num, rhs.Num);
         return Ret;
     }
@@ -58,7 +59,8 @@ struct Constant
         Ret.Type = ConstType::CONST_NUM;
         Ret.Num = std::visit([&](auto lhs_val, auto rhs_val)
                 {
-                    return RendorNum{lhs_val - rhs_val};
+                    using ResultType = decltype(lhs_val - rhs_val);
+                    return RendorNum{static_cast<ResultType>(lhs_val) - static_cast<ResultType>(rhs_val)};
                 }, lhs.Num, rhs.Num);
         return Ret;
     }
@@ -70,7 +72,8 @@ struct Constant
         Ret.Type = ConstType::CONST_NUM;
         Ret.Num = std::visit([&](auto lhs_val, auto rhs_val)
                 {
-                    return RendorNum{lhs_val * rhs_val};
+                    using ResultType = decltype(lhs_val * rhs_val);
+                    return RendorNum{static_cast<ResultType>(lhs_val) * static_cast<ResultType>(rhs_val)};
                 }, lhs.Num, rhs.Num);
         return Ret;
     }
@@ -82,7 +85,8 @@ struct Constant
         Ret.Type = ConstType::CONST_NUM;
         Ret.Num = std::visit([&](auto lhs_val, auto rhs_val)
                 {
-                    return RendorNum{lhs_val / rhs_val};
+                    using ResultType = decltype(lhs_val / rhs_val);
+                    return RendorNum{static_cast<ResultType>(lhs_val) / static_cast<ResultType>(rhs_val)};
                 }, lhs.Num, rhs.Num);
         return Ret;
     }

@@ -21,11 +21,11 @@ PLEASE READ BEFORE CONTINUING
 ---------------------------------
 ---------------------------------
 
-This is the main file for Project Rendor's interpreter by Mahid Sheikh(https://twitter.com/StandingPadYT), 
+This is the main file for Project Rendor's interpreter by Mahid Sheikh (https://twitter.com/StandingPadYT), 
 an updated version of the EnderKnight Programming Language by Mahid Sheikh.
 
 This project is open sourced, as long as you give credit to Mahid Sheikh the main file of the source code.
-To give credit, please share StandingPad's twitter link(and the original GitHub(https://github.com/StandingPadAnimations/EnderKnight-Programming-Language)). 
+To give credit, please share Mahid's twitter link(and the original GitHub (https://github.com/StandingPadAnimations/Rendor)). 
 Once done, you may then credit yourself for any changes you make
 
 Any modifications must follow GNU GPL V3
@@ -73,11 +73,6 @@ int main (int argc, char *argv[])
     catch (std::exception& exp)
     {
         std::cout << exp.what() << std::endl;
-        return EXIT_FAILURE;
-    }
-    catch (...)
-    {
-        std::cout << "Unknown Error Occured" << std::endl;
         return EXIT_FAILURE;
     }
 }

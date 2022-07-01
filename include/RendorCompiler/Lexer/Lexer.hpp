@@ -21,9 +21,11 @@
 
 #define FALLTHROUGH [[fallthrough]]
 
-namespace Lex{
+namespace Lex
+{
     // Enum for tokens 
-    enum class Token{
+    enum class Token
+    {
         // Identifiers, keywords, and functions
         IDENTIFIER, 
         KEYWORD,
@@ -52,10 +54,11 @@ namespace Lex{
     };
 
     // Lexer Class 
-    class Lexer{
+    class Lexer
+    {
         public:            
             // Tokenizes Lines of code from Rendor Files
-            std::vector<std::pair<Token, std::string>> Tokenize(const boost::interprocess::mapped_region&);
+            std::vector<std::pair<Token, std::string>> Tokenize(const boost::interprocess::mapped_region&) const noexcept;
             
         private:
             // Keywords to check for 
@@ -86,7 +89,7 @@ namespace Lex{
                 Comment
             };
 
-            bool LexerCharCheck(char Char);
+            bool LexerCharCheck(const char Char) const noexcept;
     };
 }
-#endif // * LEXER
+#endif // RENDOR_LEXER_HPP

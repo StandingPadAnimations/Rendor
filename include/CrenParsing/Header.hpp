@@ -5,11 +5,12 @@
 
 struct CrenHeader
 {
-    std::uint8_t    magic_number = 199;
+    std::uint8_t    magic_number  = 199;
     std::uint8_t    major_version = 1;
     std::uint8_t    minor_version = 0;
-    std::uint32_t   op_count = 0;
-    std::string     identifier = "CHAI";
+    std::uint32_t   op_count      = 0;
+    std::uint32_t   pool_count    = 0;
+    std::string     identifier    = "CHAI";
 };
 
 struct SectionHeader 

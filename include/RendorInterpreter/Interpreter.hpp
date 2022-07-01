@@ -15,6 +15,7 @@
 #include "RendorInterpreter/Objects/Modules.hpp"
 #include "RendorAPI/RendorAPI.h"
 #include "CrenParsing/Header.hpp"
+#include "CrenParsing/Operation.hpp"
 
 #include "Definitions.hpp"
 #include "UnorderedMapLookUp.hpp"
@@ -26,15 +27,15 @@
 class Interpreter
 {
     public:
-        explicit Interpreter(binary_io::file_istream& Input)
+        explicit Interpreter(binary_io::file_istream& t_File) noexcept
         {
-            File = &Input;
+            m_File = &t_File;
         };
 
         bool PrepareInterpreter();
         void ExecuteMain()
         {
-            ExecuteByteCode(CurrentModule->Program);
+            ExecuteByteCode(m_CurrentModule->Program, 0);
         }
 
         /* ------------------------------ API functions ----------------------------- */
@@ -52,40 +53,41 @@ class Interpreter
         void PopStack();
 
         void InitModule(RendorMethod *MethodList);
-        void ThrowStackTrace()
+        void ThrowStackTrace() const noexcept
         {
-            for (const auto& err : Stacktrace)
+            for (const auto& err : m_Stacktrace)
             {
                 fmt::print("{}\n", err);
             }
         }
 
     private:
-        std::array<StackFrame, RENDOR_CALL_STACK_LIMIT> Stack;
-        StackFrame* sp = nullptr;
-        std::size_t sp_int = 0;
+        std::array<StackFrame, RENDOR_CALL_STACK_LIMIT> m_Stack;
+        std::vector<Module*> m_ModuleStack;
+        StackFrame* m_sp = nullptr;
+        std::size_t m_sp_int = 0;
         
-        binary_io::file_istream* File;
-        Module* CurrentModule = nullptr;
-        CrenHeader header;
+        binary_io::file_istream* m_File;
+        Module* m_CurrentModule = nullptr;
+        CrenHeader m_Header;
 
-        std::vector<Module> Modules;
+        std::vector<Module> m_Modules;
 
-        std::vector<std::string> Stacktrace;
+        std::vector<std::string> m_Stacktrace;
 
         void CreateConstPool();
         void CreateStrConstPool();
         void ImportModules(){}; // ! UNSUPPORTED RIGHT NOW
         void ReadFunctions();
-        void ExecuteByteCode(const std::vector<Operation>& Func);
+        void ExecuteByteCode(const std::vector<Operation>& Func, const std::size_t start);
 
         /* ---------------------------- Helper functions ---------------------------- */
         void AddModule()
         {
-            Modules.push_back(Module{});
-            CurrentModule = &Modules.back();
-            CurrentModule->Pool = ConstPool{};
-            CurrentModule->GlobalVars = StackFrame{};
+            m_Modules.push_back(Module{});
+            m_CurrentModule = &m_Modules.back();
+            m_CurrentModule->Pool = ConstPool{};
+            m_CurrentModule->GlobalVars = StackFrame{};
         }
 
         void SetRegisters(Registers** Ptr, std::uint8_t Type)
@@ -94,22 +96,22 @@ class Interpreter
             {
                 case 0:
                 {
-                    *Ptr = &CurrentModule->Pool.Pool;
+                    *Ptr = &m_CurrentModule->Pool.Pool;
                     break;
                 }
                 case 1:
                 {
-                    *Ptr = &CurrentModule->GlobalVars.Registers;
+                    *Ptr = &m_CurrentModule->GlobalVars.Registers;
                     break;
                 }
                 case 2:
                 {
-                    *Ptr = &sp->LastStackFrame->Registers;
+                    *Ptr = &m_sp->LastStackFrame->Registers;
                     break;
                 }
                 case 3:
                 {
-                    *Ptr = &sp->Registers;
+                    *Ptr = &m_sp->Registers;
                     break;
                 }
                 default:

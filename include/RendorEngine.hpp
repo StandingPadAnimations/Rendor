@@ -23,7 +23,7 @@
 struct RendorEngineInterpreter
 {
     /* ----------------------------------- Run ---------------------------------- */
-    static void run(const std::string);
+    static void run(const std::string) noexcept;
 };
 
 struct RendorEngineCompiler
@@ -34,7 +34,6 @@ struct RendorEngineCompiler
     inline static bool DebugMode = false;
     inline static bool OptimizeByteCode = true;
     inline static std::vector<std::string> ByteCode;
-    inline static std::string OutputPath = "";
 
     inline static boost::interprocess::file_mapping File;
     inline static boost::interprocess::mapped_region RendorFileMemory;
@@ -44,12 +43,20 @@ struct RendorEngineCompiler
     inline static uint32_t MethodCount = 0;
 
     /* ----------------------------------- Run ---------------------------------- */
-    static void run(const std::string& FileInput, std::vector<std::string_view>& Arguments);
+    static void run(const std::string& FileInput, const std::vector<std::string_view>& Arguments);
 
     RendorEngineCompiler()
     {
         ByteCode.reserve(1000);
     }
+};
+
+struct RendorEngineAssembler 
+{
+    inline static boost::interprocess::file_mapping File;
+    inline static boost::interprocess::mapped_region RendorFileMemory;
+    inline static bool DebugMode = false;
+    static void run(const std::string& FileInput, const std::vector<std::string_view>& Arguments);
 };
 
 #endif // RENDOR_ENGINE_HPP

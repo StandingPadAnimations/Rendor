@@ -1,12 +1,14 @@
-#include "RendorCompiler/Lexer/Lexer.hpp"
-using namespace Lex;
+#include "RendorAssembler/Lexer.hpp"
+#include <cctype>
+using namespace LexAsm;
+
 
 std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interprocess::mapped_region& MappedCode) const noexcept
 {
     std::vector<std::pair<Token, std::string>> Tokens;
     BufferID LexerBufferID = BufferID::None;
     Tokens.reserve(5000);
-    for (auto Line : RendorMapping::crange(MappedCode))
+    for (const auto& Line : RendorMapping::crange(MappedCode))
     {
         /* -------------------------- Current Line of code -------------------------- */
         std::string_view Code{Line.begin(), Line.end()};
@@ -113,55 +115,6 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     // * Because this used to cause a bug with comments
                 }
 
-                /* ------------------------- Tokenization of buffer ------------------------- */
-                if 
-                ((Buffer.find_first_not_of(" \n\r;,(){}=^*/+-><:") == std::string::npos) &&
-                (LexerBufferID != BufferID::Comment))
-                {
-                    
-                    // Check if the buffer contains a token that can be part of a larger token
-                    if (BiOpTokens.contains(Buffer))
-                    {
-                        // Check if it's compatible with the current characther 
-                        const std::string BufferAsString{Buffer};
-                        if (BiOpTokens.at(BufferAsString) == Code[Char])
-                        {
-                            //cppcheck-suppress unassignedVariable
-                            auto& [Token, value] = Tokens.back();
-                            Token = Lex::Token::BIOP;
-                            value += Code[Char];
-                        }
-                        else 
-                        {
-                            // Ignore as we don't care 
-                        }
-
-                        // ? Not sure if this is a good use of goto
-                        goto StartIndex;
-                    }
-
-                    // Check if the buffer contains a token that can be part of a larger token
-                    else if (UnOpTokens.contains(Buffer))
-                    {
-                        // Check if it's compatible with the current characther 
-                        const std::string BufferAsString{Buffer};
-                        if (UnOpTokens.at(BufferAsString) == Code[Char])
-                        {
-                            //cppcheck-suppress unassignedVariable
-                            auto& [Token, value] = Tokens.back();
-                            Token = Lex::Token::UnOp;
-                            value += Code[Char];
-                        }
-                        else 
-                        {
-                            // Ignore as we don't care 
-                        }
-                        
-                        // ? Not sure if this is a good use of goto
-                        goto StartIndex;
-                    }
-                }
-
                 else if (LexerBufferID == BufferID::StringEnd) // NOLINTNEXTLINE
                 {
                     LexerBufferID = BufferID::None; // resets BufferID when needed
@@ -176,25 +129,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                 }
                 else if (LexerBufferID == BufferID::None) // Everything that requires the BufferID to be None
                 {
-                    // Keywords 
-                    if (std::find(Keywords.begin(), Keywords.end(), Buffer) != Keywords.end()) // if it is a keyword
+                    if (std::find(Symbols.begin(), Symbols.end(), Buffer) != Symbols.end()) // if it is a built in function
                     {
-                        Tokens.emplace_back(Token::KEYWORD, std::string{Buffer});
-                    }
-
-                    else if (std::find(Types.begin(), Types.end(), Buffer) != Types.end()) // if it is a keyword
-                    {
-                        Tokens.emplace_back(Token::TYPE_HINT, std::string{Buffer});
-                    }
-
-                    else if (std::find(Attributes.begin(), Attributes.end(), Buffer) != Attributes.end()) // if it is an attribute
-                    {
-                        Tokens.emplace_back(Token::ATTRIBUTE, std::string{Buffer});
-                    }
-                    
-                    else if (std::find(Operators.begin(), Operators.end(), Buffer) != Operators.end()) // if it is a built in function
-                    {
-                        Tokens.emplace_back(Token::OPERATOR, std::string{Buffer});
+                        Tokens.emplace_back(Token::SYMBOL, std::string{Buffer});
                     }
 
                     // Floats 
@@ -222,7 +159,7 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                     // Identifiers
                     else 
                     {
-                        Tokens.emplace_back(Token::IDENTIFIER, std::string{Buffer});
+                        Tokens.emplace_back(Token::LABEL, std::string{Buffer});
                     }
                 }
 
@@ -240,79 +177,9 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
                         ++StartIndex;
                         break;
                     }
-
-                    case ';':
-                    {
-                        Tokens.emplace_back(Token::SEMICOLON, ";");
-                        ++StartIndex;
-                        break;
-                    }
-
-                    case ',':
-                    {    
-                        Tokens.emplace_back(Token::COMMA, ",");
-                        ++StartIndex;
-                        break;
-                    }
-
-                    case '(':
-                    {    
-                        Tokens.emplace_back(Token::LPAREN, "(");
-                        ++StartIndex;
-                        break;
-                    }
-
-                    case ')':
-                    {
-                        Tokens.emplace_back(Token::RPAREN, ")");
-                        break;
-                    }
-
-                    case '{':
-                    {
-                        Tokens.emplace_back(Token::LBRACE, "{");
-                        break;
-                    }
-
-                    case '}':
-                    {
-                        Tokens.emplace_back(Token::RBRACE, "}");
-                        break;
-                    }
-
-                    case ':':
-                    {
-                        Tokens.emplace_back(Token::COLON, ":");
-                        break;
-                    }
-
-                    case '=':
-                    {
-                        Tokens.emplace_back(Token::EQUAL, "=");
-                        break;
-                    }
-                    
-                    case '^': // NOLINT
-                    FALLTHROUGH;
-                    case '*':
-                    FALLTHROUGH;
-                    case '/':
-                    FALLTHROUGH;
-                    case '+':
-                    FALLTHROUGH;
-                    case '-':
-                    FALLTHROUGH;
-                    case '>':
-                    FALLTHROUGH;
-                    case '<':
-                    {
-                        Tokens.emplace_back(Token::BIOP, std::string{Code[Char]});
-                        break;
-                    }
                 }
 
-                StartIndex: 
-                    StartIndex = Code.find_first_not_of(' ', EndIndex);
+                StartIndex = Code.find_first_not_of(' ', EndIndex);
             }
 
             /* -------------------------------------------------------------------------- */
@@ -397,24 +264,13 @@ std::vector<std::pair<Token, std::string>> Lexer::Tokenize(const boost::interpro
     return Tokens; 
 }
 
-bool Lexer::LexerCharCheck(const char Char) const noexcept
+bool Lexer::LexerCharCheck(const char Char)  const noexcept
 {
     return
-    (Char   == ' ')   ||
-    (Char   == ';')   ||
-    (Char   == ':')   ||
-    (Char   == ',')   ||
-    (Char   == '(')   ||
-    (Char   == ')')   ||
-    (Char   == '{')   ||
-    (Char   == '}')   ||
-    (Char   == '=')   ||
-    (Char   == '^')   ||
-    (Char   == '*')   ||
-    (Char   == '/')   ||
-    (Char   == '+')   ||
-    (Char   == '-')   ||
-    (Char   == '>')   ||
-    (Char   == '<')   ||
-    (Char   == '\r');
+    (Char == ' ')   ||
+    (Char == '$')   ||
+    (Char == '\n')  ||
+    (Char == '\r')  ||
+    (std::isdigit(Char))
+    ;
 }

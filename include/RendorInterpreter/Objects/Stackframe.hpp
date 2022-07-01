@@ -16,25 +16,21 @@
 struct StackFrame 
 {
     StackFrame* LastStackFrame = nullptr;
-    std::vector<Constant> Registers;
+    Registers Registers;
     Constant* Ret = nullptr;
 
     StackFrame() = default;
     explicit StackFrame(std::size_t size)
     {
-        Registers.reserve(size + 2);
-        for (std::size_t i = 0; i < size; ++i)
-        {
-            Registers[i] = std::move(Constant{RendorConst{false}, ConstType::NONE});
-        }
+        Registers.resize(size);
     }
     
-    Constant& operator[](std::size_t index)
+    Constant& operator[](std::size_t index) noexcept
     {
         return Registers[index];
     }
 
-    void insert(std::size_t index, Constant Object)
+    void insert(std::size_t index, Constant Object) noexcept
     {
         Registers[index] = std::move(Object);
     }

@@ -21,11 +21,11 @@ PLEASE READ BEFORE CONTINUING
 ---------------------------------
 ---------------------------------
 
-This is the main file for Project Rendor's bytecode compiler by Mahid Sheikh(https://twitter.com/StandingPadYT), 
+This is the main file for Project Rendor's bytecode compiler by Mahid Sheikh (https://twitter.com/StandingPadYT), 
 an updated version of the EnderKnight Programming Language by Mahid Sheikh.
 
 This project is open sourced, as long as you give credit to Mahid Sheikh the main file of the source code.
-To give credit, please share StandingPad's twitter link(and the original GitHub(https://github.com/StandingPadAnimations/EnderKnight-Programming-Language)). 
+To give credit, please share Mahid's twitter link (and the original GitHub(https://github.com/StandingPadAnimations/Rendor)). 
 Once done, you may then credit yourself for any changes you make
 
 Any modifications must follow GNU GPL V3
@@ -54,11 +54,12 @@ While the extension isn't required, it does make the code more readable in my op
 #include <iostream>
 
 #include "RendorEngine.hpp"
+#include "Exceptions.hpp"
 
 #include <fmt/core.h>
 #include <fmt/color.h>
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     try
     {
@@ -66,18 +67,17 @@ int main (int argc, char *argv[])
         std::cin.get();
         #endif
         
-        std::string File = "._.";
-        std::vector<std::string_view> Arguments;
-
-        if (argc > 1) {
-            Arguments.assign(argv, argv + argc);
-            if (argc >= 2)
-            {
-                File = Arguments[1];
-            }
+        if (argc > 1) 
+        {
+            const std::vector<std::string_view> Arguments(argv, argv + argc);
+            const std::string File = std::string{Arguments[1]};
+            RendorEngineCompiler Compiler;
+            Compiler.run(File, Arguments);
         }
-        RendorEngineCompiler Compiler;
-        Compiler.run(File, Arguments);
+        else 
+        {
+            throw error::RendorException("Missing File Input!");
+        }
         return EXIT_SUCCESS;
     }
     catch (const std::exception& exp)

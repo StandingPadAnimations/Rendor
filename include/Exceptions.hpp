@@ -11,45 +11,34 @@
 
 namespace error{
     // Exception for Rendor in general
-    class RendorException: public std::exception {
-        private:
-            std::string message_;
-        public:
-            explicit RendorException(const std::string& message);
-            const char* what() const noexcept override {
-                return message_.c_str();
-            }
-    };
-
-    inline RendorException::RendorException(const std::string& message) : message_(message) {}
+    using RendorException = std::runtime_error;
 
     // Compiler exceptions 
-    class CompilerRendorException: public std::exception {
+    class CompilerRendorException: public std::exception 
+    {
         private:
-            std::string message_;
+            std::string m_message;
         public:
-            explicit CompilerRendorException(const std::string& message, const size_t LineNumber);
-            const char* what() const noexcept override {
-                return message_.c_str();
+            explicit CompilerRendorException(const std::string& message, const size_t LineNumber)
+            {
+                size_t CurrentLine = 1;
+                for (const auto& Line : RendorMapping::crange(RendorEngineCompiler::RendorFileMemory))
+                {
+                    if (CurrentLine == LineNumber)
+                    {
+                        m_message = fmt::format("{}:\n{}", message, Line);
+                    }
+                    else
+                    {
+                        ++CurrentLine;
+                    }
+                }
+            }
+            const char* what() const noexcept override 
+            {
+                return m_message.c_str();
             }
     };
-
-    inline CompilerRendorException::CompilerRendorException(const std::string& message, const size_t LineNumber) : message_(message) 
-    {
-        size_t CurrentLine = 1;
-        for (const auto& Line : RendorMapping::crange(RendorEngineCompiler::RendorFileMemory))
-        {
-            if (CurrentLine < LineNumber)
-            {
-                ++CurrentLine;
-            }
-            else
-            {
-                message_ = fmt::format("{}:\n{}", message, Line);
-                break;
-            }
-        }
-    }
 
     inline void LogWarning(std::string_view Warning)
     {

@@ -4,7 +4,7 @@ void RendorParser::ParseImport(const std::string& Identifier)
 {
     if (CurrentToken != LexTok::STRING)
     {
-        throw error::CompilerRendorException(fmt::format("Line {}: Expected string for import, got {} instead!", CurrentLine, CurrentToken), CurrentLine);
+        throw error::CompilerRendorException(fmt::format("Line {}: Expected string for import, got {} instead!", CurrentLine, CurrentValue), CurrentLine);
     }
 
     std::unique_ptr<nodes::Import> Import = std::make_unique<nodes::Import>();

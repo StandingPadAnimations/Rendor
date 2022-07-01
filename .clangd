@@ -1,4 +1,0 @@
-If:
-  PathMatch: include/RendorCompiler/BackEnd/IR/Variables.ipp
-CompileFlags:
-  Add: -DIR_CONTEXT_HPP

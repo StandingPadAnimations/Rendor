@@ -8,35 +8,36 @@
 
 bool Interpreter::PrepareInterpreter()
 {
-    if (!File->is_open())
+    if (!m_File->is_open())
     {
-        Stacktrace.emplace_back("File is not opened/does not exist!");
+        m_Stacktrace.emplace_back("File is not opened/does not exist!");
         return false;
     }
 
     const auto read_string = [&](std::string& a_dst, std::size_t a_len) 
     {
         a_dst.resize(a_len);
-        File->read_bytes(std::as_writable_bytes(std::span{a_dst.data(), a_dst.size()}));
+        m_File->read_bytes(std::as_writable_bytes(std::span{a_dst.data(), a_dst.size()}));
     };
     
     /* --------------------------------- Header --------------------------------- */
-    File->seek_absolute(0);
-    File->read(std::endian::little, 
-                header.magic_number,
-                header.major_version,
-                header.minor_version,
-                header.op_count);
-    read_string(header.identifier, 5);
+    m_File->seek_absolute(0);
+    m_File->read(std::endian::little, 
+                m_Header.magic_number,
+                m_Header.major_version,
+                m_Header.minor_version,
+                m_Header.op_count,
+                m_Header.pool_count);
+    read_string(m_Header.identifier, 5);
 
-    if (header.magic_number != 199)
+    if (m_Header.magic_number != 199)
     {
-        Stacktrace.emplace_back("Invalid file! Wrong Magic Number!");
+        m_Stacktrace.emplace_back("Invalid file! Wrong Magic Number!");
         return false;
     }
-    if (header.identifier == "CHAI")
+    if (m_Header.identifier == "CHAI")
     {
-        Stacktrace.emplace_back("Invalid file! Wrong Identifier!");
+        m_Stacktrace.emplace_back("Invalid file! Wrong Identifier!");
         return false;
     }
 

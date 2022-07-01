@@ -1,5 +1,6 @@
 #ifndef RENNDOR_BOOST_FILE_MAPPING_HPP
 #define RENNDOR_BOOST_FILE_MAPPING_HPP
+#include <ios>
 #include <iostream>
 
 #include <boost/interprocess/file_mapping.hpp>
@@ -38,7 +39,7 @@ namespace RendorMapping
 
 
 inline std::ostream& operator<<(std::ostream& s, boost::iterator_range<char const*> const& line) {
-    return s.write(line.begin(), line.size());
+    return s.write(line.begin(), static_cast<std::streamsize>(line.size()));
 }
 
 #endif // RENNDOR_BOOST_FILE_MAPPING_HPP

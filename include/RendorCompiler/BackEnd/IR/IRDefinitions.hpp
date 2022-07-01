@@ -7,22 +7,8 @@ namespace RendorIR
     {
         enum class IR_def 
         {
-            ADD,
-            SUB,
-            MUL,
-            DIV,
-            POW,
-            ICR,
-            DCR,
-
-            ASSIGN,
-
-            EQ,
-            NOT_EQ,
-            GR,
-            LESS,
-            GR_EQ,
-            LESS_EQ,
+            CONSTANT,
+            ASSIGN_VARIABLE
         };
 
         enum class IR_Type 

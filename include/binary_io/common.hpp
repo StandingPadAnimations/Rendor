@@ -244,6 +244,7 @@ namespace binary_io
 	}
 #endif
 
+	#pragma GCC diagnostic ignored "-Wsign-conversion"
 	namespace endian
 	{
 		/// \brief Reverses the endian format of a given input.
@@ -306,6 +307,7 @@ namespace binary_io
 			std::memcpy(a_dst.data(), &a_value, sizeof(T));
 		}
 	}
+	#pragma GCC diagnostic pop
 
 #ifndef DOXYGEN
 	namespace detail

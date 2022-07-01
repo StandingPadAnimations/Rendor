@@ -14,7 +14,7 @@ class RendorParser
     public:
         Main Main;
         void PrimaryParse();
-        explicit RendorParser(std::vector<std::pair<LexTok, std::string>>* input_Tokens) : Tokens(input_Tokens), Scope(&Main.GlobalScope.Nodes)
+        explicit RendorParser(const std::vector<std::pair<LexTok, std::string>>* input_Tokens) : Tokens(input_Tokens), Scope(&Main.GlobalScope.Nodes)
         {
             GetNextTok(); // get the first token
             it = Tokens->begin();
@@ -23,8 +23,8 @@ class RendorParser
     
     private:
         std::size_t CurrentLine = 1;
-        std::vector<std::pair<LexTok, std::string>>* Tokens;
-        std::vector<std::pair<LexTok, std::string>>::iterator it = Tokens->begin();
+        const std::vector<std::pair<LexTok, std::string>>* Tokens;
+        std::vector<std::pair<LexTok, std::string>>::const_iterator it = Tokens->begin();
         std::vector<std::vector<std::unique_ptr<nodes::Node>>*> ScopeList;
         std::vector<std::unique_ptr<nodes::Node>>* Scope;
 

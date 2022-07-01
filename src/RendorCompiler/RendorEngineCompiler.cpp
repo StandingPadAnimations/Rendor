@@ -7,6 +7,7 @@
 #include <fmt/color.h>
 
 namespace fs = std::filesystem;
+namespace bi = boost::interprocess;
 
 // Overload of new for debugging
 #if DEBUGMODE
@@ -17,10 +18,13 @@ void* operator new(size_t size)
 }
 #endif
 
-void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::string_view>& Arguments)
+void RendorEngineCompiler::run(const std::string& FileInput, const std::vector<std::string_view>& Arguments)
 {
-    // * Boost variables for checking some stuff
-    // ? Personally I think there may be a way to use less variables 
+    if (!fs::exists(FileInput))
+    {
+        throw error::RendorException(fmt::format("{} doesn't exist!", FileInput));
+    }
+
     const fs::path AbsPath(FileInput);
     const std::string AbsPathExt = AbsPath.extension().string();
     std::ios_base::sync_with_stdio(false);
@@ -70,28 +74,18 @@ void RendorEngineCompiler::run(const std::string& FileInput, std::vector<std::st
                 throw error::RendorException("Can not enable and disable optimization at the same time!");
             }
         }
-
-        if
-        ((std::find(Arguments.begin(), Arguments.end(), "-c") != Arguments.end()) ||
-        (std::find(Arguments.begin(), Arguments.end(), "-cpp") != Arguments.end()))
-        {
-            fmt::print(fg(fmt::color::red), "C++ transpiling not supported in this version\n");
-        }
     }
 
-    std::vector<std::pair<Lex::Token, std::string>> Tokens;
-    const boost::interprocess::file_mapping File = boost::interprocess::file_mapping(FileInput.c_str(), boost::interprocess::read_only);
-    const boost::interprocess::mapped_region RendorFileMemory = boost::interprocess::mapped_region(File, boost::interprocess::read_only);
-
-    // Tokenizes the AllCode string
-    Lex::Lexer RenLexer;
 
     fmt::print(fg(fmt::color::green), "Tokenizing...\n");
-    Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser 
-    RendorParser Parser{&Tokens};
+    const bi::file_mapping MappedFile = bi::file_mapping(FileInput.c_str(), bi::read_only);
+    const bi::mapped_region MappedRendorFileMemory = bi::mapped_region(MappedFile, bi::read_only);
+    const Lex::Lexer RenLexer;
+    const std::vector<std::pair<Lex::Token, std::string>> Tokens = RenLexer.Tokenize(RendorFileMemory); // Tokenizes code for parser
 
     // Parses
     fmt::print(fg(fmt::color::green), "Generating AST tree......\n");
+    RendorParser Parser{&Tokens};
     Parser.PrimaryParse();
 
     //     fmt::print(fg(fmt::color::green), "Generating bytecode.........\n");

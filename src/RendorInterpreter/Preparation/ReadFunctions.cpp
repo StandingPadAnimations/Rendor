@@ -11,21 +11,27 @@ template<typename ...T> FunctionVisit(T...) -> FunctionVisit<T...>;
 
 void Interpreter::ReadFunctions()
 {
-    for (std::size_t Func = 0; Func < header.op_count; ++Func)
+    for (std::size_t Func = 0; Func < m_Header.op_count; ++Func)
     {
         Operation FullOp;
-        std::uint8_t Op_asInt = 0;
-
-        /* ------------------------------ Get Operation ----------------------------- */
-        (*File) >> Op_asInt;
-        FullOp.Operation = static_cast<ByteCodeEnum>(Op_asInt);
+        FullOp.Operation = [&]()
+                        {
+                            auto [Ret] = m_File->read<std::uint8_t>(std::endian::little);
+                            return static_cast<ByteCodeEnum>(Ret);
+                        }();
 
         /* ---------------------------- Set up operation ---------------------------- */
         switch (FullOp.Operation)
         {
+            case ByteCodeEnum::alloc:
+            FALLTHROUGH;
+            case ByteCodeEnum::free:
+            FALLTHROUGH;
+            case ByteCodeEnum::mod_push:
+            FALLTHROUGH;
             case ByteCodeEnum::jmp:
             {
-                File->read(
+                m_File->read(
                     FullOp.Reg_64,
                     FullOp.Reg_64_type_8
                 );
@@ -33,7 +39,7 @@ void Interpreter::ReadFunctions()
             }
             default:
             {
-                File->read(
+                m_File->read(
                     FullOp.Reg1_16,
                     FullOp.Reg2_16,
                     FullOp.Reg3_16,
@@ -44,6 +50,6 @@ void Interpreter::ReadFunctions()
                 break;
             }
         }
-        CurrentModule->Program.push_back(std::move(FullOp));
+        m_CurrentModule->Program.push_back(std::move(FullOp));
     }
 }

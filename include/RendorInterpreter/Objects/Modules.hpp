@@ -6,7 +6,7 @@
 
 #include "RendorInterpreter/Objects/Stackframe.hpp"
 #include "RendorInterpreter/Objects/ConstPool.hpp"
-#include "RendorInterpreter/Objects/Operation.hpp"
+#include "CrenParsing/Operation.hpp"
 
 struct Module
 {

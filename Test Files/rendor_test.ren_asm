@@ -1,0 +1,12 @@
+.import
+
+.code
+alloc 1
+jmp start
+ret
+
+.start
+cpy l0, $1
+ret
+
+.export
