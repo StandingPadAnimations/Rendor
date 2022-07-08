@@ -1,9 +1,12 @@
 # Rendor
+# Rendor has come to an end: https://gist.github.com/StandingPadAnimations/7e2d9bf4268b4471c98d79ee397c124f
+
 <img src="RendorLogo.png" width="240" height="240">
 
 GitHub for the Rendor programming language
 
 Rendor Discord Server: https://discord.gg/S95Jp8SAqT
+
 
 Rendor is the successor to the EnderKnight programming language. It aims to fix certain bugs and add:
 * Actual functions with arguments and return statements -> Arguments: Done, Return: WIP
